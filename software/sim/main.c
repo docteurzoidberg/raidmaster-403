@@ -1,5 +1,5 @@
 /*
- * Tripmaster 403 — simulateur PC.
+ * Raidmaster 403 — simulateur PC.
  *
  * Étape 1 du plan (voir PROMPT.md § 6) : ouvrir une fenêtre SDL 480×320 landscape, résolution
  * exacte du ST7796 de la carte Waveshare ESP32-S3-Touch-LCD-3.5. Fond blanc, sortie sur ÉCHAP ou
@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     }
 
     SDL_Window *window = SDL_CreateWindow(
-        "Tripmaster 403 — sim",
+        "Raidmaster 403 — sim",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         TRIPMASTER_SCREEN_W, TRIPMASTER_SCREEN_H,
         SDL_WINDOW_SHOWN);

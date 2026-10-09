@@ -1,6 +1,6 @@
-# Tripmaster GPS 403
+# Raidmaster 403
 
-Tripmaster rallye-raid custom pour Peugeot 403 Familiale (raid Crazy Dust 2027). Boîtier
+Raidmaster 403 : tripmaster rallye-raid custom pour Peugeot 403 Familiale (raid Crazy Dust 2027). Boîtier
 autonome aimanté sur le tableau de bord : écran 3,5" IPS 480×320 (Waveshare ESP32-S3-Touch-LCD-3.5),
 GPS u-blox NEO-M9N externe, magnéto QMC5883L, batterie Li-ion rechargée en USB-C. Stack ESP-IDF 5.x
 + C11 + LVGL v9, approche **sim first** : logique et UI validées sur simulateur SDL PC avant tout
@@ -18,7 +18,7 @@ Dépendance système : SDL2 (`sudo apt install libsdl2-dev` sur Debian/Ubuntu/WS
 ```bash
 cmake --preset sim
 cmake --build build-sim
-./build-sim/tripmaster-sim
+./build-sim/raidmaster-sim
 ```
 
 Fermer avec `Échap` ou la croix de la fenêtre.

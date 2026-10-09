@@ -20,9 +20,9 @@ else()
     endif()
 endif()
 
-add_executable(tripmaster-sim main.c)
-target_link_libraries(tripmaster-sim PRIVATE ${SIM_SDL2_TARGET})
+add_executable(raidmaster-sim main.c)
+target_link_libraries(raidmaster-sim PRIVATE ${SIM_SDL2_TARGET})
 
-# Chemin de sortie prévisible : build-sim/tripmaster-sim (vs build-sim/sim/tripmaster-sim).
-set_target_properties(tripmaster-sim PROPERTIES
+# Chemin de sortie prévisible : build-sim/raidmaster-sim (vs build-sim/sim/raidmaster-sim).
+set_target_properties(raidmaster-sim PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")

@@ -13,7 +13,7 @@
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build-sim",
             "cacheVariables": {
-                "TRIPMASTER_TARGET": "sim",
+                "RAIDMASTER_TARGET": "sim",
                 "CMAKE_BUILD_TYPE": "Debug"
             }
         },
@@ -24,7 +24,7 @@
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build-firmware",
             "cacheVariables": {
-                "TRIPMASTER_TARGET": "firmware"
+                "RAIDMASTER_TARGET": "firmware"
             }
         }
     ],
