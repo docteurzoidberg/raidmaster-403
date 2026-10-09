@@ -63,7 +63,6 @@ lv_obj_t *screen_balade_create(void)
     lv_obj_align(s_lbl_speed, LV_ALIGN_CENTER, -20, -10);
 
     lv_obj_t *unit = mk(s_scr, UI_FONT_FOOTER, UI_COLOR_LCD_MUTED, "km/h");
-    lv_obj_align(s_lbl_speed, LV_ALIGN_CENTER, -20, -10);
     lv_obj_align_to(unit, s_lbl_speed, LV_ALIGN_OUT_RIGHT_BOTTOM, 10, -8);
 
     /* Footer 3 cellules : CAP / TRIP / T°. */
