@@ -1,0 +1,8 @@
+# Dépendances optionnelles pour tests/tools/.
+# Les 4 scripts principaux (gen_nmea, add_noise, validate_nmea, compute_reference) tournent
+# en pure stdlib Python 3.8+ et n'ont PAS besoin de ces paquets.
+#
+# Install : pip install -r tests/tools/requirements.txt
+
+# Pour record_live.py (lecture série du module NEO-M9N branché en USB/FTDI).
+pyserial>=3.5
