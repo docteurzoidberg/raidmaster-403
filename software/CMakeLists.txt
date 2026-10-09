@@ -19,6 +19,11 @@ if(RAIDMASTER_TARGET STREQUAL "sim")
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         add_compile_options(-Wall -Wextra -Wpedantic)
     endif()
+    # UI-agent exception: integration LVGL (voir prompts/ui.md).
+    # Pour que la cible sim puisse afficher quelque chose, on construit la lib UI (LVGL + nos
+    # écrans) et le binaire sim. Les warnings LVGL sont silencés sur sa propre cible depuis
+    # ui/CMakeLists.txt sans toucher aux warnings de notre code.
+    add_subdirectory(ui)
     add_subdirectory(sim)
 elseif(RAIDMASTER_TARGET STREQUAL "firmware")
     message(FATAL_ERROR
