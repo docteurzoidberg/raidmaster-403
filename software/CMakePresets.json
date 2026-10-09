@@ -1,0 +1,37 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 20,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "sim",
+            "displayName": "Simulateur PC (SDL)",
+            "description": "Build de la cible sim 480x320. Dépendance système : libsdl2-dev.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-sim",
+            "cacheVariables": {
+                "TRIPMASTER_TARGET": "sim",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "firmware",
+            "displayName": "Firmware ESP32-S3 (stub)",
+            "description": "Preset stub — à finaliser en étape 5 (HAL ESP32 drivers, voir PROMPT.md § 6).",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-firmware",
+            "cacheVariables": {
+                "TRIPMASTER_TARGET": "firmware"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "sim",
+            "configurePreset": "sim"
+        }
+    ]
+}

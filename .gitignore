@@ -1,0 +1,43 @@
+# Build directories
+build-*/
+build/
+
+# Simulator state
+sim-storage.json
+
+# C/C++ artefacts
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.exe
+*.d
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+Testing/
+compile_commands.json
+
+# ESP-IDF
+sdkconfig
+sdkconfig.old
+managed_components/
+dependencies.lock
+
+# Références externes (clones en lecture seule)
+references/
+
+# Éditeurs / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.cache/
+
+# OS
+.DS_Store
+Thumbs.db
