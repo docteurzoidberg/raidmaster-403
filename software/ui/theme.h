@@ -24,6 +24,10 @@ void ui_theme_init(lv_display_t *disp);
 /* Bascule entre mode jour et nuit, met à jour tous les écrans actifs. */
 void ui_theme_toggle_night(void);
 
+/* Fixe le mode : avant ui_init (mode sauvegardé, appliqué dès l'écran de démarrage) ou après
+ * (reconstruit les écrans si le mode change). */
+void ui_theme_set_night(bool on);
+
 /* Renvoie l'état courant. */
 bool ui_theme_is_night(void);
 

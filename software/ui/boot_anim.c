@@ -65,15 +65,27 @@ bool boot_anim_open(void)
         return false;
     }
 
-    /* Palette B, G, R, A → RGB565. */
-    const uint8_t *pal = s_blob + HEADER_SIZE;
-    for (int i = 0; i < 256; i++) {
-        uint8_t b = pal[4 * i], g = pal[4 * i + 1], r = pal[4 * i + 2];
-        s_pal565[i] = (uint16_t)(((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3));
-    }
     s_frames = s_blob + HEADER_SIZE + PALETTE_SIZE;
+    boot_anim_set_tint(false, 0, 0, 0);
     return true;
 #endif
+}
+
+void boot_anim_set_tint(bool on, uint8_t tr, uint8_t tg, uint8_t tb)
+{
+    if (s_blob == NULL) return;
+    /* Palette B, G, R, A → RGB565 ; teinte : luminance de la couleur × couleur de teinte. */
+    const uint8_t *pal = s_blob + HEADER_SIZE;
+    for (int i = 0; i < 256; i++) {
+        unsigned b = pal[4 * i], g = pal[4 * i + 1], r = pal[4 * i + 2];
+        if (on) {
+            const unsigned y = (299U * r + 587U * g + 114U * b) / 1000U;   /* 0..255 */
+            r = tr * y / 255U;
+            g = tg * y / 255U;
+            b = tb * y / 255U;
+        }
+        s_pal565[i] = (uint16_t)(((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3));
+    }
 }
 
 void boot_anim_close(void)

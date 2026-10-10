@@ -1,0 +1,5 @@
+# s02 — 2 min à l'arrêt, gigue de position 4 m, HDOP ≤ 1,9 (1 Hz), rejouée ×100.
+# La somme naïve des écarts de position ferait 0,624 km : le moteur doit rester à 0.
+3500 expect odo    0
+3500 expect trip_a 0
+4000 quit

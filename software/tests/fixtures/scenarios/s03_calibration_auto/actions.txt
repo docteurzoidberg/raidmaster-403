@@ -1,0 +1,11 @@
+# s03 — calibration auto par l'interface : 1 min d'arrêt puis 1 min à 72 km/h plein nord
+# (1,180 km), rejouée ×10 (arrêt de 0 à 6 s, roulage de 6 à 12 s). La trace passe de 0 à
+# 72 km/h d'un coup : le trapèze de cet intervalle ajoute 10 m, d'où 1,190 km bruts.
+3500 M                       # menu
+3600 minus                   # Calibration auto distance
+3700 m                       # écran de calibration
+4000 a                       # départ (encore à l'arrêt)
+13000 a                      # arrivée : brut 1,190 km, réel proposé 1,200 km
+13100 m                      # valide : 1,200 / 1,190 − 1 = +0,8 %
+13200 expect calib 0.8 0.05
+13300 quit

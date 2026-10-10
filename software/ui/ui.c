@@ -41,17 +41,30 @@ static lv_obj_t *ensure_screen(ui_screen_id_t id)
     return s_screens[id];
 }
 
+static ui_boot_done_cb_t s_boot_done_cb = NULL;
+
+void ui_set_boot_done_cb(ui_boot_done_cb_t cb)
+{
+    s_boot_done_cb = cb;
+}
+
 static void boot_timer_cb(lv_timer_t *t)
 {
     (void)t;
     s_boot_timer = NULL;
-    ui_show_screen(UI_SCREEN_RAID);
+    /* Fin du démarrage : la source de données (core) choisit l'écran ; sans elle, démo auto. */
+    if (s_boot_done_cb != NULL) {
+        s_boot_done_cb();
+    } else {
+        ui_show_screen(UI_SCREEN_RAID);
+        ui_demo_start();
+    }
+    if (s_current == UI_SCREEN_BOOT) ui_show_screen(UI_SCREEN_RAID);
     /* Le démarrage ne revient plus : on libère son écran (et l'animation, ~5,5 Mo + tampon). */
     if (s_screens[UI_SCREEN_BOOT] != NULL) {
         lv_obj_delete(s_screens[UI_SCREEN_BOOT]);
         s_screens[UI_SCREEN_BOOT] = NULL;
     }
-    ui_demo_start();
 }
 
 static void ui_default_button_cb(ui_button_t btn, ui_button_event_t ev, void *user)

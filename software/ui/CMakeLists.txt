@@ -35,6 +35,7 @@ endif()
 # Bibliothèque statique de notre UI applicative. Elle expose les headers pour que sim/ y accède.
 add_library(raidmaster_ui STATIC
     ui.c
+    ui_app.c
     theme.c
     fonts.c
     ui_widgets.c
@@ -68,7 +69,8 @@ target_include_directories(raidmaster_ui PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(raidmaster_ui PUBLIC lvgl)
+# ui_app.c lit l'état du core (core/app) : même code sur le sim et l'ESP32.
+target_link_libraries(raidmaster_ui PUBLIC lvgl raidmaster_core)
 
 # Animation de démarrage : fichier « RMBA » (palette 256 + images indexées) généré depuis la planche
 # rendue dans Blender (variante retenue : HD, grille lisse, glow fort). Python + Pillow requis ;

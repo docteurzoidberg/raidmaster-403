@@ -13,6 +13,7 @@
  */
 
 #include "screen_boot.h"
+#include "theme.h"
 #include "ui_tokens.h"
 #include "ui_widgets.h"
 #include "boot_anim.h"
@@ -137,6 +138,11 @@ static void build_dots(lv_obj_t *scr, int32_t y)
 static bool build_animated(lv_obj_t *scr)
 {
     if (!boot_anim_open()) return false;
+    if (ui_theme_is_night()) {
+        /* Nuit : l'animation passe en monochrome orange profond, comme le reste de l'écran. */
+        const lv_color_t c = UI_C_AMBER;
+        boot_anim_set_tint(true, c.red, c.green, c.blue);
+    }
     const uint16_t w = boot_anim_width(), h = boot_anim_height();
     s_anim_buf = malloc((size_t)w * h * sizeof(uint16_t));
     if (s_anim_buf == NULL) {

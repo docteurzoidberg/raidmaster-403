@@ -200,6 +200,7 @@ void ui_statusbar_update(ui_statusbar_t *sb, const ui_trip_state_t *s)
     lv_label_set_text_fmt(sb->batt, "%d%%", pct);
 
     if (sb->temp != NULL) {
-        lv_label_set_text_fmt(sb->temp, "%d°C", (int)lroundf(s->t_cabin_c));
+        if (isnan(s->t_cabin_c)) lv_label_set_text(sb->temp, "--°C");
+        else lv_label_set_text_fmt(sb->temp, "%d°C", (int)lroundf(s->t_cabin_c));
     }
 }

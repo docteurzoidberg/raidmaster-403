@@ -30,6 +30,10 @@ uint16_t boot_anim_height(void);
 uint16_t boot_anim_frame_count(void);
 uint16_t boot_anim_fps(void);
 
+/* Teinte monochrome (mode nuit) : chaque couleur devient sa luminance × (r, g, b).
+ * on = false : couleurs d'origine. À appeler après boot_anim_open(). */
+void boot_anim_set_tint(bool on, uint8_t r, uint8_t g, uint8_t b);
+
 /* Écrit l'image `index` en RGB565 dans `dst` (largeur × hauteur pixels). */
 void boot_anim_render(uint16_t index, uint16_t *dst);
 

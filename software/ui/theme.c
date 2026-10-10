@@ -64,3 +64,13 @@ bool ui_theme_is_night(void)
 {
     return s_night_mode;
 }
+
+void ui_theme_set_night(bool on)
+{
+    if (on == s_night_mode) return;
+    if (s_disp == NULL) {
+        s_night_mode = on;          /* avant ui_init : rien à reconstruire */
+        return;
+    }
+    ui_theme_toggle_night();
+}

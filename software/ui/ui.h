@@ -55,6 +55,11 @@ void ui_push_trip_state(const ui_trip_state_t *s);
 /* Recrée les écrans avec la palette active (appelé au basculement jour / nuit). */
 void ui_rebuild_screens(void);
 
+/* Appelé à la fin du démarrage à la place de « écran raid + démo auto » : la source de
+ * données (ui_app, core) affiche l'écran principal choisi. NULL : comportement par défaut. */
+typedef void (*ui_boot_done_cb_t)(void);
+void ui_set_boot_done_cb(ui_boot_done_cb_t cb);
+
 #ifdef __cplusplus
 }
 #endif

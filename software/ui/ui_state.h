@@ -1,10 +1,9 @@
 /*
- * Raidmaster 403 — structure d'état UI transitoire.
+ * Raidmaster 403 — état affiché par les écrans (modèle de vue de l'UI).
  *
- * TODO cross-agent (firmware) : aligner avec core/trip_engine.h quand l'agent firmware écrira
- * le core (voir prompts/firmware.md § 5 et § 6). Ce type est volontairement préfixé `ui_`
- * pour marquer qu'il est temporaire côté UI : il sert à nourrir les écrans et la démo auto
- * tant que la vraie TripState du core n'existe pas.
+ * Rempli par ui_app.c depuis l'état du core (app_get_state), ou directement par la démo,
+ * l'enregistrement du GIF et les captures du sim. Les écrans ne dépendent que de ce type :
+ * ils restent indépendants du core. Valeurs déjà prêtes à afficher (km, km/h, heure locale).
  *
  * Licence : GPL-3.0.
  */
@@ -12,6 +11,7 @@
 #ifndef RAIDMASTER_UI_STATE_H
 #define RAIDMASTER_UI_STATE_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -34,8 +34,11 @@ typedef struct {
     uint32_t chrono_s;       /* Chrono (s) */
     uint8_t  fix_type;       /* ui_fix_type_t */
     uint8_t  battery_pct;    /* 0..100 */
-    float    t_cabin_c;      /* Température habitacle (°C) */
-    char     time_hhmm[6];   /* "HH:MM" zéro-terminé */
+    float    t_cabin_c;      /* Température habitacle (°C), NAN si inconnue */
+    char     time_hhmm[6];   /* "HH:MM" zéro-terminé, vide si heure inconnue */
+    uint8_t  active_trip;    /* 0 : Trip A, 1 : Trip B (celui que corrigent +/−) */
+    bool     heading_unknown;/* cap inconnu (pas de boussole ni de route GPS) */
+    bool     speed_alarm;    /* vitesse au-dessus du seuil d'alarme */
 } ui_trip_state_t;
 
 #ifdef __cplusplus

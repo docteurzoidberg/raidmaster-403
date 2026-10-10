@@ -28,6 +28,7 @@ static lv_obj_t      *s_lbl_odo;
 static lv_obj_t      *s_lbl_cap;
 static lv_obj_t      *s_lbl_trip;
 static lv_obj_t      *s_lbl_temp;
+static lv_obj_t      *s_lbl_trip_name;
 
 static const char *cardinal_for_heading(int deg)
 {
@@ -35,10 +36,11 @@ static const char *cardinal_for_heading(int deg)
     return dirs[((deg + 22) / 45) & 7];
 }
 
-static lv_obj_t *btm_cell(int col, const char *name, const char *init)
+static lv_obj_t *btm_cell(int col, const char *name, const char *init, lv_obj_t **name_lbl)
 {
     int32_t x = X_L + col * BTM_COL_W;
     lv_obj_t *l = ui_label(s_scr, UI_FONT_BTM_LABEL, UI_C_MUTED, name);
+    if (name_lbl != NULL) *name_lbl = l;
     lv_obj_set_style_text_letter_space(l, 1, 0);
     ui_place_baseline(l, x, BTM_LBL, LV_TEXT_ALIGN_LEFT, 0);
     lv_obj_t *v = ui_label(s_scr, UI_FONT_VALUE_SMALL, UI_C_CYAN, init);
@@ -69,9 +71,9 @@ lv_obj_t *screen_balade_create(void)
 
     /* Trois cellules du bas. */
     ui_hline(s_scr, X_L, BTM_DIV, X_R - X_L);
-    s_lbl_cap  = btm_cell(0, "CAP", "---°");
-    s_lbl_trip = btm_cell(1, "TRIP", "0,0 km");
-    s_lbl_temp = btm_cell(2, "T°", "--°C");
+    s_lbl_cap  = btm_cell(0, "CAP", "---°", NULL);
+    s_lbl_trip = btm_cell(1, "TRIP", "0,0 km", &s_lbl_trip_name);
+    s_lbl_temp = btm_cell(2, "T°", "--°C", NULL);
 
     return s_scr;
 }
@@ -90,11 +92,16 @@ void screen_balade_update(const ui_trip_state_t *s)
     ui_fmt_km(buf, sizeof(buf), s->odo_km, 0);
     lv_label_set_text_fmt(s_lbl_odo, "%s km", buf);
 
+    lv_obj_set_style_text_color(s_lbl_speed, s->speed_alarm ? UI_C_CRIT : UI_C_AMBER, 0);
+
     int cap = s->heading_deg % 360;
     if (cap < 0) cap += 360;
-    lv_label_set_text_fmt(s_lbl_cap, "%03d° %s", cap, cardinal_for_heading(cap));
+    if (s->heading_unknown) lv_label_set_text(s_lbl_cap, "---°");
+    else lv_label_set_text_fmt(s_lbl_cap, "%03d° %s", cap, cardinal_for_heading(cap));
 
-    ui_fmt_km(buf, sizeof(buf), s->trip_a_km, 1);
+    ui_fmt_km(buf, sizeof(buf), s->active_trip ? s->trip_b_km : s->trip_a_km, 1);
     lv_label_set_text_fmt(s_lbl_trip, "%s km", buf);
-    lv_label_set_text_fmt(s_lbl_temp, "%d°C", (int)lroundf(s->t_cabin_c));
+    lv_label_set_text(s_lbl_trip_name, s->active_trip ? "TRIP B" : "TRIP");
+    if (isnan(s->t_cabin_c)) lv_label_set_text(s_lbl_temp, "--°C");
+    else lv_label_set_text_fmt(s_lbl_temp, "%d°C", (int)lroundf(s->t_cabin_c));
 }

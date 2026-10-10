@@ -29,13 +29,13 @@ Distance **GPS uniquement**, sans capteur de roue ni intervention sur le câblag
 | Étape | Contenu | État |
 |---|---|---|
 | 1 | Squelette CMake + simulateur SDL 480 × 320 | fait |
-| 2 | Core portable + tests : `gps_parser` (NMEA, sur minmea), `trip_engine` | parseur fait, `trip_engine` à faire |
-| 3 | Interface LVGL : raid, balade, menu, calibration, démarrage animé, mode nuit | écrans faits, câblage au core à faire |
-| 4 | Simulateur : rejeu de traces NMEA, scénarios | à faire |
+| 2 | Core portable + tests : `gps_parser` (NMEA, sur minmea), `trip_engine` (distance, moyenne, chrono, calibration), `app` (boutons, menu, sauvegarde) | fait |
+| 3 | Interface LVGL câblée sur le core : raid, balade, menu réglages actif, calibration auto, démarrage animé, mode nuit | fait |
+| 4 | Simulateur : rejeu de traces NMEA, trajet simulé, scénarios de bout en bout | phase 1 faite, catalogue à compléter |
 | 5-6 | HAL ESP32 et firmware sur la carte | à faire |
 
-Pour l'instant, l'interface tourne sur des données de démonstration. Le plan détaillé et le journal des
-décisions sont dans [`PROMPT.md`](PROMPT.md).
+Pas encore là : boussole (le cap affiché est la route GPS), batterie et température réelles, log GPX.
+Le plan détaillé et le journal des décisions sont dans [`PROMPT.md`](PROMPT.md).
 
 ## Démarrage rapide (simulateur PC)
 
@@ -46,18 +46,31 @@ dépôt.
 ```bash
 cmake --preset sim
 cmake --build build-sim
-./build-sim/raidmaster-sim
+./build-sim/raidmaster-sim                                    # trajet simulé
+./build-sim/raidmaster-sim --replay trace.nmea --speed 10     # rejoue un fichier NMEA ×10
 ```
 
-| Touche | Action |
+Le core tourne comme sur la carte : GPS fourni par le simulateur (trajet simulé ou fichier rejoué),
+réglages et distances sauvegardés dans `sim-storage.json`.
+
+| Option | Effet |
 |---|---|
-| `a` / `b` | bouton A / B (`Maj` + touche : appui long) |
-| `+` / `−` | correction de distance |
-| `m` | menu (`Maj` + `m` : appui long) |
+| `--replay fichier.nmea` | rejoue un fichier au rythme de ses horodatages (sinon trajet simulé : boucle de 2 min) |
+| `--speed N` | accélère le temps GPS, 1 à 100 |
+| `--loop` | rejoue le fichier en boucle |
+| `--storage f.json` / `--no-storage` | fichier de sauvegarde (défaut `./sim-storage.json`) / en mémoire |
+| `--script actions.txt --out dossier` | joue des actions horodatées en temps virtuel, sans attente (tests de bout en bout) |
+
+| Touche | Bouton / action |
+|---|---|
+| `a` / `b` | A / B : RAZ Trip A / Trip B ; à la calibration auto : départ et arrivée (A), annuler (B) |
+| `+` / `−` | ±10 m sur le trip actif ; dans le menu : monter / descendre, ou changer la valeur en édition |
+| `m` | trip actif A ↔ B ; dans le menu : choisir / valider |
+| `Maj` + touche | appui long : `Maj`+`m` entre dans le menu ou en sort, `Maj`+`+`/`−` ±100 m |
 | `n` ou `Tab` | bascule jour / nuit |
-| `v` | écran suivant |
-| `d` | démo automatique marche / arrêt |
-| `Échap` | quitter |
+| `d` | coupe / rétablit le signal GPS (tunnel) |
+| `v` | écran suivant (debug) |
+| `Échap` | quitter (sauvegarde) |
 
 ### Tests
 
@@ -66,9 +79,12 @@ ctest --preset sim
 tools/check.sh        # build + avertissements + tests + état du GIF, résumé en 3 lignes (-c : tout recompiler)
 ```
 
-Tests unitaires du core avec [Unity](https://github.com/ThrowTheSwitch/Unity). Les traces NMEA longues de
-`references/traces-brutes/` ne sont pas versionnées : présentes, elles sont rejouées ; absentes, ces tests
-sont ignorés.
+- Tests unitaires du core avec [Unity](https://github.com/ThrowTheSwitch/Unity) : parseur NMEA, moteur
+  de distance, application (boutons, menu, sauvegarde).
+- Scénarios de bout en bout (`tests/fixtures/scenarios/`) : le simulateur sans fenêtre rejoue une trace,
+  appuie sur les boutons et vérifie l'état, en temps virtuel (moins d'une seconde en tout).
+- Les traces NMEA longues de `references/traces-brutes/` ne sont pas versionnées : présentes, elles sont
+  rejouées (distances à ±0,1 % de la référence) ; absentes, ces tests sont ignorés.
 
 ### GIF de démo
 
@@ -170,12 +186,13 @@ Pas encore commencé : étapes 5 et 6 du plan. Le preset CMake `firmware` n'est 
 ## Organisation du dépôt
 
 ```
-core/        logique métier en C11 portable (aucun accès matériel), core/third_party/minmea
+core/        logique métier en C11 portable (aucun accès matériel) : gps_parser, trip_engine, app ;
+             core/include/hal/ : interfaces matériel ; core/third_party/minmea
 ui/          interface LVGL v9 : écrans, thème jour / nuit, polices, images, animation de démarrage
-sim/         simulateur PC SDL2 : fenêtre, clavier, captures, enregistrement du GIF
-tests/       tests unitaires Unity ; tests/tools/ : outils Python de traces NMEA
+sim/         simulateur PC SDL2 : fenêtre, clavier, options, mode script, captures, GIF
+tests/       tests unitaires Unity, scénarios (fixtures/scenarios/), tools/ : outils Python NMEA
 hal_esp32/   pilotes ESP32 (à venir)
-hal_sim/     HAL du simulateur (à venir)
+hal_sim/     HAL du simulateur : GPS (rejeu, trajet simulé), stockage JSON, horloge
 firmware/    projet ESP-IDF (à venir)
 tools/       scripts : check.sh (vérification complète), demo_gif.sh
 .claude/     skills Claude Code du projet (sim-check, ship)

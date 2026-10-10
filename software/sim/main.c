@@ -8,13 +8,36 @@
  * permet de router les touches a/b/+/-/m vers notre ui_input_dispatch() sans combat avec le
  * driver clavier interne de LVGL. Fallback acceptable d'après prompts/ui.md (dérogation UI-agent).
  *
+ * Le core (core/app) tourne comme sur l'ESP32 : GPS fourni par hal_sim (rejeu d'un .nmea ou
+ * trajet simulé), réglages et distances sauvegardés dans sim-storage.json.
+ *
+ *   raidmaster-sim [--replay trace.nmea] [--speed N] [--loop] [--storage fichier.json | --no-storage]
+ *                  [--script actions.txt --out dossier]
+ *     --replay   rejoue un fichier NMEA au rythme de ses horodatages (sinon trajet simulé)
+ *     --speed    accélère le temps GPS (1 à 100, défaut 1)
+ *     --loop     rejoue le fichier en boucle
+ *     --storage  fichier de sauvegarde (défaut ./sim-storage.json) ; --no-storage : en mémoire
+ *     --script   joue des actions horodatées puis quitte (avec SDL_VIDEODRIVER=dummy pour
+ *                tourner sans fenêtre) ; une action par ligne, « # » pour commenter :
+ *                  <ms> <bouton>   a b plus minus m, en majuscules pour l'appui long (A, PLUS, M…)
+ *                  <ms> night      bascule jour / nuit
+ *                  <ms> signal     coupe / rétablit le signal GPS
+ *                  <ms> shot <nom> capture <dossier>/<nom>.ppm
+ *                  <ms> expect <champ> <valeur> [tolérance]
+ *                                  champs : trip_a trip_b odo (km), speed (km/h), calib (%),
+ *                                  active (0 A, 1 B), fix, night, view (0 raid, 1 balade)
+ *                  <ms> quit
+ *                <ms> : temps depuis le lancement, sur une horloge virtuelle (pas de 10 ms, sans
+ *                attente) : résultat déterministe, une minute se joue en une fraction de seconde.
+ *                Code de sortie 1 si un expect échoue.
+ *
  * Touches clavier (voir prompts/ui.md § 4 et prompts/simulation.md § 1) :
  *   a / b / + ou = / - / m        → boutons physiques A, B, +, -, Menu (appui court)
- *   Shift + m                     → long-press menu (entrée/sortie menu réglages)
- *   n ou Tab                      → bascule mode nuit (toggle thème global)
- *   v                             → cycle entre écrans raid / balade / menu / calib
- *   d                             → bascule démo auto
- *   Échap                         → quitter
+ *   Shift + touche                → appui long (Shift + m : entrée / sortie du menu réglages)
+ *   n ou Tab                      → bascule mode nuit
+ *   v                             → cycle entre écrans raid / balade / menu / calib (debug)
+ *   d                             → coupe / rétablit le signal GPS (tunnel)
+ *   Échap                         → quitter (sauvegarde)
  *
  * Mode captures (vérification visuelle sans interaction) : RAIDMASTER_SHOTS=<dossier>
  * enchaîne chaque écran avec un état fixe repris de la maquette, écrit <dossier>/<écran>.ppm
@@ -30,6 +53,7 @@
  */
 
 #include <SDL2/SDL.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -43,6 +67,11 @@
 #include "screen_boot.h"
 #include "screen_menu.h"
 #include "demo_record.h"
+#include "app.h"
+#include "hal/hal_gps.h"
+#include "hal/hal_time.h"
+#include "hal_sim.h"
+#include "ui_app.h"
 
 enum {
     TRIPMASTER_SCREEN_W = 480,
@@ -53,6 +82,21 @@ enum {
  * c'est largement suffisant côté PC. */
 #define BUF_LINES 40
 static uint16_t s_lv_buf[TRIPMASTER_SCREEN_W * BUF_LINES];
+
+static app_t s_app;
+static bool  s_app_on = false;      /* core branché (hors modes GIF et captures) */
+
+static void on_gps_line(const char *line, size_t len, void *user)
+{
+    (void)len;
+    app_gps_line((app_t *)user, line, hal_time_ms());
+}
+
+static void usage(void)
+{
+    fprintf(stderr, "usage : raidmaster-sim [--replay trace.nmea] [--speed N] [--loop] "
+                    "[--storage fichier.json | --no-storage] [--script actions.txt --out dossier]\n");
+}
 
 static SDL_Window   *s_window   = NULL;
 static SDL_Renderer *s_renderer = NULL;
@@ -180,24 +224,30 @@ static void handle_key(const SDL_KeyboardEvent *k, int *running)
         case SDLK_PLUS:
         case SDLK_EQUALS:
         case SDLK_KP_PLUS:
-            ui_input_dispatch(UI_BTN_PLUS, UI_BTN_EV_PRESS);
+            ui_input_dispatch(UI_BTN_PLUS, is_long ? UI_BTN_EV_LONGPRESS : UI_BTN_EV_PRESS);
             break;
         case SDLK_MINUS:
         case SDLK_KP_MINUS:
-            ui_input_dispatch(UI_BTN_MINUS, UI_BTN_EV_PRESS);
+            ui_input_dispatch(UI_BTN_MINUS, is_long ? UI_BTN_EV_LONGPRESS : UI_BTN_EV_PRESS);
             break;
         case SDLK_m:
             ui_input_dispatch(UI_BTN_MENU, is_long ? UI_BTN_EV_LONGPRESS : UI_BTN_EV_PRESS);
             break;
         case SDLK_n:
         case SDLK_TAB:
-            ui_theme_toggle_night();
+            if (s_app_on) ui_app_toggle_night();
+            else          ui_theme_toggle_night();
             break;
         case SDLK_v:
             ui_cycle_screen();
             break;
         case SDLK_d:
-            ui_demo_toggle();
+            if (s_app_on) {
+                hal_gps_sim_set_signal(!hal_gps_sim_signal());
+                printf("[sim] signal GPS %s\n", hal_gps_sim_signal() ? "rétabli" : "coupé");
+            } else {
+                ui_demo_toggle();
+            }
             break;
         default:
             break;
@@ -205,10 +255,149 @@ static void handle_key(const SDL_KeyboardEvent *k, int *running)
 }
 
 /* ------------------------------------------------------------------------- */
+/* Mode script : actions horodatées (voir l'en-tête). */
+
+#define SCRIPT_STEP_MS 10U
+
+static FILE       *s_script;
+static const char *s_script_out = ".";
+static uint32_t    s_script_at;
+static char        s_script_cmd[160];
+static bool        s_script_pending;
+static int         s_script_failures;
+
+/* expect <champ> <valeur> [tolérance] sur l'état du core. */
+static void script_expect(const char *args)
+{
+    char field[32];
+    double want, tol = 0.0;
+    int n = sscanf(args, "%31s %lf %lf", field, &want, &tol);
+    if (n < 2) {
+        fprintf(stderr, "script : expect mal formé « %s »\n", args);
+        s_script_failures++;
+        return;
+    }
+    app_state_t st;
+    app_get_state(&s_app, hal_time_ms(), &st);
+    double got;
+    if      (strcmp(field, "trip_a") == 0) got = st.trip.trip_a_m / 1000.0;
+    else if (strcmp(field, "trip_b") == 0) got = st.trip.trip_b_m / 1000.0;
+    else if (strcmp(field, "odo") == 0)    got = st.trip.odo_m / 1000.0;
+    else if (strcmp(field, "speed") == 0)  got = st.trip.speed_kmh;
+    else if (strcmp(field, "calib") == 0)  got = st.trip.calib_pct;
+    else if (strcmp(field, "active") == 0) got = st.active;
+    else if (strcmp(field, "fix") == 0)    got = st.trip.fix_ok;
+    else if (strcmp(field, "night") == 0)  got = st.set.night;
+    else if (strcmp(field, "view") == 0)   got = st.set.view;
+    else {
+        fprintf(stderr, "script : champ inconnu « %s »\n", field);
+        s_script_failures++;
+        return;
+    }
+    const bool ok = fabs(got - want) <= tol + 1e-9;
+    printf("expect %-7s %10.4f (attendu %.4f ± %g) %s\n", field, got, want, tol, ok ? "ok" : "ÉCHEC");
+    if (!ok) s_script_failures++;
+}
+
+static bool script_next(void)
+{
+    char line[200];
+    while (fgets(line, sizeof(line), s_script) != NULL) {
+        char *h = strchr(line, '#');
+        if (h != NULL) *h = '\0';
+        unsigned at;
+        int n = 0;
+        if (sscanf(line, "%u %n", &at, &n) == 1 && line[n] != '\0' && line[n] != '\n') {
+            s_script_at = at;
+            snprintf(s_script_cmd, sizeof(s_script_cmd), "%s", line + n);
+            s_script_cmd[strcspn(s_script_cmd, "\r\n")] = '\0';
+            return true;
+        }
+    }
+    return false;
+}
+
+static void dispatch_named(const char *name, bool *ok)
+{
+    static const struct { const char *n; ui_button_t b; } map[] = {
+        {"a", UI_BTN_A}, {"b", UI_BTN_B}, {"plus", UI_BTN_PLUS}, {"minus", UI_BTN_MINUS}, {"m", UI_BTN_MENU},
+    };
+    for (size_t i = 0; i < sizeof(map) / sizeof(map[0]); i++) {
+        if (strcmp(name, map[i].n) == 0) {
+            ui_input_dispatch(map[i].b, UI_BTN_EV_PRESS);
+            return;
+        }
+        if (SDL_strcasecmp(name, map[i].n) == 0) {
+            ui_input_dispatch(map[i].b, UI_BTN_EV_LONGPRESS);
+            return;
+        }
+    }
+    *ok = false;
+}
+
+/* Joue les actions échues ; renvoie 0 pour quitter. */
+static int script_step(uint32_t t_ms)
+{
+    while (s_script_pending && t_ms >= s_script_at) {
+        char verb[32] = "", arg[128] = "";
+        sscanf(s_script_cmd, "%31s %127s", verb, arg);
+        bool ok = true;
+        if (strcmp(verb, "quit") == 0) {
+            return 0;
+        } else if (strcmp(verb, "shot") == 0 && arg[0] != '\0') {
+            lv_refr_now(NULL);
+            save_ppm(s_script_out, arg);
+        } else if (strcmp(verb, "expect") == 0) {
+            script_expect(s_script_cmd + strlen("expect"));
+        } else if (strcmp(verb, "night") == 0) {
+            ui_app_toggle_night();
+        } else if (strcmp(verb, "signal") == 0) {
+            hal_gps_sim_set_signal(!hal_gps_sim_signal());
+        } else {
+            dispatch_named(verb, &ok);
+        }
+        if (!ok) fprintf(stderr, "script : action inconnue « %s »\n", s_script_cmd);
+        s_script_pending = script_next();
+    }
+    return s_script_pending ? 1 : 0;
+}
+
+/* ------------------------------------------------------------------------- */
 int main(int argc, char *argv[])
 {
-    (void)argc;
-    (void)argv;
+    const char *replay = NULL, *storage = "sim-storage.json";
+    double speed = 1.0;
+    bool loop = false;
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--replay") == 0 && i + 1 < argc) {
+            replay = argv[++i];
+        } else if (strcmp(argv[i], "--speed") == 0 && i + 1 < argc) {
+            speed = atof(argv[++i]);
+            if (speed < 1.0 || speed > 100.0) {
+                fprintf(stderr, "--speed : 1 à 100\n");
+                return 2;
+            }
+        } else if (strcmp(argv[i], "--loop") == 0) {
+            loop = true;
+        } else if (strcmp(argv[i], "--storage") == 0 && i + 1 < argc) {
+            storage = argv[++i];
+        } else if (strcmp(argv[i], "--no-storage") == 0) {
+            storage = NULL;
+        } else if (strcmp(argv[i], "--script") == 0 && i + 1 < argc) {
+            s_script = fopen(argv[++i], "r");
+            if (s_script == NULL) {
+                fprintf(stderr, "--script : impossible de lire %s\n", argv[i]);
+                return 2;
+            }
+            s_script_pending = script_next();
+            hal_time_sim_virtual(true);
+        } else if (strcmp(argv[i], "--out") == 0 && i + 1 < argc) {
+            s_script_out = argv[++i];
+        } else {
+            usage();
+            return 2;
+        }
+    }
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         fprintf(stderr, "SDL_Init a echoue : %s\n", SDL_GetError());
@@ -265,8 +454,29 @@ int main(int argc, char *argv[])
                            LV_DISPLAY_RENDER_MODE_PARTIAL);
     lv_display_set_color_format(disp, LV_COLOR_FORMAT_RGB565);
 
-    /* UI init (thème, écran boot, timer boot→raid, démo). */
+    /* Core branché comme sur l'ESP32, sauf en modes GIF et captures (états figés de la démo et
+     * de la maquette). Initialisé avant l'UI pour appliquer le mode nuit sauvegardé dès le boot. */
+    const char *record_env = getenv("RAIDMASTER_RECORD");
+    const char *shots_env = getenv("RAIDMASTER_SHOTS");
+    if ((record_env == NULL || record_env[0] == '\0') && shots_env == NULL) {
+        if (!hal_gps_sim_config(replay, speed, loop)) {
+            fprintf(stderr, "--replay : impossible de lire %s\n", replay);
+            return 1;
+        }
+        hal_storage_sim_open(storage);
+        app_init(&s_app, hal_time_ms());
+        ui_theme_set_night(s_app.set.night);
+        s_app_on = true;
+    }
+
+    /* UI init (thème, écran boot, timer boot→écran principal). */
     ui_init(disp);
+    if (s_app_on) {
+        hal_gps_init(on_gps_line, &s_app);
+        ui_app_attach(&s_app);
+        printf("[sim] GPS : %s (×%g%s), sauvegarde : %s\n", replay ? replay : "trajet simulé", speed,
+               loop ? ", en boucle" : "", storage ? storage : "mémoire");
+    }
 
     /* ------- Mode enregistrement démo (temps virtuel, pas de boucle d'événements) ------- */
     const char *record_path = getenv("RAIDMASTER_RECORD");
@@ -284,8 +494,10 @@ int main(int argc, char *argv[])
 
     /* ------- Boucle principale ------- */
     const char *shots_dir = getenv("RAIDMASTER_SHOTS");
+
+
     int running = 1;
-    uint32_t start_ms = SDL_GetTicks();
+    uint32_t start_ms = (uint32_t)hal_time_ms();
     uint32_t last_ms = start_ms;
     while (running) {
         SDL_Event ev;
@@ -297,7 +509,12 @@ int main(int argc, char *argv[])
             }
         }
 
-        uint32_t now = SDL_GetTicks();
+        if (s_app_on) {
+            hal_gps_poll();
+            app_tick(&s_app, hal_time_ms());
+        }
+
+        uint32_t now = (uint32_t)hal_time_ms();
         uint32_t dt  = now - last_ms;
         last_ms      = now;
         if (dt > 0) {
@@ -307,16 +524,28 @@ int main(int argc, char *argv[])
         if (shots_dir != NULL && !shots_step(shots_dir, now - start_ms)) {
             running = 0;
         }
+        if (s_script != NULL && !script_step(now - start_ms)) {
+            running = 0;
+        }
 
         uint32_t next = lv_timer_handler();
+        if (s_script != NULL) {
+            hal_time_sim_advance_ms(SCRIPT_STEP_MS);    /* horloge virtuelle : pas d'attente */
+            continue;
+        }
         if (next > 33U) next = 33U;    /* cap à ~30 FPS côté veille. */
         if (next < 1U)  next = 1U;
         SDL_Delay(next);
     }
+    if (s_app_on) app_save(&s_app);
 
     SDL_DestroyTexture(s_texture);
     SDL_DestroyRenderer(s_renderer);
     SDL_DestroyWindow(s_window);
     SDL_Quit();
+    if (s_script_failures > 0) {
+        fprintf(stderr, "script : %d vérification(s) en échec\n", s_script_failures);
+        return 1;
+    }
     return 0;
 }

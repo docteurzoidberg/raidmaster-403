@@ -41,6 +41,9 @@
             "configurePreset": "sim",
             "output": {
                 "outputOnFailure": true
+            },
+            "execution": {
+                "jobs": 8
             }
         }
     ]

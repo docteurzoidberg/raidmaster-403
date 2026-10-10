@@ -6,6 +6,8 @@
 # via minmea_port/minmea_compat.h.
 add_library(raidmaster_core STATIC
     gps_parser.c
+    trip_engine.c
+    app.c
     third_party/minmea/minmea.c
 )
 target_include_directories(raidmaster_core

@@ -24,6 +24,7 @@ if(RAIDMASTER_TARGET STREQUAL "sim")
     # écrans) et le binaire sim. Les warnings LVGL sont silencés sur sa propre cible depuis
     # ui/CMakeLists.txt sans toucher aux warnings de notre code.
     add_subdirectory(core)
+    add_subdirectory(hal_sim)
     add_subdirectory(ui)
     add_subdirectory(sim)
     # Tests unitaires du core (Unity) : ctest --preset sim

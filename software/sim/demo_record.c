@@ -39,6 +39,7 @@ typedef enum {
     PH_MENU,
     PH_CALIB,
     PH_RAID_NUIT,
+    PH_RAID_JOUR,       /* retour au jour : la boucle du GIF repart sans saut de palette */
     PH_FIN,
 } phase_t;
 
@@ -49,10 +50,11 @@ static const uint32_t s_phase_ms[PH_FIN] = {
     [PH_MENU]      = 4500,
     [PH_CALIB]     = 3000,
     [PH_RAID_NUIT] = 4000,
+    [PH_RAID_JOUR] = 1500,
 };
 
 static const char *const s_phase_name[PH_FIN + 1] = {
-    "boot", "raid", "balade", "menu", "calibration", "raid nuit", "fin",
+    "boot", "raid", "balade", "menu", "calibration", "raid nuit", "raid jour", "fin",
 };
 
 /* Déplacements de la sélection du menu : instant (ms depuis l'entrée dans le menu) → sens. */
@@ -120,6 +122,9 @@ static void enter_phase(phase_t ph)
         case PH_RAID_NUIT:
             ui_show_screen(UI_SCREEN_RAID);
             if (!ui_theme_is_night()) ui_theme_toggle_night();
+            break;
+        case PH_RAID_JOUR:
+            if (ui_theme_is_night()) ui_theme_toggle_night();
             break;
         default: break;
     }

@@ -24,7 +24,7 @@ endif()
 add_executable(raidmaster-sim main.c demo_record.c gif_writer.c)
 # UI-agent exception: integration LVGL (voir prompts/ui.md).
 # On link l'UI pour piloter LVGL depuis la fenêtre SDL que ce binaire ouvre déjà.
-target_link_libraries(raidmaster-sim PRIVATE ${SIM_SDL2_TARGET} raidmaster_ui)
+target_link_libraries(raidmaster-sim PRIVATE ${SIM_SDL2_TARGET} raidmaster_ui raidmaster_hal_sim)
 
 # libm pour sinf() dans ui_demo.c (via raidmaster_ui). CMake ne le propage pas tout seul.
 if(UNIX AND NOT APPLE)

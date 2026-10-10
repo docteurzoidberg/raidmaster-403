@@ -175,11 +175,17 @@ void screen_raid_update(const ui_trip_state_t *s)
     float sp = s->speed_kmh;
     if (sp < 0) sp = 0;
     lv_label_set_text_fmt(s_lbl_speed, "%d", (int)(sp + 0.5f));
+    lv_obj_set_style_text_color(s_lbl_speed, s->speed_alarm ? UI_C_CRIT : UI_C_TEXT, 0);
 
     int cap = s->heading_deg % 360;
     if (cap < 0) cap += 360;
-    lv_label_set_text_fmt(s_lbl_cap, "%03d°", cap);
-    lv_label_set_text(s_lbl_card, cardinal_for_heading(cap));
+    if (s->heading_unknown) {
+        lv_label_set_text(s_lbl_cap, "---°");
+        lv_label_set_text(s_lbl_card, "");
+    } else {
+        lv_label_set_text_fmt(s_lbl_cap, "%03d°", cap);
+        lv_label_set_text(s_lbl_card, cardinal_for_heading(cap));
+    }
     lv_image_set_rotation(s_img_cap, cap * 10);
     lv_image_set_rotation(s_img_cap_shadow, cap * 10);
 
