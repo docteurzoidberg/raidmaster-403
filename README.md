@@ -14,8 +14,8 @@ tableau de bord : distances partielles A et B, odomètre, vitesse, cap, moyenne,
 
 | Élément | Choix |
 |---|---|
-| Carte | [Waveshare ESP32-S3-Touch-LCD-3.5](https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-3.5) : ESP32-S3, 8 Mo PSRAM, 16 Mo flash |
-| Écran | 3,5" IPS 480 × 320, ST7796 en SPI, tactile capacitif |
+| Carte | [Waveshare ESP32-S3-Touch-LCD-3.5B](https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-3.5B) : ESP32-S3, 8 Mo PSRAM, 16 Mo flash |
+| Écran | 3,5" IPS 480 × 320, AXS15231B en QSPI, tactile capacitif intégré |
 | GPS | u-blox NEO-M9N externe (UART, 10 Hz) + antenne active déportée |
 | Cap | magnétomètre QMC5883L (I²C) |
 | Alimentation | batterie Li-ion interne gérée par l'AXP2101, recharge USB-C, aucun fil 12 V |
@@ -41,9 +41,10 @@ Le plan détaillé et le journal des décisions sont dans [`PROMPT.md`](PROMPT.m
 
 Prérequis : CMake ≥ 3.20, Ninja, un compilateur C11, SDL2 (`sudo apt install libsdl2-dev` sous
 Debian / Ubuntu / WSL). LVGL, Unity et les autres dépendances sont téléchargées par CMake ou déjà dans le
-dépôt.
+dépôt. Le code est dans `software/` : les commandes se lancent depuis ce dossier.
 
 ```bash
+cd software
 cmake --preset sim
 cmake --build build-sim
 ./build-sim/raidmaster-sim                                    # trajet simulé
@@ -75,17 +76,18 @@ réglages et distances sauvegardés dans `sim-storage.json`.
 ### Tests
 
 ```bash
+cd software
 ctest --preset sim
 tools/check.sh        # build + avertissements + tests + état du GIF, résumé en 3 lignes (-c : tout recompiler)
 ```
 
 - Tests unitaires du core avec [Unity](https://github.com/ThrowTheSwitch/Unity) : parseur NMEA, moteur
   de distance, application (boutons, menu, sauvegarde).
-- Scénarios de bout en bout (`tests/fixtures/scenarios/`, 21 au catalogue) : le simulateur sans fenêtre
+- Scénarios de bout en bout (`software/tests/fixtures/scenarios/`, 21 au catalogue) : le simulateur sans fenêtre
   rejoue une trace, appuie sur les boutons et vérifie l'état, en temps virtuel (une étape de 12 h se
   joue en moins d'une seconde, la suite entière en ~1,5 s). Les traces sont générées au build depuis
-  l'itinéraire `route.txt` de chaque scénario (`tests/tools/gen_route.py`, Python sans dépendance).
-- Les traces NMEA longues de `references/traces-brutes/` ne sont pas versionnées : présentes, elles sont
+  l'itinéraire `route.txt` de chaque scénario (`software/tests/tools/gen_route.py`, Python sans dépendance).
+- Les traces NMEA longues de `software/references/traces-brutes/` ne sont pas versionnées : présentes, elles sont
   rejouées (distances à ±0,1 % de la référence) ; absentes, ces tests sont ignorés.
 
 ### GIF de démo
@@ -96,7 +98,7 @@ balade, menu, calibration et raid de nuit. Le GIF se commite avec la modificatio
 produit.
 
 - Désactiver : `cmake --preset sim -DRAIDMASTER_DEMO_GIF=OFF`.
-- À la demande, agrandi ou vers un autre fichier : `tools/demo_gif.sh [-s 1..4] [-o sortie.gif]`.
+- À la demande, agrandi ou vers un autre fichier : `software/tools/demo_gif.sh [-s 1..4] [-o sortie.gif]`.
 
 ### Animation de démarrage
 
@@ -139,13 +141,14 @@ Testé sous Ubuntu 24.04 (natif ou WSL2). Le dépôt est privé : demander un ac
    .venv/bin/pip install pillow
    ```
 
-   CMake prend `.venv/` à la racine du dépôt s'il existe, sinon le `python3` du système. Pour en
+   CMake prend `.venv/` à la racine du dépôt (à côté de `software/`) s'il existe, sinon le `python3` du système. Pour en
    imposer un autre : `-DRAIDMASTER_PYTHON=/chemin/vers/python`. Sans Pillow, le build passe quand même :
    le démarrage affiche une silhouette fixe.
 
 4. **Configurer, compiler, tester, lancer**
 
    ```bash
+   cd software
    cmake --preset sim          # télécharge LVGL et Unity au premier passage (connexion requise)
    cmake --build build-sim
    ctest --preset sim
@@ -156,15 +159,15 @@ Testé sous Ubuntu 24.04 (natif ou WSL2). Le dépôt est privé : demander un ac
    `git status` le montre modifié, annule-le (`git checkout docs/demo/raidmaster-demo.gif`) ou configure
    avec `-DRAIDMASTER_DEMO_GIF=OFF`.
 
-5. **Traces NMEA de test** (optionnel). `references/` n'est pas versionné. Les traces longues se
-   génèrent avec les scripts Python de `tests/tools/` (sans dépendance, voir `tests/tools/README.md`),
+5. **Traces NMEA de test** (optionnel). `software/references/` n'est pas versionné. Les traces longues se
+   génèrent avec les scripts Python de `software/tests/tools/` (sans dépendance, voir `software/tests/tools/README.md`),
    par exemple :
 
    ```bash
-   mkdir -p references/traces-brutes
-   python3 tests/tools/gen_nmea.py --mode linear --duration 3600 --rate 10 --speed-kmh 90 \
+   mkdir -p software/references/traces-brutes
+   python3 software/tests/tools/gen_nmea.py --mode linear --duration 3600 --rate 10 --speed-kmh 90 \
        --heading-deg 90 --start-lat 48.8566 --start-lon 2.3522 --start-utc 2026-10-09T06:00:00+00:00 \
-       --out references/traces-brutes/stage_highway_1h.nmea
+       --out software/references/traces-brutes/stage_highway_1h.nmea
    ```
 
    Sans elles, les tests qui les rejouent sont ignorés. Si les paramètres diffèrent de ceux de
@@ -175,9 +178,9 @@ Testé sous Ubuntu 24.04 (natif ou WSL2). Le dépôt est privé : demander un ac
      concerné dans [`prompts/`](prompts/). [`AGENTS.md`](AGENTS.md) dit quel rôle touche quels dossiers.
    - C11 strict, compilation sans avertissement (`-Wall -Wextra -Wpedantic`), `core/` sans aucun
      accès matériel ni LVGL.
-   - Une branche par sujet, `tools/check.sh` propre (aucun avertissement, tests verts), GIF de démo commité avec toute modification de
+   - Une branche par sujet, `software/tools/check.sh` propre (aucun avertissement, tests verts), GIF de démo commité avec toute modification de
      l'interface, ce README mis à jour s'il devient faux.
-   - Optionnel : `compile_commands.json` est exporté dans `build-sim/` pour clangd ou ton IDE (lien
+   - Optionnel : `compile_commands.json` est exporté dans `software/build-sim/` pour clangd ou ton IDE (lien
      symbolique à la racine si besoin).
    - Code sous GPL-3.0.
 
@@ -188,27 +191,39 @@ Pas encore commencé : étapes 5 et 6 du plan. Le preset CMake `firmware` n'est 
 ## Organisation du dépôt
 
 ```
-core/        logique métier en C11 portable (aucun accès matériel) : gps_parser, trip_engine, app ;
-             core/include/hal/ : interfaces matériel ; core/third_party/minmea
-ui/          interface LVGL v9 : écrans, thème jour / nuit, polices, images, animation de démarrage
-sim/         simulateur PC SDL2 : fenêtre, clavier, options, mode script, captures, GIF
-tests/       tests unitaires Unity, scénarios (fixtures/scenarios/), tools/ : outils Python NMEA
-hal_esp32/   pilotes ESP32 (à venir)
-hal_sim/     HAL du simulateur : GPS (rejeu, trajet simulé), stockage JSON, horloge
-firmware/    projet ESP-IDF (à venir)
-tools/       scripts : check.sh (vérification complète), demo_gif.sh
-.claude/     skills Claude Code du projet (sim-check, ship)
-docs/        GIF de démo, copies locales des maquettes (docs/artefacts/)
-prompts/     cahier des charges découpé par rôle (features, hardware, boîtier, firmware, ui, simulation)
-references/  non versionné : Open Rally Computer (inspiration), traces NMEA de test
+software/        tout le code ; CMakeLists.txt et CMakePresets.json, build dans software/build-sim/
+  core/          logique métier en C11 portable (aucun accès matériel) : gps_parser, trip_engine, app ;
+                 core/include/hal/ : interfaces matériel ; core/third_party/minmea
+  ui/            interface LVGL v9 : écrans, thème jour / nuit, polices, images, animation de démarrage
+  sim/           simulateur PC SDL2 : fenêtre, clavier, options, mode script, captures, GIF
+  hal_sim/       HAL du simulateur : GPS (rejeu, trajet simulé), stockage JSON, horloge
+  hal_esp32/     pilotes ESP32 (à venir)
+  firmware/      projet ESP-IDF (à venir)
+  tests/         tests unitaires Unity, scénarios (fixtures/scenarios/), tools/ : outils Python NMEA
+  tools/         scripts : check.sh (vérification complète), demo_gif.sh
+  references/    non versionné : Open Rally Computer (inspiration), traces NMEA de test
+hardware/        électronique : datasheets des composants (hors git, fetch_datasheets.sh), index dans
+                 README ; plus tard BOM détaillée, schéma KiCad
+enclosure/       boîtier : modèle 3D et plan coté de la carte (cad/, hors git) ; plus tard exports
+                 Fusion, 3MF
+docs/            documentation
+  user/          notice d'utilisation (à venir)
+  demo/          GIF de démo
+  mockups/       copies locales des maquettes (écrans, flèche de cap, animation de démarrage)
+  roadbooks/     roadbooks de rallye-raid d'exemple (fichiers hors git, sources dans le README)
+prompts/         cahier des charges découpé par rôle (features, hardware, boîtier, firmware, ui, simulation)
+.claude/         skills Claude Code du projet (sim-check, ship)
 ```
+
+Dans les briefs et le journal, les chemins de code (`core/…`, `ui/…`, `sim/…`, `tests/…`) sont
+relatifs à `software/`.
 
 ## Documentation
 
 - [`PROMPT.md`](PROMPT.md) : contexte, étapes, état et journal des décisions.
 - [`prompts/`](prompts/) : un brief par rôle.
 - [`AGENTS.md`](AGENTS.md) et [`CLAUDE.md`](CLAUDE.md) : organisation du travail entre agents.
-- [`docs/artefacts/`](docs/artefacts/) : maquettes des écrans, styles de flèche de cap, propositions
+- [`docs/mockups/`](docs/mockups/) : maquettes des écrans, styles de flèche de cap, propositions
   d'animation de démarrage.
 
 ## Licence
