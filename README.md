@@ -63,6 +63,7 @@ cmake --build build-sim
 
 ```bash
 ctest --preset sim
+tools/check.sh        # build + avertissements + tests + état du GIF, résumé en 3 lignes (-c : tout recompiler)
 ```
 
 Tests unitaires du core avec [Unity](https://github.com/ThrowTheSwitch/Unity). Les traces NMEA longues de
@@ -156,7 +157,7 @@ Testé sous Ubuntu 24.04 (natif ou WSL2). Le dépôt est privé : demander un ac
      concerné dans [`prompts/`](prompts/). [`AGENTS.md`](AGENTS.md) dit quel rôle touche quels dossiers.
    - C11 strict, compilation sans avertissement (`-Wall -Wextra -Wpedantic`), `core/` sans aucun
      accès matériel ni LVGL.
-   - Une branche par sujet, `ctest --preset sim` vert, GIF de démo commité avec toute modification de
+   - Une branche par sujet, `tools/check.sh` propre (aucun avertissement, tests verts), GIF de démo commité avec toute modification de
      l'interface, ce README mis à jour s'il devient faux.
    - Optionnel : `compile_commands.json` est exporté dans `build-sim/` pour clangd ou ton IDE (lien
      symbolique à la racine si besoin).
@@ -176,7 +177,8 @@ tests/       tests unitaires Unity ; tests/tools/ : outils Python de traces NMEA
 hal_esp32/   pilotes ESP32 (à venir)
 hal_sim/     HAL du simulateur (à venir)
 firmware/    projet ESP-IDF (à venir)
-tools/       scripts (demo_gif.sh)
+tools/       scripts : check.sh (vérification complète), demo_gif.sh
+.claude/     skills Claude Code du projet (sim-check, ship)
 docs/        GIF de démo, copies locales des maquettes (docs/artefacts/)
 prompts/     cahier des charges découpé par rôle (features, hardware, boîtier, firmware, ui, simulation)
 references/  non versionné : Open Rally Computer (inspiration), traces NMEA de test

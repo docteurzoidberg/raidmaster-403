@@ -47,3 +47,9 @@ Thumbs.db
 
 # Blender (sauvegardes automatiques)
 *.blend1
+
+# Skills Claude Code locaux (non partagés) ; sim-check et ship sont versionnés
+.claude/skills/ui-shots/
+.claude/skills/boot-anim/
+.claude/skills/ui-font/
+.claude/settings.local.json

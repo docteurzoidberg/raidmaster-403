@@ -40,6 +40,7 @@
 #include "theme.h"
 #include "ui_demo.h"
 #include "ui_input.h"
+#include "screen_boot.h"
 #include "screen_menu.h"
 #include "demo_record.h"
 
@@ -153,9 +154,9 @@ static int shots_step(const char *dir, uint32_t t_ms)
         case 7:  save_ppm(dir, "7-balade-nuit"); return 0;
         default: return 0;
     }
-    /* Après le boot, on attend la fin du timer boot→raid (1200 ms, qui lance la démo) avant
-     * de figer l'état. */
-    next = t_ms + (step == 1 ? 900 : step == 2 ? 600 : 300);
+    /* Après le boot, on attend la fin du timer boot→raid (qui lance la démo) avant de figer
+     * l'état : sa durée dépend de la présence de l'animation (screen_boot_duration_ms). */
+    next = step == 1 ? screen_boot_duration_ms() + 300U : t_ms + (step == 2 ? 600 : 300);
     return 1;
 }
 
