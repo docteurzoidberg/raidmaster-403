@@ -33,6 +33,7 @@ Distance **GPS uniquement**, sans capteur de roue ni intervention sur le câblag
 | 3 | Interface LVGL câblée sur le core : raid, balade, menu réglages actif, calibration auto, démarrage animé, mode nuit | fait |
 | 4 | Simulateur : rejeu de traces NMEA, trajet simulé, scénarios de bout en bout | 21 scénarios GPS en place ; boussole et matériel à venir |
 | 5-6 | HAL ESP32 et firmware sur la carte | à faire |
+| 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B commandée, datasheets et modèle 3D rassemblés |
 
 Pas encore là : boussole (le cap affiché est la route GPS), batterie et température réelles, log GPX.
 Le plan détaillé et le journal des décisions sont dans [`PROMPT.md`](PROMPT.md).
