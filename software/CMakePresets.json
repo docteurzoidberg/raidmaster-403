@@ -34,5 +34,14 @@
             "name": "sim",
             "configurePreset": "sim"
         }
+    ],
+    "testPresets": [
+        {
+            "name": "sim",
+            "configurePreset": "sim",
+            "output": {
+                "outputOnFailure": true
+            }
+        }
     ]
 }

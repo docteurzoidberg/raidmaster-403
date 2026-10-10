@@ -23,8 +23,15 @@ if(RAIDMASTER_TARGET STREQUAL "sim")
     # Pour que la cible sim puisse afficher quelque chose, on construit la lib UI (LVGL + nos
     # écrans) et le binaire sim. Les warnings LVGL sont silencés sur sa propre cible depuis
     # ui/CMakeLists.txt sans toucher aux warnings de notre code.
+    add_subdirectory(core)
     add_subdirectory(ui)
     add_subdirectory(sim)
+    # Tests unitaires du core (Unity) : ctest --preset sim
+    option(RAIDMASTER_TESTS "Construire les tests unitaires du core" ON)
+    if(RAIDMASTER_TESTS)
+        enable_testing()
+        add_subdirectory(tests)
+    endif()
 elseif(RAIDMASTER_TARGET STREQUAL "firmware")
     message(FATAL_ERROR
         "La cible 'firmware' sera finalisée à l'étape 5 du plan (voir PROMPT.md § 6). "

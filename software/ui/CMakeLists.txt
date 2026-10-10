@@ -72,9 +72,19 @@ target_link_libraries(raidmaster_ui PUBLIC lvgl)
 
 # Animation de démarrage : fichier « RMBA » (palette 256 + images indexées) généré depuis la planche
 # rendue dans Blender (variante retenue : HD, grille lisse, glow fort). Python + Pillow requis ;
-# par défaut le venv du projet 403. Sans eux, le sim démarre sur l'écran de boot statique.
-set(RAIDMASTER_PYTHON "${CMAKE_SOURCE_DIR}/../../.venv/bin/python" CACHE FILEPATH
-    "Python avec Pillow pour générer l'animation de démarrage")
+# par défaut le premier trouvé parmi : .venv du dépôt, venv du projet 403 parent, python3 du système.
+# Sans eux, le sim démarre sur l'écran de boot statique.
+if(NOT RAIDMASTER_PYTHON)
+    find_program(_rm_python NAMES python3 python
+                 PATHS "${CMAKE_SOURCE_DIR}/.venv/bin" "${CMAKE_SOURCE_DIR}/../../.venv/bin"
+                 NO_DEFAULT_PATH)
+    if(NOT _rm_python)
+        find_program(_rm_python NAMES python3 python)
+    endif()
+    set(RAIDMASTER_PYTHON "${_rm_python}" CACHE FILEPATH
+        "Python avec Pillow pour générer l'animation de démarrage" FORCE)
+    unset(_rm_python CACHE)
+endif()
 set(BOOT_ANIM_SHEET "${CMAKE_SOURCE_DIR}/docs/artefacts/boot-anim/2e_selection_hd_glow_fort.png")
 set(BOOT_ANIM_BIN   "${CMAKE_BINARY_DIR}/boot_anim.bin")
 execute_process(COMMAND "${RAIDMASTER_PYTHON}" -c "import PIL"

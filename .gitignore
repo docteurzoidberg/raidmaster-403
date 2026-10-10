@@ -42,5 +42,8 @@ references/
 .DS_Store
 Thumbs.db
 
+# Python (venv local optionnel pour Pillow)
+.venv/
+
 # Blender (sauvegardes automatiques)
 *.blend1
