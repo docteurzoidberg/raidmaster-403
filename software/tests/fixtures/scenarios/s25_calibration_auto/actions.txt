@@ -1,0 +1,11 @@
+# s25 — ×10. Calibration auto par l'interface : 1 min d'arrêt (0 à 6 s), 1 min plein nord à
+# 72 km/h (6 à 12 s) : 1,160 km.
+3500 M                       # menu
+3600 minus                   # Calibration auto distance
+3700 m                       # écran de calibration
+4000 a                       # départ (encore à l'arrêt)
+13000 a                      # arrivée : brut ≈ 1,161 km (trapèzes de la montée), réel proposé 1,200 km
+13100 minus                  # réel 1,190 km
+13300 m                      # valide : 1,190 / 1,161 − 1 = +2,5 % (pas de 0,1 %)
+13400 expect calib 2.5 0.01
+13500 quit

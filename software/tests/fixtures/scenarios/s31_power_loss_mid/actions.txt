@@ -1,0 +1,24 @@
+# s31 — ×1 (temps réel). Calibration +1 % au menu, puis 90 km/h ; coupure d'alimentation à
+# 120 s : le core repart de la dernière sauvegarde périodique (toutes les 10 s), soit au plus
+# 250 m perdus à 90 km/h. Vérité à 120 s : 2,1250 km → 2,1463 km calibrés.
+@5 M
+@6 m
+@7 plus
+@8 plus
+@9 plus
+@10 plus
+@11 plus
+@12 plus
+@13 plus
+@14 plus
+@15 plus
+@16 plus
+@17 m
+@18 M
+@20 expect calib 1.0 0.01
+@120 expect trip_a 2.1463 0.01
+@120 power_cut
+@121 expect calib  1.0 0.01          # réglage relu
+@121 expect trip_a 2.0200 0.1265     # entre 2,1463 − 0,2525 et 2,1463
+@121 expect odo    2.0200 0.1265
+@205 quit

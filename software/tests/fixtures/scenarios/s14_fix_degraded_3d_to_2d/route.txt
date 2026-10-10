@@ -1,0 +1,9 @@
+# s14 — 15 min de route, fix 2D (4 satellites, sans altitude) de 5 à 10 min.
+stop 300
+mark depart
+drive 15 0 70
+wander 870 60 90 5 100
+drive 15 70 0
+mark arrivee
+stop 60
+fix2d 600 1200

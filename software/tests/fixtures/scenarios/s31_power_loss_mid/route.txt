@@ -1,0 +1,7 @@
+# s31 — coupure d'alimentation en roulant à 90 km/h, rejouée en temps réel (×1) : la
+# sauvegarde périodique (10 s) borne la perte.
+stop 30
+mark depart
+drive 10 0 90
+drive 170 90 90
+mark fin

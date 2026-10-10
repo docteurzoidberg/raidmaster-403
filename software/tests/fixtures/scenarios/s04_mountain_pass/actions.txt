@@ -1,0 +1,4 @@
+# s04 — ×100. Col : 1 h entre 25 et 60 km/h, virages jusqu'à 25 °/s. Vérité 42,5833 km.
+@4070 expect trip_a 42.5833 0.21     # ±0,5 %
+@4070 expect gps_err 0
+@4075 quit

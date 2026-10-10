@@ -1,0 +1,10 @@
+# s03 — route de campagne : 1 h entre 70 et 90 km/h, virages jusqu'à 8 °/s, léger bruit.
+jitter 2
+speed_noise 0.3
+stop 700
+mark depart
+drive 15 0 70
+wander 3600 70 90 8 90
+drive 15 70 0
+mark arrivee
+stop 60

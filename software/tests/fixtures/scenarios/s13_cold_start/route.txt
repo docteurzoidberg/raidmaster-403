@@ -1,0 +1,11 @@
+# s13 — démarrage à froid : 1 min sans fix (phrases « V », heure seule ; les 30 premières
+# secondes, module muet, sont jouées par la commande « signal » du script), puis fix ; la voiture
+# attend 90 s et roule 8 min à 60 km/h.
+loss 0 60
+stop 90
+mark depart
+drive 10 0 60
+drive 480 60 60
+drive 10 60 0
+mark arrivee
+stop 10

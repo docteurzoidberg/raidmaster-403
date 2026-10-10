@@ -1,0 +1,16 @@
+# s11 — tunnel : 60 km/h, ralentit à 15 km/h dans le tunnel où le fix est perdu 2 min (500 m
+# parcourus), puis repart.
+stop 40
+mark depart
+drive 10 0 60
+drive 60 60 60
+drive 10 60 15
+mark entree
+drive 120 15 15
+mark sortie
+drive 10 15 60
+drive 60 60 60
+drive 10 60 0
+mark arrivee
+stop 20
+loss 120 240

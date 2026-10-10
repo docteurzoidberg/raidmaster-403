@@ -1,0 +1,10 @@
+# s02 — autoroute : 700 s à l'arrêt (démarrage du boîtier, réglage de la calibration), puis 1 h à
+# 120 km/h en ligne droite, montée et descente en 20 s.
+heading 45
+stop 700
+mark depart
+drive 20 0 120
+drive 3560 120 120
+drive 20 120 0
+mark arrivee
+stop 100

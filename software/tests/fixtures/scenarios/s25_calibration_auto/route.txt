@@ -1,0 +1,8 @@
+# s25 — calibration auto par l'interface : 1 min d'arrêt puis 1 min plein nord (4 s pour atteindre
+# 72 km/h).
+heading 0
+stop 60
+mark depart
+drive 4 0 72
+drive 56 72 72
+mark arrivee

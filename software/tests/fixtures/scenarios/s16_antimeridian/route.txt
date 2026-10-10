@@ -1,0 +1,8 @@
+# s16 — Fidji : traverse le méridien 180° plein est à 80 km/h.
+start -16.8 179.99 2026-10-09T06:00:00
+heading 90
+stop 40
+mark depart
+drive 10 0 80
+drive 250 80 80
+mark arrivee

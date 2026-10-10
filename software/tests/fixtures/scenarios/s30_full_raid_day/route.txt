@@ -1,0 +1,23 @@
+# s30 — étape complète de 12 h type Crazy Dust : 8 boucles de 1 h de route, 5 min d'arrêt,
+# 20 min de piste, 5 min d'arrêt ; bruit léger et pics de HDOP courts (époques refusées).
+jitter 3
+speed_noise 0.3
+hdop 1.2
+stop 3600
+mark depart
+repeat 8
+  drive 20 0 80
+  wander 3560 60 100 6 120
+  drive 20 80 0
+  stop 300
+  drive 10 0 30
+  wander 1180 20 40 12 60
+  drive 10 30 0
+  stop 300
+end
+mark arrivee
+stop 300
+hdop_at 9000 9002 4
+hdop_at 20000 20002 5
+hdop_at 33000 33002 6
+hdop_at 41000 41002 4

@@ -1,0 +1,6 @@
+# s14 — ×50. Fix 2D (4 satellites, sans altitude) de 600 à 1200 s : distance inchangée.
+# Vérité 18,5037 km.
+@900 expect fix    1
+@1250 expect trip_a 18.5037 0.055    # ±0,3 %
+@1250 expect gps_err 0
+@1255 quit

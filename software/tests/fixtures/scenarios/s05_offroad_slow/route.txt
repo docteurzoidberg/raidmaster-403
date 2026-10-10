@@ -1,0 +1,11 @@
+# s05 — piste : 1 h entre 20 et 40 km/h, cahots (gigue 4 m, vitesse ±1 km/h, HDOP 1,6).
+hdop 1.6
+jitter 4
+speed_noise 1.0
+stop 400
+mark depart
+drive 10 0 25
+wander 3600 20 40 10 20
+drive 10 25 0
+mark arrivee
+stop 60

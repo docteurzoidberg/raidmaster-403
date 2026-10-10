@@ -1,0 +1,13 @@
+# s20 — ×10. 5 RAZ A en 10 s en roulant à 50 km/h (13,9 m/s dès 42 s) : seule la dernière
+# compte, Trip B et l'ODO ne bougent pas.
+@60 a
+@62 a
+@64 a
+@66 a
+@68 a
+@70 expect trip_a 0.0278 0.015        # 2 s depuis la dernière RAZ
+@119 expect trip_a 0.7083 0.015       # 51 s depuis la dernière RAZ
+@119 expect trip_b 1.0833 0.005       # vérité à 119 s
+@119 expect odo    1.0833 0.005
+@119 expect chrono 1
+@119.5 quit

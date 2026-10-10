@@ -1,0 +1,15 @@
+# s01 — trajet urbain 30 min : 12 feux (accélération, 1 min de circulation à 30-50 km/h,
+# freinage, 30 s d'arrêt), bruit de ville (gigue 3 m, vitesse ±0,5 km/h, HDOP 1,6).
+hdop 1.6
+jitter 3
+speed_noise 0.5
+stop 400
+mark depart
+repeat 12
+  drive 8 0 45 0
+  wander 60 30 50 15 40
+  drive 6 45 0 0
+  stop 30
+end
+mark arrivee
+stop 60

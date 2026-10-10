@@ -1,0 +1,5 @@
+# s10 — 10 min à l'arrêt, récepteur bruité : position ±5 m, vitesse annoncée ±0,5 km/h, HDOP 1,5.
+hdop 1.5
+jitter 5
+speed_noise 0.5
+stop 600

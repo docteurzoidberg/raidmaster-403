@@ -1,0 +1,7 @@
+# s17 — minuit UTC (01:00 en UTC+1) en roulant à 60 km/h.
+start 48.8566 2.3522 2026-10-09T23:57:00
+stop 40
+mark depart
+drive 10 0 60
+drive 250 60 60
+mark arrivee

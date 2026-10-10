@@ -1,0 +1,9 @@
+# s04 — col de montagne : 1 h entre 25 et 60 km/h, virages serrés jusqu'à 25 °/s.
+jitter 2
+stop 400
+mark depart
+drive 10 0 30
+wander 3600 25 60 25 30
+drive 10 30 0
+mark arrivee
+stop 60

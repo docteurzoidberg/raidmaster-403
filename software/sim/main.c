@@ -14,7 +14,7 @@
  *   raidmaster-sim [--replay trace.nmea] [--speed N] [--loop] [--storage fichier.json | --no-storage]
  *                  [--script actions.txt --out dossier]
  *     --replay   rejoue un fichier NMEA au rythme de ses horodatages (sinon trajet simulé)
- *     --speed    accélère le temps GPS (1 à 100, défaut 1)
+ *     --speed    accélère le temps GPS (1 à 1000, défaut 1)
  *     --loop     rejoue le fichier en boucle
  *     --storage  fichier de sauvegarde (défaut ./sim-storage.json) ; --no-storage : en mémoire
  *     --script   joue des actions horodatées puis quitte (avec SDL_VIDEODRIVER=dummy pour
@@ -22,13 +22,18 @@
  *                  <ms> <bouton>   a b plus minus m, en majuscules pour l'appui long (A, PLUS, M…)
  *                  <ms> night      bascule jour / nuit
  *                  <ms> signal     coupe / rétablit le signal GPS
+ *                  <ms> power_cut  coupure d'alimentation : le core redémarre sur la dernière
+ *                                  sauvegarde, sans sauvegarder (l'UI et le GPS continuent)
  *                  <ms> shot <nom> capture <dossier>/<nom>.ppm
  *                  <ms> expect <champ> <valeur> [tolérance]
- *                                  champs : trip_a trip_b odo (km), speed (km/h), calib (%),
- *                                  active (0 A, 1 B), fix, night, view (0 raid, 1 balade)
+ *                                  champs : trip_a trip_b odo (km), speed avg max (km/h), calib (%),
+ *                                  active (0 A, 1 B), fix, night, view (0 raid, 1 balade),
+ *                                  hhmm (heure locale, -1 inconnue), alarm, chrono (en marche),
+ *                                  gps_err (phrases rejetées : checksum ou champs illisibles)
  *                  <ms> quit
  *                <ms> : temps depuis le lancement, sur une horloge virtuelle (pas de 10 ms, sans
  *                attente) : résultat déterministe, une minute se joue en une fraction de seconde.
+ *                « @<s> » à la place : instant <s> de la trace rejouée (= s × 1000 / --speed ms).
  *                Code de sortie 1 si un expect échoue.
  *
  * Touches clavier (voir prompts/ui.md § 4 et prompts/simulation.md § 1) :
@@ -265,6 +270,7 @@ static uint32_t    s_script_at;
 static char        s_script_cmd[160];
 static bool        s_script_pending;
 static int         s_script_failures;
+static double      s_script_speed = 1.0;    /* --speed, pour les instants « @<s> » */
 
 /* expect <champ> <valeur> [tolérance] sur l'état du core. */
 static void script_expect(const char *args)
@@ -289,6 +295,13 @@ static void script_expect(const char *args)
     else if (strcmp(field, "fix") == 0)    got = st.trip.fix_ok;
     else if (strcmp(field, "night") == 0)  got = st.set.night;
     else if (strcmp(field, "view") == 0)   got = st.set.view;
+    else if (strcmp(field, "avg") == 0)    got = st.trip.avg_kmh;
+    else if (strcmp(field, "max") == 0)    got = st.trip.max_kmh;
+    else if (strcmp(field, "hhmm") == 0)   got = st.local_hh < 0 ? -1 : st.local_hh * 100 + st.local_mm;
+    else if (strcmp(field, "alarm") == 0)  got = st.speed_alarm;
+    else if (strcmp(field, "chrono") == 0) got = st.trip.chrono_running;
+    else if (strcmp(field, "gps_err") == 0)
+        got = s_app.parser.stats.bad_checksum + s_app.parser.stats.parse_errors;
     else {
         fprintf(stderr, "script : champ inconnu « %s »\n", field);
         s_script_failures++;
@@ -306,7 +319,15 @@ static bool script_next(void)
         char *h = strchr(line, '#');
         if (h != NULL) *h = '\0';
         unsigned at;
+        double at_s;
         int n = 0;
+        if (sscanf(line, " @%lf %n", &at_s, &n) == 1 && line[n] != '\0' && line[n] != '\n') {
+            s_script_at = (uint32_t)llround(at_s * 1000.0 / s_script_speed);
+            snprintf(s_script_cmd, sizeof(s_script_cmd), "%s", line + n);
+            s_script_cmd[strcspn(s_script_cmd, "\r\n")] = '\0';
+            return true;
+        }
+        n = 0;
         if (sscanf(line, "%u %n", &at, &n) == 1 && line[n] != '\0' && line[n] != '\n') {
             s_script_at = at;
             snprintf(s_script_cmd, sizeof(s_script_cmd), "%s", line + n);
@@ -353,6 +374,8 @@ static int script_step(uint32_t t_ms)
             ui_app_toggle_night();
         } else if (strcmp(verb, "signal") == 0) {
             hal_gps_sim_set_signal(!hal_gps_sim_signal());
+        } else if (strcmp(verb, "power_cut") == 0) {
+            app_init(&s_app, hal_time_ms());
         } else {
             dispatch_named(verb, &ok);
         }
@@ -365,7 +388,7 @@ static int script_step(uint32_t t_ms)
 /* ------------------------------------------------------------------------- */
 int main(int argc, char *argv[])
 {
-    const char *replay = NULL, *storage = "sim-storage.json";
+    const char *replay = NULL, *storage = "sim-storage.json", *script = NULL;
     double speed = 1.0;
     bool loop = false;
     for (int i = 1; i < argc; i++) {
@@ -373,8 +396,8 @@ int main(int argc, char *argv[])
             replay = argv[++i];
         } else if (strcmp(argv[i], "--speed") == 0 && i + 1 < argc) {
             speed = atof(argv[++i]);
-            if (speed < 1.0 || speed > 100.0) {
-                fprintf(stderr, "--speed : 1 à 100\n");
+            if (speed < 1.0 || speed > 1000.0) {
+                fprintf(stderr, "--speed : 1 à 1000\n");
                 return 2;
             }
         } else if (strcmp(argv[i], "--loop") == 0) {
@@ -384,19 +407,24 @@ int main(int argc, char *argv[])
         } else if (strcmp(argv[i], "--no-storage") == 0) {
             storage = NULL;
         } else if (strcmp(argv[i], "--script") == 0 && i + 1 < argc) {
-            s_script = fopen(argv[++i], "r");
-            if (s_script == NULL) {
-                fprintf(stderr, "--script : impossible de lire %s\n", argv[i]);
-                return 2;
-            }
-            s_script_pending = script_next();
-            hal_time_sim_virtual(true);
+            script = argv[++i];
         } else if (strcmp(argv[i], "--out") == 0 && i + 1 < argc) {
             s_script_out = argv[++i];
         } else {
             usage();
             return 2;
         }
+    }
+
+    if (script != NULL) {
+        s_script = fopen(script, "r");
+        if (s_script == NULL) {
+            fprintf(stderr, "--script : impossible de lire %s\n", script);
+            return 2;
+        }
+        s_script_speed = speed;
+        s_script_pending = script_next();
+        hal_time_sim_virtual(true);
     }
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {

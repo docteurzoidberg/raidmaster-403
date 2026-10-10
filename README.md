@@ -31,7 +31,7 @@ Distance **GPS uniquement**, sans capteur de roue ni intervention sur le câblag
 | 1 | Squelette CMake + simulateur SDL 480 × 320 | fait |
 | 2 | Core portable + tests : `gps_parser` (NMEA, sur minmea), `trip_engine` (distance, moyenne, chrono, calibration), `app` (boutons, menu, sauvegarde) | fait |
 | 3 | Interface LVGL câblée sur le core : raid, balade, menu réglages actif, calibration auto, démarrage animé, mode nuit | fait |
-| 4 | Simulateur : rejeu de traces NMEA, trajet simulé, scénarios de bout en bout | phase 1 faite, catalogue à compléter |
+| 4 | Simulateur : rejeu de traces NMEA, trajet simulé, scénarios de bout en bout | 21 scénarios GPS en place ; boussole et matériel à venir |
 | 5-6 | HAL ESP32 et firmware sur la carte | à faire |
 
 Pas encore là : boussole (le cap affiché est la route GPS), batterie et température réelles, log GPX.
@@ -56,7 +56,7 @@ réglages et distances sauvegardés dans `sim-storage.json`.
 | Option | Effet |
 |---|---|
 | `--replay fichier.nmea` | rejoue un fichier au rythme de ses horodatages (sinon trajet simulé : boucle de 2 min) |
-| `--speed N` | accélère le temps GPS, 1 à 100 |
+| `--speed N` | accélère le temps GPS, 1 à 1000 |
 | `--loop` | rejoue le fichier en boucle |
 | `--storage f.json` / `--no-storage` | fichier de sauvegarde (défaut `./sim-storage.json`) / en mémoire |
 | `--script actions.txt --out dossier` | joue des actions horodatées en temps virtuel, sans attente (tests de bout en bout) |
@@ -81,8 +81,10 @@ tools/check.sh        # build + avertissements + tests + état du GIF, résumé 
 
 - Tests unitaires du core avec [Unity](https://github.com/ThrowTheSwitch/Unity) : parseur NMEA, moteur
   de distance, application (boutons, menu, sauvegarde).
-- Scénarios de bout en bout (`tests/fixtures/scenarios/`) : le simulateur sans fenêtre rejoue une trace,
-  appuie sur les boutons et vérifie l'état, en temps virtuel (moins d'une seconde en tout).
+- Scénarios de bout en bout (`tests/fixtures/scenarios/`, 21 au catalogue) : le simulateur sans fenêtre
+  rejoue une trace, appuie sur les boutons et vérifie l'état, en temps virtuel (une étape de 12 h se
+  joue en moins d'une seconde, la suite entière en ~1,5 s). Les traces sont générées au build depuis
+  l'itinéraire `route.txt` de chaque scénario (`tests/tools/gen_route.py`, Python sans dépendance).
 - Les traces NMEA longues de `references/traces-brutes/` ne sont pas versionnées : présentes, elles sont
   rejouées (distances à ±0,1 % de la référence) ; absentes, ces tests sont ignorés.
 

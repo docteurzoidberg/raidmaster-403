@@ -1,0 +1,13 @@
+# s12 — canyon : 20 min entre 50 et 80 km/h ; HDOP 8 pendant 2 min (fixs refusés), puis une
+# remontée courte à 2,5 / 4 / 2,5.
+stop 150
+mark depart
+drive 10 0 60
+wander 1200 50 80 4 100
+drive 10 60 0
+mark arrivee
+stop 30
+hdop_at 300 420 8
+hdop_at 600 620 2.5
+hdop_at 620 640 4
+hdop_at 640 660 2.5

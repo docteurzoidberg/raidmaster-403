@@ -1,0 +1,6 @@
+# s01 — ×100. 30 min en ville, 12 feux, bruit urbain : vérité 9,4744 km.
+@1700 expect trip_a 9.4744 0.047      # ±0,5 %
+@1700 expect odo    9.4744 0.047
+@1700 expect speed  0
+@1700 expect gps_err 0
+@1705 quit

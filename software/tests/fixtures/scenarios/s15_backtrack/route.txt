@@ -1,0 +1,12 @@
+# s15 — demi-tour : 200 s à 40 km/h, demi-tour de 180° en 9 s à 20 km/h, retour 200 s.
+stop 40
+mark depart
+drive 10 0 40
+drive 200 40 40
+drive 6 40 20
+drive 9 20 20 20
+drive 6 20 40
+drive 200 40 40
+drive 10 40 0
+mark arrivee
+stop 20

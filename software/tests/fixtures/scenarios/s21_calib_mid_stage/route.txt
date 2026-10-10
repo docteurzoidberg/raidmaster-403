@@ -1,0 +1,15 @@
+# s21 — calibration changée à mi-parcours : 15 min à 90 km/h, arrêt de 2 min (passage à +2 %
+# au menu), 15 min à 90 km/h.
+stop 400
+mark depart
+drive 10 0 90
+drive 880 90 90
+drive 10 90 0
+mark mi_parcours
+stop 120
+mark reprise
+drive 10 0 90
+drive 880 90 90
+drive 10 90 0
+mark arrivee
+stop 60

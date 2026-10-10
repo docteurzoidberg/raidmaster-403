@@ -1,0 +1,12 @@
+# s11 — ×10. Fix perdu 2 min dans un tunnel (500 m parcourus à 15 km/h).
+# Trips figés pendant la perte. Au retour du fix : règle PROVISOIRE (rattrapage à vol d'oiseau
+# si la vitesse implicite reste ≤ 200 km/h), à revoir avec la décision « perte de fix »
+# (PROMPT.md § 8) : seules les deux dernières vérifications en dépendent.
+@125 expect trip_a 1.1875 0.015      # entrée du tunnel
+@200 expect fix    0                 # fix perdu après 2 s sans fix (20 s de trace à ×10)
+@200 expect trip_a 1.1875 0.015      # figé
+@235 expect trip_a 1.1875 0.015
+@260 expect fix    1
+@330 expect trip_a 2.875 0.03        # provisoire : rattrapage des 500 m
+@330 expect odo    2.875 0.03        # provisoire
+@335 quit

@@ -1,0 +1,3 @@
+# s24 — ligne droite 2 min à 90 km/h plein est : distance puis boutons.
+drive 120 90 90
+mark fin

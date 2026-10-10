@@ -10,6 +10,7 @@
 
 | Script | Rôle |
 |---|---|
+| `gen_route.py` | Itinéraire décrit en texte (`route.txt` : segments, bruit, pertes de fix, HDOP, fix 2D) → trace NMEA RMC + GGA + GSA, et distance vérité à chaque repère. Génère les traces des scénarios au build. Pure stdlib. |
 | `gen_nmea.py` | Génère une trace NMEA synthétique (ligne droite ou cercle, vitesse constante ou profilée), à 1-10 Hz. Pure stdlib, pas de dépendance. |
 | `add_noise.py` | Injecte du bruit (jitter position gaussien, HDOP spikes, fenêtres de perte de fix) dans une trace .nmea existante. Pure stdlib. |
 | `validate_nmea.py` | Vérifie les checksums RMC/GGA et la continuité temporelle d'une trace. Pure stdlib. |
@@ -86,8 +87,6 @@ python3 tests/tools/compute_reference.py references/traces-brutes/stage_highway_
    de sortie des logs).
 2. Décider si on dépend de `gpsbabel` + `pyserial` + `gpxpy` + `pynmea2` ou si on reste pure
    stdlib (le brief dit « au choix » — moi j'ai pris pure stdlib par simplicité).
-3. Générer les scénarios Phase 1 du catalogue (voir `prompts/simulation.md` § 3) :
-   - `s10_stationary_noise` : réutilise `gen_nmea.py --mode stationary` + `add_noise.py`.
-   - `s02_highway_cruise` : réutilise `gen_nmea.py --mode linear`.
-4. Construire le harnais Unity qui rejoue une fixture et vérifie les assertions `expected.yaml`.
-5. Mettre en place `ctest --preset sim --test-dir tests` dans `CMakePresets.json`.
+3. ~~Scénarios du catalogue~~ : faits avec `gen_route.py` (2026-10-10), voir
+   `tests/fixtures/scenarios/README.md`.
+4. ~~Harnais~~ : mode script du simulateur + `ctest --preset sim`.

@@ -1,0 +1,6 @@
+# s23 — navigation dans le menu en roulant à 80 km/h pendant 10 min.
+stop 80
+mark depart
+drive 600 80 80
+mark arrivee
+stop 20
