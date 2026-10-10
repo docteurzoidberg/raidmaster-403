@@ -38,6 +38,7 @@ add_library(raidmaster_ui STATIC
     theme.c
     fonts.c
     ui_widgets.c
+    boot_anim.c
     img_cap_arrow.c
     ui_input.c
     ui_demo.c
@@ -68,6 +69,33 @@ target_include_directories(raidmaster_ui PUBLIC
 )
 
 target_link_libraries(raidmaster_ui PUBLIC lvgl)
+
+# Animation de démarrage : fichier « RMBA » (palette 256 + images indexées) généré depuis la planche
+# rendue dans Blender (variante retenue : HD, grille lisse, glow fort). Python + Pillow requis ;
+# par défaut le venv du projet 403. Sans eux, le sim démarre sur l'écran de boot statique.
+set(RAIDMASTER_PYTHON "${CMAKE_SOURCE_DIR}/../../.venv/bin/python" CACHE FILEPATH
+    "Python avec Pillow pour générer l'animation de démarrage")
+set(BOOT_ANIM_SHEET "${CMAKE_SOURCE_DIR}/docs/artefacts/boot-anim/2e_selection_hd_glow_fort.png")
+set(BOOT_ANIM_BIN   "${CMAKE_BINARY_DIR}/boot_anim.bin")
+execute_process(COMMAND "${RAIDMASTER_PYTHON}" -c "import PIL"
+                RESULT_VARIABLE BOOT_ANIM_PY_RC OUTPUT_QUIET ERROR_QUIET)
+if(BOOT_ANIM_PY_RC EQUAL 0 AND EXISTS "${BOOT_ANIM_SHEET}")
+    add_custom_command(
+        OUTPUT "${BOOT_ANIM_BIN}"
+        COMMAND "${RAIDMASTER_PYTHON}" "${CMAKE_CURRENT_SOURCE_DIR}/assets/boot_anim/build_boot_anim.py"
+                "${BOOT_ANIM_SHEET}" "${BOOT_ANIM_BIN}" --frames 36 --cols 6 --fps 12
+        DEPENDS "${BOOT_ANIM_SHEET}" "${CMAKE_CURRENT_SOURCE_DIR}/assets/boot_anim/build_boot_anim.py"
+        COMMENT "Animation de démarrage → boot_anim.bin"
+        VERBATIM)
+    add_custom_target(boot_anim_bin ALL DEPENDS "${BOOT_ANIM_BIN}")
+    add_dependencies(raidmaster_ui boot_anim_bin)
+    target_compile_definitions(raidmaster_ui PRIVATE RAIDMASTER_BOOT_ANIM_PATH="${BOOT_ANIM_BIN}")
+    set(RAIDMASTER_BOOT_ANIM_BIN "${BOOT_ANIM_BIN}" CACHE INTERNAL "")
+else()
+    message(WARNING "Animation de démarrage désactivée : Python+Pillow (${RAIDMASTER_PYTHON}) "
+                    "ou planche ${BOOT_ANIM_SHEET} introuvable.")
+    set(RAIDMASTER_BOOT_ANIM_BIN "" CACHE INTERNAL "")
+endif()
 
 # LVGL propage sa propre -DLV_CONF_PATH=<chemin absolu> (sans guillemets) à ses consommateurs
 # via INTERFACE_COMPILE_DEFINITIONS. On ne redéfinit pas ici (sinon warning « redefined »).

@@ -46,6 +46,11 @@ static void boot_timer_cb(lv_timer_t *t)
     (void)t;
     s_boot_timer = NULL;
     ui_show_screen(UI_SCREEN_RAID);
+    /* Le démarrage ne revient plus : on libère son écran (et l'animation, ~5,5 Mo + tampon). */
+    if (s_screens[UI_SCREEN_BOOT] != NULL) {
+        lv_obj_delete(s_screens[UI_SCREEN_BOOT]);
+        s_screens[UI_SCREEN_BOOT] = NULL;
+    }
     ui_demo_start();
 }
 
@@ -91,8 +96,8 @@ void ui_init(lv_display_t *disp)
     /* On commence par l'écran boot. */
     ui_show_screen(UI_SCREEN_BOOT);
 
-    /* Timer auto-switch boot → raid après ~1200 ms. */
-    s_boot_timer = lv_timer_create(boot_timer_cb, 1200, NULL);
+    /* Passage boot → raid après une rotation de l'animation (~1,2 s sans animation). */
+    s_boot_timer = lv_timer_create(boot_timer_cb, screen_boot_duration_ms(), NULL);
     lv_timer_set_repeat_count(s_boot_timer, 1);
 }
 
@@ -144,6 +149,12 @@ void ui_rebuild_screens(void)
     for (int i = 0; i < UI_SCREEN__COUNT; i++) {
         old[i] = s_screens[i];
         s_screens[i] = NULL;
+    }
+    /* Pendant le démarrage, on garde l'écran boot tel quel (animation en cours, ressources
+     * uniques) : seuls les autres écrans prendront la nouvelle palette. */
+    if (s_current == UI_SCREEN_BOOT) {
+        s_screens[UI_SCREEN_BOOT] = old[UI_SCREEN_BOOT];
+        old[UI_SCREEN_BOOT] = NULL;
     }
     ui_show_screen(s_current);
     for (int i = 0; i < UI_SCREEN__COUNT; i++) {

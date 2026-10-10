@@ -19,6 +19,10 @@ extern "C" {
 /* Crée l'écran. Le screen n'est pas chargé automatiquement — c'est ui_show_screen() qui le fait. */
 lv_obj_t *screen_boot_create(void);
 
+/* Durée d'affichage du démarrage avant de passer à l'écran raid : une rotation complète de
+ * l'animation si elle est disponible, sinon ~1,2 s. Valable après screen_boot_create(). */
+uint32_t screen_boot_duration_ms(void);
+
 #ifdef __cplusplus
 }
 #endif

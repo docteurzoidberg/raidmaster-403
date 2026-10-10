@@ -41,3 +41,6 @@ references/
 # OS
 .DS_Store
 Thumbs.db
+
+# Blender (sauvegardes automatiques)
+*.blend1

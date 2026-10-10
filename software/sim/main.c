@@ -20,6 +20,10 @@
  * enchaîne chaque écran avec un état fixe repris de la maquette, écrit <dossier>/<écran>.ppm
  * puis quitte. Ex. : SDL_VIDEODRIVER=dummy RAIDMASTER_SHOTS=/tmp/shots ./raidmaster-sim
  *
+ * Mode enregistrement démo : RAIDMASTER_RECORD=<fichier.gif> [RAIDMASTER_RECORD_SCALE=1..4]
+ * joue le scénario de démo en temps virtuel et écrit un GIF animé en boucle (voir
+ * demo_record.h). Commande à la demande : tools/demo_gif.sh.
+ *
  * UI-agent exception: integration LVGL (voir prompts/ui.md).
  *
  * Licence : GPL-3.0.
@@ -37,6 +41,7 @@
 #include "ui_demo.h"
 #include "ui_input.h"
 #include "screen_menu.h"
+#include "demo_record.h"
 
 enum {
     TRIPMASTER_SCREEN_W = 480,
@@ -52,7 +57,8 @@ static SDL_Window   *s_window   = NULL;
 static SDL_Renderer *s_renderer = NULL;
 static SDL_Texture  *s_texture  = NULL;
 
-/* Copie complète de l'écran (RGB565), tenue à jour au flush, pour le mode captures. */
+/* Copie complète de l'écran (RGB565), tenue à jour au flush, pour les modes captures et
+ * enregistrement. */
 static uint16_t s_fb[TRIPMASTER_SCREEN_W * TRIPMASTER_SCREEN_H];
 
 /* ------------------------------------------------------------------------- */
@@ -260,6 +266,20 @@ int main(int argc, char *argv[])
 
     /* UI init (thème, écran boot, timer boot→raid, démo). */
     ui_init(disp);
+
+    /* ------- Mode enregistrement démo (temps virtuel, pas de boucle d'événements) ------- */
+    const char *record_path = getenv("RAIDMASTER_RECORD");
+    if (record_path != NULL && record_path[0] != '\0') {
+        const char *scale_env = getenv("RAIDMASTER_RECORD_SCALE");
+        int scale = (scale_env != NULL) ? atoi(scale_env) : 1;
+        int rc = demo_record_run(disp, s_fb, TRIPMASTER_SCREEN_W, TRIPMASTER_SCREEN_H,
+                                 record_path, scale);
+        SDL_DestroyTexture(s_texture);
+        SDL_DestroyRenderer(s_renderer);
+        SDL_DestroyWindow(s_window);
+        SDL_Quit();
+        return rc;
+    }
 
     /* ------- Boucle principale ------- */
     const char *shots_dir = getenv("RAIDMASTER_SHOTS");

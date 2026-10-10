@@ -20,7 +20,8 @@ else()
     endif()
 endif()
 
-add_executable(raidmaster-sim main.c)
+# demo_record.c + gif_writer.c : mode enregistrement d'un GIF de démo (tools/demo_gif.sh).
+add_executable(raidmaster-sim main.c demo_record.c gif_writer.c)
 # UI-agent exception: integration LVGL (voir prompts/ui.md).
 # On link l'UI pour piloter LVGL depuis la fenêtre SDL que ce binaire ouvre déjà.
 target_link_libraries(raidmaster-sim PRIVATE ${SIM_SDL2_TARGET} raidmaster_ui)
@@ -33,3 +34,27 @@ endif()
 # Chemin de sortie prévisible : build-sim/raidmaster-sim (vs build-sim/sim/raidmaster-sim).
 set_target_properties(raidmaster-sim PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+# GIF de démo régénéré automatiquement à chaque build qui change le sim (donc toute modif de l'UI,
+# liée statiquement). Enregistrement déterministe (temps virtuel) : docs/demo/raidmaster-demo.gif
+# n'est réécrit que si son contenu change. Désactivable : -DRAIDMASTER_DEMO_GIF=OFF.
+# À la main (échelle ×2, autre sortie) : tools/demo_gif.sh.
+option(RAIDMASTER_DEMO_GIF "Régénérer docs/demo/raidmaster-demo.gif à chaque build du sim" ON)
+if(RAIDMASTER_DEMO_GIF)
+    set(DEMO_GIF_TMP "${CMAKE_BINARY_DIR}/demo-gif/raidmaster-demo.gif")
+    set(DEMO_GIF_OUT "${CMAKE_SOURCE_DIR}/docs/demo/raidmaster-demo.gif")
+    add_custom_command(
+        OUTPUT "${DEMO_GIF_TMP}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/demo-gif"
+        COMMAND ${CMAKE_COMMAND} -E env
+                SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy
+                TMPDIR=${CMAKE_BINARY_DIR}/demo-gif
+                RAIDMASTER_RECORD=${DEMO_GIF_TMP} RAIDMASTER_RECORD_SCALE=1
+                $<TARGET_FILE:raidmaster-sim>
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/docs/demo"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${DEMO_GIF_TMP}" "${DEMO_GIF_OUT}"
+        DEPENDS raidmaster-sim ${RAIDMASTER_BOOT_ANIM_BIN}
+        COMMENT "GIF de démo de l'UI → docs/demo/raidmaster-demo.gif"
+        VERBATIM)
+    add_custom_target(demo_gif ALL DEPENDS "${DEMO_GIF_TMP}")
+endif()
