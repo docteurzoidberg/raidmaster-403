@@ -1,8 +1,8 @@
 /*
  * Raidmaster 403 — simulateur PC.
  *
- * Fenêtre SDL 480×320 landscape (résolution exacte du ST7796 de la carte Waveshare
- * ESP32-S3-Touch-LCD-3.5), avec LVGL v9 dessinant dedans via un buffer software + SDL_Texture.
+ * Fenêtre SDL 480×320 landscape (résolution exacte de l'écran de la carte Waveshare
+ * ESP32-S3-Touch-LCD-3.5B), avec LVGL v9 dessinant dedans via un buffer software + SDL_Texture.
  *
  * Pourquoi ce chemin plutôt que LV_USE_SDL=1 : on garde le contrôle total des SDL_Event, ce qui
  * permet de router les touches a/b/+/-/m vers notre ui_input_dispatch() sans combat avec le

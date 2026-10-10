@@ -6,6 +6,9 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
+# Racine du dépôt : le code est dans software/, la doc (GIF de démo, maquettes) dans ../docs/.
+get_filename_component(RAIDMASTER_REPO_DIR "${CMAKE_SOURCE_DIR}/.." ABSOLUTE)
+
 # Cible de build : "sim" (PC SDL, défaut) ou "firmware" (ESP-IDF, étape 5+).
 # Peut être forcée par un preset ou en ligne de commande (-DRAIDMASTER_TARGET=sim).
 if(NOT DEFINED RAIDMASTER_TARGET)

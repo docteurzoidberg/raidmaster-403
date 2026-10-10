@@ -78,7 +78,7 @@ target_link_libraries(raidmaster_ui PUBLIC lvgl raidmaster_core)
 # Sans eux, le sim démarre sur l'écran de boot statique.
 if(NOT RAIDMASTER_PYTHON)
     find_program(_rm_python NAMES python3 python
-                 PATHS "${CMAKE_SOURCE_DIR}/.venv/bin" "${CMAKE_SOURCE_DIR}/../../.venv/bin"
+                 PATHS "${RAIDMASTER_REPO_DIR}/.venv/bin" "${RAIDMASTER_REPO_DIR}/../../.venv/bin"
                  NO_DEFAULT_PATH)
     if(NOT _rm_python)
         find_program(_rm_python NAMES python3 python)
@@ -87,7 +87,7 @@ if(NOT RAIDMASTER_PYTHON)
         "Python avec Pillow pour générer l'animation de démarrage" FORCE)
     unset(_rm_python CACHE)
 endif()
-set(BOOT_ANIM_SHEET "${CMAKE_SOURCE_DIR}/docs/artefacts/boot-anim/2e_selection_hd_glow_fort.png")
+set(BOOT_ANIM_SHEET "${RAIDMASTER_REPO_DIR}/docs/mockups/boot-anim/2e_selection_hd_glow_fort.png")
 set(BOOT_ANIM_BIN   "${CMAKE_BINARY_DIR}/boot_anim.bin")
 execute_process(COMMAND "${RAIDMASTER_PYTHON}" -c "import PIL"
                 RESULT_VARIABLE BOOT_ANIM_PY_RC OUTPUT_QUIET ERROR_QUIET)

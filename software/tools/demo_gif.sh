@@ -14,7 +14,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-OUT="$ROOT/docs/demo/raidmaster-demo.gif"
+OUT="$ROOT/../docs/demo/raidmaster-demo.gif"
 SCALE=1
 
 while getopts "s:o:h" opt; do

@@ -3,7 +3,7 @@
 
 Entrée : une planche PNG (images rangées de gauche à droite puis de haut en bas, COLS par ligne),
 rendue dans Blender depuis ui/assets/boot_anim/boot_anim.blend (variante retenue : HD sur grille
-lisse, glow fort → docs/artefacts/boot-anim/2e_selection_hd_glow_fort.png).
+lisse, glow fort → docs/mockups/boot-anim/2e_selection_hd_glow_fort.png).
 
 Sortie : fichier binaire petit-boutiste, identique pour le simulateur et l'ESP32 (partition flash
 dédiée, lue en place) :

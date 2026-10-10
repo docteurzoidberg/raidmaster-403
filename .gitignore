@@ -28,8 +28,16 @@ sdkconfig.old
 managed_components/
 dependencies.lock
 
-# Références externes (clones en lecture seule)
-references/
+# Références externes (clones en lecture seule, traces NMEA longues)
+software/references/
+
+# Roadbooks d'exemple téléchargés (droits de leurs auteurs) : seul le README est versionné
+docs/roadbooks/*
+!docs/roadbooks/README.md
+
+# Datasheets (hardware/fetch_datasheets.sh) et modèle 3D de la carte : droits des fabricants
+hardware/datasheets/
+enclosure/cad/
 
 # Éditeurs / IDE
 .vscode/

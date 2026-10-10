@@ -63,7 +63,7 @@ if [ "$build_ok" = 1 ]; then
     fi
 fi
 
-gif="docs/demo/raidmaster-demo.gif"
+gif="../docs/demo/raidmaster-demo.gif"
 case "$(git status --porcelain -- "$gif" 2>/dev/null)" in
     "") echo "GIF : inchangé" ;;
     *)  echo "GIF : modifié ($(du -h "$gif" | cut -f1)) — à commiter avec la modification d'UI, sinon git checkout -- $gif" ;;
