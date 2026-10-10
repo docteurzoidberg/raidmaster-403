@@ -11,6 +11,7 @@
 #define RAIDMASTER_UI_TOKENS_H
 
 #include "lvgl.h"
+#include "fonts.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,20 +42,49 @@ extern "C" {
 #define UI_COLOR_NIGHT_DIVIDER  lv_color_hex(0x220800)
 
 /* ------------------------------------------------------------------------- */
-/* Typographie                                                               */
+/* Palette active (jour / nuit)                                              */
 /* ------------------------------------------------------------------------- */
 
-/* Fallback Montserrat embarqué LVGL — à remplacer par Share Tech Mono / Inter
- * en phase 2 via lv_font_conv (TODO documenté dans prompts/ui.md § 9). */
-#define UI_FONT_DIGIT_LARGE     (&lv_font_montserrat_48)  /* ~ font_digit_96 */
-#define UI_FONT_DIGIT_MED       (&lv_font_montserrat_36)  /* ~ font_digit_54 */
-#define UI_FONT_DIGIT_SMALL     (&lv_font_montserrat_28)  /* ~ font_digit_32 */
+/* Les écrans prennent leurs couleurs dans la palette active : au basculement jour/nuit,
+ * ui.c reconstruit les écrans (voir ui_theme_toggle_night()). En nuit, toutes les couleurs
+ * d'accent passent en orange profond, comme sur la maquette. */
+typedef struct {
+    lv_color_t bg, panel, divider, text, muted, amber, cyan, ok, warn, crit, on_amber;
+} ui_palette_t;
 
-#define UI_FONT_LABEL           (&lv_font_montserrat_14)
-#define UI_FONT_LABEL_SMALL     (&lv_font_montserrat_12)
-#define UI_FONT_STATUS          (&lv_font_montserrat_16)
-#define UI_FONT_FOOTER          (&lv_font_montserrat_18)
-#define UI_FONT_TITLE           (&lv_font_montserrat_24)
+const ui_palette_t *ui_pal(void);       /* défini dans theme.c */
+
+#define UI_C_BG        (ui_pal()->bg)
+#define UI_C_PANEL     (ui_pal()->panel)
+#define UI_C_DIVIDER   (ui_pal()->divider)
+#define UI_C_TEXT      (ui_pal()->text)
+#define UI_C_MUTED     (ui_pal()->muted)
+#define UI_C_AMBER     (ui_pal()->amber)
+#define UI_C_CYAN      (ui_pal()->cyan)
+#define UI_C_OK        (ui_pal()->ok)
+#define UI_C_WARN      (ui_pal()->warn)
+#define UI_C_CRIT      (ui_pal()->crit)
+#define UI_C_ON_AMBER  (ui_pal()->on_amber)    /* texte sur fond amber (sélection menu) */
+
+/* ------------------------------------------------------------------------- */
+/* Typographie — tout l'écran en Share Tech Mono                             */
+/* ------------------------------------------------------------------------- */
+
+/* Tailles reprises de la maquette (unités cqw × 4,8 px pour un écran de 480 px). */
+#define UI_FONT_TRIP_A        ui_font_mono(72)   /* Trip A, 15 cqw */
+#define UI_FONT_TRIP_B        ui_font_mono(44)   /* Trip B, 9 cqw */
+#define UI_FONT_CELL          ui_font_mono(38)   /* V / CAP, 8 cqw */
+#define UI_FONT_SPEEDO        ui_font_mono(190)  /* vitesse mode balade, ~40 cqw */
+#define UI_FONT_LOGO          ui_font_mono(134)  /* « 403 » écran de démarrage, 28 cqw */
+#define UI_FONT_VALUE_MED     ui_font_mono(34)   /* lectures calibration, 7 cqw */
+#define UI_FONT_VALUE_RES     ui_font_mono(29)   /* facteur calibration, 6 cqw */
+#define UI_FONT_VALUE_SMALL   ui_font_mono(25)   /* valeurs bas d'écran balade, 5,2 cqw */
+#define UI_FONT_TITLE         ui_font_mono(16)   /* titres menu / calib, items menu */
+#define UI_FONT_TIME          ui_font_mono(15)   /* heure barre d'état, labels A / B */
+#define UI_FONT_UNIT          ui_font_mono(14)   /* unité trip, nom de marque boot */
+#define UI_FONT_BTM_LABEL     ui_font_mono(13)   /* labels bas d'écran balade */
+#define UI_FONT_STATUS        ui_font_mono(13)   /* barre d'état, labels V / CAP */
+#define UI_FONT_SMALL         ui_font_mono(12)   /* bas d'écran raid, unités, version */
 
 /* ------------------------------------------------------------------------- */
 /* Dimensions clés du layout 480×320                                         */
@@ -62,8 +92,10 @@ extern "C" {
 
 #define UI_SCREEN_W             480
 #define UI_SCREEN_H             320
-#define UI_STATUS_BAR_H         28
-#define UI_FOOTER_H             40
+#define UI_STATUS_BAR_H         34
+#define UI_PAD_X                14     /* marge latérale du contenu, 3 cqw */
+#define UI_PAD_Y                10     /* marge haute / basse du contenu, 2 cqw */
+#define UI_GAP                  7      /* espacement entre rangées, 1,4 cqw */
 
 #ifdef __cplusplus
 }

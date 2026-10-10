@@ -14,7 +14,8 @@
             "binaryDir": "${sourceDir}/build-sim",
             "cacheVariables": {
                 "RAIDMASTER_TARGET": "sim",
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             }
         },
         {

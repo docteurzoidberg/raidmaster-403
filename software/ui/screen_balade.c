@@ -1,93 +1,77 @@
 /*
  * Raidmaster 403 — écran mode balade.
  *
- * Compteur de vitesse central énorme (amber), ODO discret en haut à gauche, footer 3 cellules.
+ * Maquette « Mode balade » : grand compteur de vitesse central (amber), ODO discret en haut à
+ * gauche, unité en bas à droite de la zone compteur, puis trois cellules CAP / TRIP / T°
+ * (libellé au-dessus, valeur cyan dessous).
  *
  * Licence : GPL-3.0.
  */
 
 #include "screen_balade.h"
 #include "ui_tokens.h"
+#include "ui_widgets.h"
+#include <math.h>
 
-static lv_obj_t *s_scr        = NULL;
-static lv_obj_t *s_lbl_speed;
-static lv_obj_t *s_lbl_odo;
-static lv_obj_t *s_lbl_cap;
-static lv_obj_t *s_lbl_trip;
-static lv_obj_t *s_lbl_temp;
-static lv_obj_t *s_lbl_mode;
-static lv_obj_t *s_lbl_time;
+#define X_L         UI_PAD_X
+#define X_R         (UI_SCREEN_W - UI_PAD_X)
+#define SPEED_BASE  212
+#define BTM_DIV     244
+#define BTM_LBL     266
+#define BTM_VAL     298
+#define BTM_COL_W   ((X_R - X_L) / 3)
 
-static lv_obj_t *mk(lv_obj_t *p, const lv_font_t *f, lv_color_t c, const char *t)
+static lv_obj_t      *s_scr = NULL;
+static ui_statusbar_t s_sb;
+static lv_obj_t      *s_lbl_speed;
+static lv_obj_t      *s_lbl_odo;
+static lv_obj_t      *s_lbl_cap;
+static lv_obj_t      *s_lbl_trip;
+static lv_obj_t      *s_lbl_temp;
+
+static const char *cardinal_for_heading(int deg)
 {
-    lv_obj_t *o = lv_label_create(p);
-    lv_label_set_text(o, t);
-    lv_obj_set_style_text_font(o, f, 0);
-    lv_obj_set_style_text_color(o, c, 0);
-    return o;
+    static const char *dirs[] = {"N", "NE", "E", "SE", "S", "SO", "O", "NO"};
+    return dirs[((deg + 22) / 45) & 7];
+}
+
+static lv_obj_t *btm_cell(int col, const char *name, const char *init)
+{
+    int32_t x = X_L + col * BTM_COL_W;
+    lv_obj_t *l = ui_label(s_scr, UI_FONT_BTM_LABEL, UI_C_MUTED, name);
+    lv_obj_set_style_text_letter_space(l, 1, 0);
+    ui_place_baseline(l, x, BTM_LBL, LV_TEXT_ALIGN_LEFT, 0);
+    lv_obj_t *v = ui_label(s_scr, UI_FONT_VALUE_SMALL, UI_C_CYAN, init);
+    ui_place_baseline(v, x, BTM_VAL, LV_TEXT_ALIGN_LEFT, 0);
+    return v;
 }
 
 lv_obj_t *screen_balade_create(void)
 {
-    s_scr = lv_obj_create(NULL);
-    lv_obj_remove_style_all(s_scr);
-    lv_obj_set_style_bg_color(s_scr, UI_COLOR_LCD_BG, 0);
-    lv_obj_set_style_bg_opa(s_scr, LV_OPA_COVER, 0);
-    lv_obj_set_scrollbar_mode(s_scr, LV_SCROLLBAR_MODE_OFF);
-    lv_obj_remove_flag(s_scr, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_size(s_scr, UI_SCREEN_W, UI_SCREEN_H);
+    s_scr = ui_screen_base();
+    ui_statusbar_create(s_scr, &s_sb, false, true, "BALADE");
 
-    /* Barre d'état minimaliste : horloge + mode. */
-    lv_obj_t *bar = lv_obj_create(s_scr);
-    lv_obj_remove_style_all(bar);
-    lv_obj_set_size(bar, UI_SCREEN_W, UI_STATUS_BAR_H);
-    lv_obj_set_pos(bar, 0, 0);
-    lv_obj_set_style_bg_color(bar, UI_COLOR_LCD_PANEL, 0);
-    lv_obj_set_style_bg_opa(bar, LV_OPA_COVER, 0);
-    lv_obj_remove_flag(bar, LV_OBJ_FLAG_SCROLLABLE);
+    /* ODO discret en haut à gauche de la zone compteur. */
+    lv_obj_t *odo_l = ui_label(s_scr, UI_FONT_STATUS, UI_C_MUTED, "ODO");
+    lv_obj_set_style_text_letter_space(odo_l, 1, 0);
+    ui_place_baseline(odo_l, X_L + 5, 64, LV_TEXT_ALIGN_LEFT, 0);
+    s_lbl_odo = ui_label(s_scr, UI_FONT_STATUS, UI_C_TEXT, "0 km");
+    ui_place_baseline(s_lbl_odo, X_L + 40, 64, LV_TEXT_ALIGN_LEFT, 0);
 
-    s_lbl_time = mk(bar, UI_FONT_STATUS, UI_COLOR_LCD_TEXT, "--:--");
-    lv_obj_align(s_lbl_time, LV_ALIGN_LEFT_MID, 8, 0);
+    /* Compteur central. */
+    s_lbl_speed = ui_label(s_scr, UI_FONT_SPEEDO, UI_C_AMBER, "0");
+    lv_obj_set_style_text_letter_space(s_lbl_speed, -4, 0);
+    ui_place_baseline(s_lbl_speed, UI_SCREEN_W / 2, SPEED_BASE, LV_TEXT_ALIGN_CENTER, 440);
 
-    s_lbl_mode = mk(bar, UI_FONT_LABEL, UI_COLOR_LCD_CYAN, "BALADE");
-    lv_obj_align(s_lbl_mode, LV_ALIGN_RIGHT_MID, -8, 0);
+    lv_obj_t *unit = ui_label(s_scr, ui_font_mono(17), UI_C_MUTED, "km/h");
+    lv_obj_set_style_text_letter_space(unit, 2, 0);
+    ui_place_baseline(unit, X_R - 10, BTM_DIV - 14, LV_TEXT_ALIGN_RIGHT, 80);
 
-    /* ODO discret haut-gauche sous la barre. */
-    lv_obj_t *odo_lab = mk(s_scr, UI_FONT_LABEL_SMALL, UI_COLOR_LCD_MUTED, "ODO");
-    lv_obj_set_pos(odo_lab, 16, 36);
-    s_lbl_odo = mk(s_scr, UI_FONT_LABEL, UI_COLOR_LCD_TEXT, "0.0 km");
-    lv_obj_set_pos(s_lbl_odo, 48, 34);
-
-    /* Compteur de vitesse central énorme. */
-    s_lbl_speed = mk(s_scr, UI_FONT_DIGIT_LARGE, UI_COLOR_LCD_AMBER, "0");
-    lv_obj_align(s_lbl_speed, LV_ALIGN_CENTER, -20, -10);
-
-    lv_obj_t *unit = mk(s_scr, UI_FONT_FOOTER, UI_COLOR_LCD_MUTED, "km/h");
-    lv_obj_align_to(unit, s_lbl_speed, LV_ALIGN_OUT_RIGHT_BOTTOM, 10, -8);
-
-    /* Footer 3 cellules : CAP / TRIP / T°. */
-    int row_y = UI_SCREEN_H - UI_FOOTER_H + 10;
-    lv_obj_t *sep = lv_obj_create(s_scr);
-    lv_obj_remove_style_all(sep);
-    lv_obj_set_size(sep, UI_SCREEN_W, 1);
-    lv_obj_set_pos(sep, 0, UI_SCREEN_H - UI_FOOTER_H);
-    lv_obj_set_style_bg_color(sep, UI_COLOR_LCD_DIVIDER, 0);
-    lv_obj_set_style_bg_opa(sep, LV_OPA_COVER, 0);
-
-    lv_obj_t *cap_l = mk(s_scr, UI_FONT_LABEL_SMALL, UI_COLOR_LCD_MUTED, "CAP");
-    lv_obj_set_pos(cap_l, 24, row_y);
-    s_lbl_cap = mk(s_scr, UI_FONT_FOOTER, UI_COLOR_LCD_TEXT, "---°");
-    lv_obj_set_pos(s_lbl_cap, 60, row_y - 3);
-
-    lv_obj_t *tr_l = mk(s_scr, UI_FONT_LABEL_SMALL, UI_COLOR_LCD_MUTED, "TRIP");
-    lv_obj_set_pos(tr_l, UI_SCREEN_W / 2 - 60, row_y);
-    s_lbl_trip = mk(s_scr, UI_FONT_FOOTER, UI_COLOR_LCD_TEXT, "0.0 km");
-    lv_obj_set_pos(s_lbl_trip, UI_SCREEN_W / 2 - 20, row_y - 3);
-
-    lv_obj_t *t_l = mk(s_scr, UI_FONT_LABEL_SMALL, UI_COLOR_LCD_MUTED, "T°");
-    lv_obj_set_pos(t_l, UI_SCREEN_W - 110, row_y);
-    s_lbl_temp = mk(s_scr, UI_FONT_FOOTER, UI_COLOR_LCD_TEXT, "--°C");
-    lv_obj_set_pos(s_lbl_temp, UI_SCREEN_W - 80, row_y - 3);
+    /* Trois cellules du bas. */
+    ui_hline(s_scr, X_L, BTM_DIV, X_R - X_L);
+    s_lbl_cap  = btm_cell(0, "CAP", "---°");
+    s_lbl_trip = btm_cell(1, "TRIP", "0,0 km");
+    s_lbl_temp = btm_cell(2, "T°", "--°C");
 
     return s_scr;
 }
@@ -95,15 +79,22 @@ lv_obj_t *screen_balade_create(void)
 void screen_balade_update(const ui_trip_state_t *s)
 {
     if (s_scr == NULL || s == NULL) return;
+
+    ui_statusbar_update(&s_sb, s);
+
     float sp = s->speed_kmh;
     if (sp < 0) sp = 0;
     lv_label_set_text_fmt(s_lbl_speed, "%d", (int)(sp + 0.5f));
-    lv_label_set_text_fmt(s_lbl_odo, "%.1f km", s->odo_km);
+
+    char buf[24];
+    ui_fmt_km(buf, sizeof(buf), s->odo_km, 0);
+    lv_label_set_text_fmt(s_lbl_odo, "%s km", buf);
 
     int cap = s->heading_deg % 360;
     if (cap < 0) cap += 360;
-    lv_label_set_text_fmt(s_lbl_cap, "%03d°", cap);
-    lv_label_set_text_fmt(s_lbl_trip, "%.2f km", s->trip_a_km);
-    lv_label_set_text_fmt(s_lbl_temp, "%d°C", (int)(s->t_cabin_c + 0.5f));
-    lv_label_set_text(s_lbl_time, s->time_hhmm[0] ? s->time_hhmm : "--:--");
+    lv_label_set_text_fmt(s_lbl_cap, "%03d° %s", cap, cardinal_for_heading(cap));
+
+    ui_fmt_km(buf, sizeof(buf), s->trip_a_km, 1);
+    lv_label_set_text_fmt(s_lbl_trip, "%s km", buf);
+    lv_label_set_text_fmt(s_lbl_temp, "%d°C", (int)lroundf(s->t_cabin_c));
 }

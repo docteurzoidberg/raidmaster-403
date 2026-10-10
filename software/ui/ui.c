@@ -10,6 +10,7 @@
 
 #include "ui.h"
 #include "theme.h"
+#include "fonts.h"
 #include "screen_boot.h"
 #include "screen_raid.h"
 #include "screen_balade.h"
@@ -21,6 +22,8 @@
 static lv_obj_t      *s_screens[UI_SCREEN__COUNT] = {0};
 static ui_screen_id_t s_current = UI_SCREEN_BOOT;
 static lv_timer_t    *s_boot_timer = NULL;
+static ui_trip_state_t s_last_state;
+static bool           s_have_state = false;
 
 static lv_obj_t *ensure_screen(ui_screen_id_t id)
 {
@@ -78,6 +81,10 @@ static void ui_default_button_cb(ui_button_t btn, ui_button_event_t ev, void *us
 
 void ui_init(lv_display_t *disp)
 {
+    /* Police Share Tech Mono (FreeType) chargée AVANT la création des écrans — les macros
+     * UI_FONT_* appellent ui_font_mono(). Repli Montserrat intégré si FreeType échoue. */
+    ui_fonts_init();
+
     ui_theme_init(disp);
     ui_input_set_cb(ui_default_button_cb, NULL);
 
@@ -101,6 +108,13 @@ void ui_show_screen(ui_screen_id_t id)
     if (scr == NULL) return;
     lv_screen_load(scr);
     s_current = id;
+    /* Un écran créé à la volée reçoit tout de suite le dernier état connu. */
+    if (s_have_state) {
+        if (id == UI_SCREEN_RAID)   screen_raid_update(&s_last_state);
+        if (id == UI_SCREEN_BALADE) screen_balade_update(&s_last_state);
+        if (id == UI_SCREEN_MENU)   screen_menu_update(&s_last_state);
+        if (id == UI_SCREEN_CALIB)  screen_calib_update(&s_last_state);
+    }
 }
 
 ui_screen_id_t ui_current_screen(void)
@@ -121,11 +135,32 @@ void ui_cycle_screen(void)
     }
 }
 
+void ui_rebuild_screens(void)
+{
+    /* Changement de palette : on recrée l'écran courant, on le charge, puis on détruit les
+     * anciens (y compris l'ancien courant, une fois remplacé). Les autres écrans seront
+     * recréés à la demande. */
+    lv_obj_t *old[UI_SCREEN__COUNT];
+    for (int i = 0; i < UI_SCREEN__COUNT; i++) {
+        old[i] = s_screens[i];
+        s_screens[i] = NULL;
+    }
+    ui_show_screen(s_current);
+    for (int i = 0; i < UI_SCREEN__COUNT; i++) {
+        if (old[i] != NULL) lv_obj_delete(old[i]);
+    }
+    if (s_have_state) ui_push_trip_state(&s_last_state);
+}
+
 void ui_push_trip_state(const ui_trip_state_t *s)
 {
     if (s == NULL) return;
+    s_last_state = *s;
+    s_have_state = true;
     /* On met à jour tous les écrans "data" instanciés, pas seulement le courant : au prochain
      * switch les labels reflètent déjà l'état le plus récent. */
     if (s_screens[UI_SCREEN_RAID]   != NULL) screen_raid_update(s);
     if (s_screens[UI_SCREEN_BALADE] != NULL) screen_balade_update(s);
+    if (s_screens[UI_SCREEN_MENU]   != NULL) screen_menu_update(s);
+    if (s_screens[UI_SCREEN_CALIB]  != NULL) screen_calib_update(s);
 }

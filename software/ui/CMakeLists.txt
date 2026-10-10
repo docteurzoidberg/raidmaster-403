@@ -36,6 +36,9 @@ endif()
 add_library(raidmaster_ui STATIC
     ui.c
     theme.c
+    fonts.c
+    ui_widgets.c
+    img_cap_arrow.c
     ui_input.c
     ui_demo.c
     screen_boot.c
@@ -43,6 +46,21 @@ add_library(raidmaster_ui STATIC
     screen_balade.c
     screen_menu.c
     screen_calib.c
+    # Polices bitmap Share Tech Mono (générées par fonts/gen_fonts.sh).
+    fonts/stm_12.c
+    fonts/stm_13.c
+    fonts/stm_14.c
+    fonts/stm_15.c
+    fonts/stm_16.c
+    fonts/stm_17.c
+    fonts/stm_25.c
+    fonts/stm_29.c
+    fonts/stm_34.c
+    fonts/stm_38.c
+    fonts/stm_44.c
+    fonts/stm_72.c
+    fonts/stm_134.c
+    fonts/stm_190.c
 )
 
 target_include_directories(raidmaster_ui PUBLIC

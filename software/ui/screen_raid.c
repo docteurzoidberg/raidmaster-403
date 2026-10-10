@@ -1,49 +1,60 @@
 /*
  * Raidmaster 403 — écran mode raid.
  *
- * Layout 480×320 landscape, selon prompts/ui.md § 3.1 :
+ * Reproduit la maquette « Mode raid » (artifact Raidmaster 403 — maquettes), 480×320 :
  *
- *   ┌──────────────────────────────────────────────────────────┐  28 px status
- *   │ 14:03  3D  10Hz  ■■■□  25°C                        RAID  │
+ *   ┌──────────────────────────────────────────────────────────┐  34 px barre d'état
+ *   │ 14:23  10Hz  ● 3D  ▮▮▮▯ 68%                   22°C  RAID │
  *   ├──────────────────────────────────────────────────────────┤
- *   │                                                          │
- *   │          12.345  km       (Trip A — amber, 48 px)        │
- *   │                                                          │
- *   │             3.47  km      (Trip B — cyan, 36 px)         │
- *   │                                                          │
- *   │       V  85  km/h           CAP  127°  SE                │  row-mid
- *   │                                                          │
- *   ├──────────────────────────────────────────────────────────┤  40 px footer
- *   │  ODO  12354.1 km   MOY  42 km/h   CHRONO  2:14:08        │
+ *   │ A                                        12.34        km │  Trip A (amber, 72 px)
+ *   ├──────────────────────────────────────────────────────────┤
+ *   │ B                                         3.47        km │  Trip B (cyan, 44 px)
+ *   ├──────────────────────────────────────────────────────────┤
+ *   │ V           68  km/h  │ CAP   ➤      127°  SE            │  V / CAP (38 px) + flèche 3D
+ *   ├──────────────────────────────────────────────────────────┤
+ *   │ ODO 48 273 km          MOY 42 km/h       CHRONO 0:14:27  │
  *   └──────────────────────────────────────────────────────────┘
  *
- * Les widgets sont statiques (une seule instance d'écran) : screen_raid_update() patch les
- * labels existants.
+ * Les positions viennent de la maquette (cqw × 4,8 px). Les textes sont calés sur leur ligne
+ * de base (ui_place_baseline) pour que libellé, valeur et unité s'alignent comme en CSS.
  *
  * Licence : GPL-3.0.
  */
 
 #include "screen_raid.h"
 #include "ui_tokens.h"
+#include "ui_widgets.h"
+#include "theme.h"
+#include "img_cap_arrow.h"
 #include <stdio.h>
-#include <math.h>
 
-static lv_obj_t *s_scr      = NULL;
-static lv_obj_t *s_lbl_time;
-static lv_obj_t *s_lbl_fix;
-static lv_obj_t *s_lbl_batt;
-static lv_obj_t *s_lbl_temp;
-static lv_obj_t *s_lbl_mode;
-static lv_obj_t *s_lbl_trip_a;
-static lv_obj_t *s_lbl_trip_a_unit;
-static lv_obj_t *s_lbl_trip_b;
-static lv_obj_t *s_lbl_trip_b_unit;
-static lv_obj_t *s_lbl_speed;
-static lv_obj_t *s_lbl_speed_unit;
-static lv_obj_t *s_lbl_cap;
-static lv_obj_t *s_lbl_odo;
-static lv_obj_t *s_lbl_moy;
-static lv_obj_t *s_lbl_chrono;
+/* Géométrie (px). */
+#define X_L          UI_PAD_X                     /* bord gauche du contenu */
+#define X_R          (UI_SCREEN_W - UI_PAD_X)     /* bord droit du contenu */
+#define TRIP_VAL_R   440                          /* bord droit des valeurs trip */
+#define TRIP_VAL_W   400
+#define TRIP_A_BASE  104
+#define TRIP_A_DIV   124
+#define TRIP_B_BASE  167
+#define TRIP_B_DIV   183
+#define MID_BASE     248                          /* ligne de base V / CAP */
+#define MID_CENTER_Y 234                          /* centre visuel des chiffres V / CAP */
+#define COL2_X       247                          /* début colonne CAP */
+#define FOOT_DIV     286
+#define FOOT_Y       293
+
+static lv_obj_t      *s_scr = NULL;
+static ui_statusbar_t s_sb;
+static lv_obj_t      *s_lbl_trip_a;
+static lv_obj_t      *s_lbl_trip_b;
+static lv_obj_t      *s_lbl_speed;
+static lv_obj_t      *s_lbl_cap;
+static lv_obj_t      *s_lbl_card;
+static lv_obj_t      *s_img_cap;
+static lv_obj_t      *s_img_cap_shadow;
+static lv_obj_t      *s_lbl_odo;
+static lv_obj_t      *s_lbl_moy;
+static lv_obj_t      *s_lbl_chrono;
 
 static const char *cardinal_for_heading(int deg)
 {
@@ -52,145 +63,100 @@ static const char *cardinal_for_heading(int deg)
     return dirs[idx];
 }
 
-static lv_obj_t *make_label(lv_obj_t *parent, const lv_font_t *font, lv_color_t color,
-                            const char *init_text)
+/* Rangée trip : libellé à gauche, valeur calée à droite, unité au bord droit, filet dessous. */
+static lv_obj_t *build_trip_row(const char *name, const lv_font_t *val_font, lv_color_t val_color,
+                                int32_t baseline, int32_t divider_y)
 {
-    lv_obj_t *l = lv_label_create(parent);
-    lv_label_set_text(l, init_text);
-    lv_obj_set_style_text_font(l, font, 0);
-    lv_obj_set_style_text_color(l, color, 0);
-    return l;
+    lv_obj_t *lbl = ui_label(s_scr, UI_FONT_TIME, UI_C_MUTED, name);
+    lv_obj_set_style_text_letter_space(lbl, 2, 0);
+    ui_place_baseline(lbl, X_L, baseline, LV_TEXT_ALIGN_LEFT, 0);
+
+    lv_obj_t *val = ui_label(s_scr, val_font, val_color, "0.00");
+    ui_place_baseline(val, TRIP_VAL_R, baseline, LV_TEXT_ALIGN_RIGHT, TRIP_VAL_W);
+
+    lv_obj_t *unit = ui_label(s_scr, UI_FONT_UNIT, UI_C_MUTED, "km");
+    lv_obj_set_style_text_letter_space(unit, 1, 0);
+    ui_place_baseline(unit, X_R, baseline, LV_TEXT_ALIGN_RIGHT, 30);
+
+    ui_hline(s_scr, X_L, divider_y, X_R - X_L);
+    return val;
 }
 
-static lv_obj_t *build_status_bar(lv_obj_t *parent)
+static void build_row_mid(void)
 {
-    lv_obj_t *bar = lv_obj_create(parent);
-    lv_obj_remove_style_all(bar);
-    lv_obj_set_size(bar, UI_SCREEN_W, UI_STATUS_BAR_H);
-    lv_obj_set_pos(bar, 0, 0);
-    lv_obj_set_style_bg_color(bar, UI_COLOR_LCD_PANEL, 0);
-    lv_obj_set_style_bg_opa(bar, LV_OPA_COVER, 0);
-    lv_obj_set_scrollbar_mode(bar, LV_SCROLLBAR_MODE_OFF);
-    lv_obj_remove_flag(bar, LV_OBJ_FLAG_SCROLLABLE);
+    /* Cellule V : libellé | valeur calée à droite | unité. */
+    lv_obj_t *v = ui_label(s_scr, UI_FONT_STATUS, UI_C_MUTED, "V");
+    ui_place_baseline(v, X_L, MID_BASE, LV_TEXT_ALIGN_LEFT, 0);
+    s_lbl_speed = ui_label(s_scr, UI_FONT_CELL, UI_C_TEXT, "0");
+    ui_place_baseline(s_lbl_speed, 199, MID_BASE, LV_TEXT_ALIGN_RIGHT, 120);
+    lv_obj_t *kmh = ui_label(s_scr, UI_FONT_SMALL, UI_C_MUTED, "km/h");
+    ui_place_baseline(kmh, 207, MID_BASE, LV_TEXT_ALIGN_LEFT, 0);
 
-    s_lbl_time = make_label(bar, UI_FONT_STATUS, UI_COLOR_LCD_TEXT, "--:--");
-    lv_obj_align(s_lbl_time, LV_ALIGN_LEFT_MID, 8, 0);
+    /* Cellule CAP : libellé | flèche 3D | valeur | point cardinal. */
+    lv_obj_t *cap = ui_label(s_scr, UI_FONT_STATUS, UI_C_MUTED, "CAP");
+    ui_place_baseline(cap, COL2_X, MID_BASE, LV_TEXT_ALIGN_LEFT, 0);
+    s_lbl_cap = ui_label(s_scr, UI_FONT_CELL, UI_C_TEXT, "---°");
+    ui_place_baseline(s_lbl_cap, 445, MID_BASE, LV_TEXT_ALIGN_RIGHT, 100);
+    s_lbl_card = ui_label(s_scr, UI_FONT_SMALL, UI_C_MUTED, "N");
+    ui_place_baseline(s_lbl_card, 453, MID_BASE, LV_TEXT_ALIGN_LEFT, 0);
 
-    s_lbl_fix = make_label(bar, UI_FONT_LABEL, UI_COLOR_LCD_WARN, "no fix");
-    lv_obj_align(s_lbl_fix, LV_ALIGN_LEFT_MID, 80, 0);
+    /* Flèche de cap (style 07 isométrique) dans le blanc entre « CAP » et la valeur, centrée
+     * sur les chiffres. L'ombre est un sprite séparé, décalé et pivoté indépendamment : la
+     * lumière reste fixe quand la flèche tourne. */
+    const int32_t ax = 316 - IMG_CAP_ARROW_SIZE / 2;
+    const int32_t ay = MID_CENTER_Y - IMG_CAP_ARROW_SIZE / 2;
+    s_img_cap_shadow = lv_image_create(s_scr);
+    lv_image_set_src(s_img_cap_shadow, &img_cap_arrow_shadow);
+    lv_obj_set_pos(s_img_cap_shadow, ax + 3, ay + 3);
+    lv_image_set_pivot(s_img_cap_shadow, IMG_CAP_ARROW_SIZE / 2, IMG_CAP_ARROW_SIZE / 2);
 
-    s_lbl_batt = make_label(bar, UI_FONT_LABEL, UI_COLOR_LCD_OK, "---%");
-    lv_obj_align(s_lbl_batt, LV_ALIGN_RIGHT_MID, -120, 0);
-
-    s_lbl_temp = make_label(bar, UI_FONT_LABEL, UI_COLOR_LCD_MUTED, "--°C");
-    lv_obj_align(s_lbl_temp, LV_ALIGN_RIGHT_MID, -70, 0);
-
-    s_lbl_mode = make_label(bar, UI_FONT_LABEL, UI_COLOR_LCD_AMBER, "RAID");
-    lv_obj_align(s_lbl_mode, LV_ALIGN_RIGHT_MID, -8, 0);
-
-    /* Ligne séparatrice fine en bas de la barre. */
-    lv_obj_t *sep = lv_obj_create(parent);
-    lv_obj_remove_style_all(sep);
-    lv_obj_set_size(sep, UI_SCREEN_W, 1);
-    lv_obj_set_pos(sep, 0, UI_STATUS_BAR_H);
-    lv_obj_set_style_bg_color(sep, UI_COLOR_LCD_DIVIDER, 0);
-    lv_obj_set_style_bg_opa(sep, LV_OPA_COVER, 0);
-
-    return bar;
+    s_img_cap = lv_image_create(s_scr);
+    lv_image_set_src(s_img_cap, &img_cap_arrow);
+    lv_obj_set_pos(s_img_cap, ax, ay);
+    lv_image_set_pivot(s_img_cap, IMG_CAP_ARROW_SIZE / 2, IMG_CAP_ARROW_SIZE / 2);
+    if (ui_theme_is_night()) {
+        /* Nuit : flèche teintée orange profond, on garde un peu du modelé de la facette. */
+        lv_obj_set_style_image_recolor(s_img_cap, UI_C_AMBER, 0);
+        lv_obj_set_style_image_recolor_opa(s_img_cap, LV_OPA_80, 0);
+    }
 }
 
-static void build_trip_block(lv_obj_t *parent)
+/* Élément du bas d'écran : « LIBELLÉ valeur ». */
+static lv_obj_t *footer_item(lv_obj_t *row, const char *name, const char *init)
 {
-    /* Trip A : "12.345 km" aligné à droite, label "A" en préfixe. */
-    lv_obj_t *label_a = make_label(parent, UI_FONT_LABEL, UI_COLOR_LCD_MUTED, "A");
-    lv_obj_set_pos(label_a, 16, 42);
-
-    s_lbl_trip_a = make_label(parent, UI_FONT_DIGIT_LARGE, UI_COLOR_LCD_AMBER, "0.000");
-    lv_obj_align(s_lbl_trip_a, LV_ALIGN_TOP_RIGHT, -70, 36);
-
-    s_lbl_trip_a_unit = make_label(parent, UI_FONT_FOOTER, UI_COLOR_LCD_AMBER, "km");
-    lv_obj_align(s_lbl_trip_a_unit, LV_ALIGN_TOP_RIGHT, -20, 54);
-
-    /* Trip B : "3.47 km". */
-    lv_obj_t *label_b = make_label(parent, UI_FONT_LABEL, UI_COLOR_LCD_MUTED, "B");
-    lv_obj_set_pos(label_b, 16, 112);
-
-    s_lbl_trip_b = make_label(parent, UI_FONT_DIGIT_MED, UI_COLOR_LCD_CYAN, "0.00");
-    lv_obj_align(s_lbl_trip_b, LV_ALIGN_TOP_RIGHT, -70, 108);
-
-    s_lbl_trip_b_unit = make_label(parent, UI_FONT_LABEL, UI_COLOR_LCD_CYAN, "km");
-    lv_obj_align(s_lbl_trip_b_unit, LV_ALIGN_TOP_RIGHT, -24, 118);
+    lv_obj_t *g = ui_box(row);
+    lv_obj_set_size(g, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_flex_flow(g, LV_FLEX_FLOW_ROW);
+    lv_obj_set_style_pad_column(g, 4, 0);
+    ui_label(g, UI_FONT_SMALL, UI_C_MUTED, name);
+    return ui_label(g, UI_FONT_SMALL, UI_C_TEXT, init);
 }
 
-static void build_row_mid(lv_obj_t *parent)
+static void build_footer(void)
 {
-    /* V (vitesse) à gauche, CAP à droite. Séparateur vertical. */
-    lv_obj_t *v_label = make_label(parent, UI_FONT_LABEL, UI_COLOR_LCD_MUTED, "V");
-    lv_obj_set_pos(v_label, 24, 170);
+    ui_hline(s_scr, X_L, FOOT_DIV, X_R - X_L);
 
-    s_lbl_speed = make_label(parent, UI_FONT_DIGIT_SMALL, UI_COLOR_LCD_TEXT, "0");
-    lv_obj_set_pos(s_lbl_speed, 52, 162);
+    lv_obj_t *row = ui_box(s_scr);
+    lv_obj_set_size(row, X_R - X_L, LV_SIZE_CONTENT);
+    lv_obj_set_pos(row, X_L, FOOT_Y);
+    lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(row, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER,
+                          LV_FLEX_ALIGN_CENTER);
 
-    s_lbl_speed_unit = make_label(parent, UI_FONT_LABEL_SMALL, UI_COLOR_LCD_MUTED, "km/h");
-    lv_obj_set_pos(s_lbl_speed_unit, 150, 192);
-
-    /* Séparateur vertical. */
-    lv_obj_t *vdiv = lv_obj_create(parent);
-    lv_obj_remove_style_all(vdiv);
-    lv_obj_set_size(vdiv, 1, 56);
-    lv_obj_set_pos(vdiv, UI_SCREEN_W / 2, 162);
-    lv_obj_set_style_bg_color(vdiv, UI_COLOR_LCD_DIVIDER, 0);
-    lv_obj_set_style_bg_opa(vdiv, LV_OPA_COVER, 0);
-
-    lv_obj_t *cap_label = make_label(parent, UI_FONT_LABEL, UI_COLOR_LCD_MUTED, "CAP");
-    lv_obj_set_pos(cap_label, UI_SCREEN_W / 2 + 20, 170);
-
-    s_lbl_cap = make_label(parent, UI_FONT_DIGIT_SMALL, UI_COLOR_LCD_TEXT, "---°  N");
-    lv_obj_set_pos(s_lbl_cap, UI_SCREEN_W / 2 + 70, 162);
-}
-
-static void build_footer(lv_obj_t *parent)
-{
-    /* Ligne séparatrice. */
-    lv_obj_t *sep = lv_obj_create(parent);
-    lv_obj_remove_style_all(sep);
-    lv_obj_set_size(sep, UI_SCREEN_W, 1);
-    lv_obj_set_pos(sep, 0, UI_SCREEN_H - UI_FOOTER_H);
-    lv_obj_set_style_bg_color(sep, UI_COLOR_LCD_DIVIDER, 0);
-    lv_obj_set_style_bg_opa(sep, LV_OPA_COVER, 0);
-
-    int row_y = UI_SCREEN_H - UI_FOOTER_H + 10;
-
-    lv_obj_t *odo_l = make_label(parent, UI_FONT_LABEL_SMALL, UI_COLOR_LCD_MUTED, "ODO");
-    lv_obj_set_pos(odo_l, 16, row_y);
-    s_lbl_odo = make_label(parent, UI_FONT_FOOTER, UI_COLOR_LCD_TEXT, "0.0 km");
-    lv_obj_set_pos(s_lbl_odo, 56, row_y - 3);
-
-    lv_obj_t *moy_l = make_label(parent, UI_FONT_LABEL_SMALL, UI_COLOR_LCD_MUTED, "MOY");
-    lv_obj_set_pos(moy_l, UI_SCREEN_W / 2 - 60, row_y);
-    s_lbl_moy = make_label(parent, UI_FONT_FOOTER, UI_COLOR_LCD_TEXT, "0 km/h");
-    lv_obj_set_pos(s_lbl_moy, UI_SCREEN_W / 2 - 20, row_y - 3);
-
-    lv_obj_t *ch_l = make_label(parent, UI_FONT_LABEL_SMALL, UI_COLOR_LCD_MUTED, "CHRONO");
-    lv_obj_set_pos(ch_l, UI_SCREEN_W - 160, row_y);
-    s_lbl_chrono = make_label(parent, UI_FONT_FOOTER, UI_COLOR_LCD_TEXT, "0:00:00");
-    lv_obj_set_pos(s_lbl_chrono, UI_SCREEN_W - 90, row_y - 3);
+    s_lbl_odo    = footer_item(row, "ODO", "0 km");
+    s_lbl_moy    = footer_item(row, "MOY", "0 km/h");
+    s_lbl_chrono = footer_item(row, "CHRONO", "0:00:00");
 }
 
 lv_obj_t *screen_raid_create(void)
 {
-    s_scr = lv_obj_create(NULL);
-    lv_obj_remove_style_all(s_scr);
-    lv_obj_set_style_bg_color(s_scr, UI_COLOR_LCD_BG, 0);
-    lv_obj_set_style_bg_opa(s_scr, LV_OPA_COVER, 0);
-    lv_obj_set_scrollbar_mode(s_scr, LV_SCROLLBAR_MODE_OFF);
-    lv_obj_remove_flag(s_scr, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_size(s_scr, UI_SCREEN_W, UI_SCREEN_H);
+    s_scr = ui_screen_base();
+    ui_statusbar_create(s_scr, &s_sb, true, true, ui_theme_is_night() ? "NUIT" : "RAID");
 
-    build_status_bar(s_scr);
-    build_trip_block(s_scr);
-    build_row_mid(s_scr);
-    build_footer(s_scr);
+    s_lbl_trip_a = build_trip_row("A", UI_FONT_TRIP_A, UI_C_AMBER, TRIP_A_BASE, TRIP_A_DIV);
+    s_lbl_trip_b = build_trip_row("B", UI_FONT_TRIP_B, UI_C_CYAN, TRIP_B_BASE, TRIP_B_DIV);
+    build_row_mid();
+    build_footer();
 
     return s_scr;
 }
@@ -201,42 +167,25 @@ void screen_raid_update(const ui_trip_state_t *s)
         return;
     }
 
-    /* Barre d'état. */
-    lv_label_set_text_fmt(s_lbl_time, "%s", s->time_hhmm[0] ? s->time_hhmm : "--:--");
+    ui_statusbar_update(&s_sb, s);
 
-    const char *fix_txt = "no fix";
-    lv_color_t fix_col = UI_COLOR_LCD_CRIT;
-    if (s->fix_type == 1) { fix_txt = "2D"; fix_col = UI_COLOR_LCD_WARN; }
-    else if (s->fix_type == 2) { fix_txt = "3D"; fix_col = UI_COLOR_LCD_OK; }
-    lv_label_set_text(s_lbl_fix, fix_txt);
-    lv_obj_set_style_text_color(s_lbl_fix, fix_col, 0);
+    lv_label_set_text_fmt(s_lbl_trip_a, "%.2f", s->trip_a_km);
+    lv_label_set_text_fmt(s_lbl_trip_b, "%.2f", s->trip_b_km);
 
-    lv_label_set_text_fmt(s_lbl_batt, "%d%%", (int)s->battery_pct);
-    if (s->battery_pct > 30) {
-        lv_obj_set_style_text_color(s_lbl_batt, UI_COLOR_LCD_OK, 0);
-    } else if (s->battery_pct > 10) {
-        lv_obj_set_style_text_color(s_lbl_batt, UI_COLOR_LCD_WARN, 0);
-    } else {
-        lv_obj_set_style_text_color(s_lbl_batt, UI_COLOR_LCD_CRIT, 0);
-    }
-
-    lv_label_set_text_fmt(s_lbl_temp, "%d°C", (int)(s->t_cabin_c + 0.5f));
-
-    /* Trip A / B. */
-    lv_label_set_text_fmt(s_lbl_trip_a, "%6.3f", s->trip_a_km);
-    lv_label_set_text_fmt(s_lbl_trip_b, "%5.2f", s->trip_b_km);
-
-    /* Vitesse / cap. */
     float sp = s->speed_kmh;
     if (sp < 0) sp = 0;
-    lv_label_set_text_fmt(s_lbl_speed, "%3d", (int)(sp + 0.5f));
+    lv_label_set_text_fmt(s_lbl_speed, "%d", (int)(sp + 0.5f));
 
     int cap = s->heading_deg % 360;
     if (cap < 0) cap += 360;
-    lv_label_set_text_fmt(s_lbl_cap, "%03d°  %s", cap, cardinal_for_heading(cap));
+    lv_label_set_text_fmt(s_lbl_cap, "%03d°", cap);
+    lv_label_set_text(s_lbl_card, cardinal_for_heading(cap));
+    lv_image_set_rotation(s_img_cap, cap * 10);
+    lv_image_set_rotation(s_img_cap_shadow, cap * 10);
 
-    /* Footer. */
-    lv_label_set_text_fmt(s_lbl_odo, "%.1f km", s->odo_km);
+    char odo[24];
+    ui_fmt_km(odo, sizeof(odo), s->odo_km, 0);
+    lv_label_set_text_fmt(s_lbl_odo, "%s km", odo);
     lv_label_set_text_fmt(s_lbl_moy, "%d km/h", (int)(s->avg_kmh + 0.5f));
     lv_label_set_text_fmt(s_lbl_chrono, "%u:%02u:%02u",
                           (unsigned)(s->chrono_s / 3600U),

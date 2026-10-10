@@ -52,6 +52,9 @@ void ui_cycle_screen(void);
 /* Pousse un état trip au bon écran (raid ou balade selon celui qui est affiché). */
 void ui_push_trip_state(const ui_trip_state_t *s);
 
+/* Recrée les écrans avec la palette active (appelé au basculement jour / nuit). */
+void ui_rebuild_screens(void);
+
 #ifdef __cplusplus
 }
 #endif

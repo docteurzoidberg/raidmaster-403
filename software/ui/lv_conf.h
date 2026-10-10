@@ -474,8 +474,11 @@
 /*Prefix all global extern data with this*/
 #define LV_ATTRIBUTE_EXTERN_DATA
 
-/* Use `float` as `lv_value_precise_t` */
-#define LV_USE_FLOAT            0
+/* Use `float` as `lv_value_precise_t`
+ * RAIDMASTER : activé pour que lv_label_set_text_fmt supporte %f (sinon
+ * trip/odo/moy restent sur le format brut "%.1f km" → affiche "f km").
+ * Cross-agent fix 2026-10-09 — bug visible repéré par l'utilisateur. */
+#define LV_USE_FLOAT            1
 
 /*Enable matrix support
  *Requires `LV_USE_FLOAT = 1`*/
@@ -495,25 +498,25 @@
  * Share Tech Mono générés par lv_font_conv en phase 2 (TODO documenté dans prompts/ui.md). */
 #define LV_FONT_MONTSERRAT_8  0
 #define LV_FONT_MONTSERRAT_10 0
-#define LV_FONT_MONTSERRAT_12 1
+#define LV_FONT_MONTSERRAT_12 0
 #define LV_FONT_MONTSERRAT_14 1
-#define LV_FONT_MONTSERRAT_16 1
-#define LV_FONT_MONTSERRAT_18 1
+#define LV_FONT_MONTSERRAT_16 0
+#define LV_FONT_MONTSERRAT_18 0
 #define LV_FONT_MONTSERRAT_20 0
 #define LV_FONT_MONTSERRAT_22 0
-#define LV_FONT_MONTSERRAT_24 1
+#define LV_FONT_MONTSERRAT_24 0
 #define LV_FONT_MONTSERRAT_26 0
-#define LV_FONT_MONTSERRAT_28 1
+#define LV_FONT_MONTSERRAT_28 0
 #define LV_FONT_MONTSERRAT_30 0
-#define LV_FONT_MONTSERRAT_32 1
+#define LV_FONT_MONTSERRAT_32 0
 #define LV_FONT_MONTSERRAT_34 0
-#define LV_FONT_MONTSERRAT_36 1
+#define LV_FONT_MONTSERRAT_36 0
 #define LV_FONT_MONTSERRAT_38 0
 #define LV_FONT_MONTSERRAT_40 0
-#define LV_FONT_MONTSERRAT_42 1
+#define LV_FONT_MONTSERRAT_42 0
 #define LV_FONT_MONTSERRAT_44 0
 #define LV_FONT_MONTSERRAT_46 0
-#define LV_FONT_MONTSERRAT_48 1
+#define LV_FONT_MONTSERRAT_48 0
 
 /*Demonstrate special features*/
 #define LV_FONT_MONTSERRAT_28_COMPRESSED 0  /*bpp = 3*/
@@ -819,8 +822,11 @@
 /*Barcode code library*/
 #define LV_USE_BARCODE 0
 
-/*FreeType library*/
-#define LV_USE_FREETYPE 0
+/*FreeType library
+ * RAIDMASTER : activé pour charger Share Tech Mono + Inter à l'exécution,
+ * en remplacement des Montserrat intégrées par défaut.
+ * Cross-agent fix 2026-10-09. */
+#define LV_USE_FREETYPE 0   /* polices bitmap compilées (ui/fonts/), pas de chargement TTF */
 #if LV_USE_FREETYPE
     /*Let FreeType to use LVGL memory and file porting*/
     #define LV_FREETYPE_USE_LVGL_PORT 0

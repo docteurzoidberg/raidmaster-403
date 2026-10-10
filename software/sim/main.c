@@ -16,6 +16,10 @@
  *   d                             → bascule démo auto
  *   Échap                         → quitter
  *
+ * Mode captures (vérification visuelle sans interaction) : RAIDMASTER_SHOTS=<dossier>
+ * enchaîne chaque écran avec un état fixe repris de la maquette, écrit <dossier>/<écran>.ppm
+ * puis quitte. Ex. : SDL_VIDEODRIVER=dummy RAIDMASTER_SHOTS=/tmp/shots ./raidmaster-sim
+ *
  * UI-agent exception: integration LVGL (voir prompts/ui.md).
  *
  * Licence : GPL-3.0.
@@ -24,6 +28,7 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "lvgl.h"
@@ -31,6 +36,7 @@
 #include "theme.h"
 #include "ui_demo.h"
 #include "ui_input.h"
+#include "screen_menu.h"
 
 enum {
     TRIPMASTER_SCREEN_W = 480,
@@ -46,6 +52,9 @@ static SDL_Window   *s_window   = NULL;
 static SDL_Renderer *s_renderer = NULL;
 static SDL_Texture  *s_texture  = NULL;
 
+/* Copie complète de l'écran (RGB565), tenue à jour au flush, pour le mode captures. */
+static uint16_t s_fb[TRIPMASTER_SCREEN_W * TRIPMASTER_SCREEN_H];
+
 /* ------------------------------------------------------------------------- */
 /* LVGL display flush : LVGL nous donne un rectangle à copier dans la texture SDL,
  * puis on présente. On fait un UpdateTexture ciblé par rectangle. */
@@ -59,6 +68,11 @@ static void sim_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *p
 
     /* px_map est au format RGB565, stride = r.w * 2. */
     SDL_UpdateTexture(s_texture, &r, px_map, r.w * (int)sizeof(uint16_t));
+    const uint16_t *src = (const uint16_t *)px_map;
+    for (int y = 0; y < r.h; y++) {
+        memcpy(&s_fb[(r.y + y) * TRIPMASTER_SCREEN_W + r.x], &src[y * r.w],
+               (size_t)r.w * sizeof(uint16_t));
+    }
 
     /* On ne fait un RenderPresent qu'au dernier chunk pour éviter le tearing. */
     if (lv_display_flush_is_last(disp)) {
@@ -68,6 +82,75 @@ static void sim_disp_flush(lv_display_t *disp, const lv_area_t *area, uint8_t *p
     }
 
     lv_display_flush_ready(disp);
+}
+
+/* ------------------------------------------------------------------------- */
+/* Mode captures. */
+static void save_ppm(const char *dir, const char *name)
+{
+    char path[512];
+    snprintf(path, sizeof(path), "%s/%s.ppm", dir, name);
+    FILE *f = fopen(path, "wb");
+    if (f == NULL) {
+        fprintf(stderr, "capture : impossible d'écrire %s\n", path);
+        return;
+    }
+    fprintf(f, "P6\n%d %d\n255\n", TRIPMASTER_SCREEN_W, TRIPMASTER_SCREEN_H);
+    for (int i = 0; i < TRIPMASTER_SCREEN_W * TRIPMASTER_SCREEN_H; i++) {
+        uint16_t p = s_fb[i];
+        uint8_t rgb[3] = {
+            (uint8_t)(((p >> 11) & 0x1F) * 255 / 31),
+            (uint8_t)(((p >> 5) & 0x3F) * 255 / 63),
+            (uint8_t)((p & 0x1F) * 255 / 31),
+        };
+        fwrite(rgb, 1, 3, f);
+    }
+    fclose(f);
+    printf("capture : %s\n", path);
+}
+
+/* État fixe = valeurs de la maquette mode raid jour. */
+static void push_mockup_state(void)
+{
+    ui_trip_state_t st;
+    memset(&st, 0, sizeof(st));
+    st.trip_a_km   = 12.345;
+    st.trip_b_km   = 3.47;
+    st.odo_km      = 48273.2;
+    st.speed_kmh   = 68.0f;
+    st.avg_kmh     = 42.0f;
+    st.heading_deg = 127;
+    st.chrono_s    = 14U * 60U + 27U;
+    st.fix_type    = UI_FIX_3D;
+    st.battery_pct = 68;
+    st.t_cabin_c   = 22.0f;
+    snprintf(st.time_hhmm, sizeof(st.time_hhmm), "14:23");
+    ui_push_trip_state(&st);
+}
+
+/* Avance le scénario de captures ; renvoie 0 quand c'est fini. */
+static int shots_step(const char *dir, uint32_t t_ms)
+{
+    static int step = 0;
+    static uint32_t next = 700;
+    if (t_ms < next) return 1;
+    switch (step++) {
+        case 0:  save_ppm(dir, "1-boot"); break;
+        case 1:  ui_demo_stop(); ui_show_screen(UI_SCREEN_RAID); push_mockup_state(); break;
+        case 2:  save_ppm(dir, "2-raid"); ui_show_screen(UI_SCREEN_BALADE); break;
+        case 3:  save_ppm(dir, "3-balade"); ui_show_screen(UI_SCREEN_MENU);
+                 screen_menu_move(+1); break;
+        case 4:  save_ppm(dir, "4-menu"); ui_show_screen(UI_SCREEN_CALIB); break;
+        case 5:  save_ppm(dir, "5-calib"); ui_show_screen(UI_SCREEN_RAID);
+                 ui_theme_toggle_night(); break;
+        case 6:  save_ppm(dir, "6-raid-nuit"); ui_show_screen(UI_SCREEN_BALADE); break;
+        case 7:  save_ppm(dir, "7-balade-nuit"); return 0;
+        default: return 0;
+    }
+    /* Après le boot, on attend la fin du timer boot→raid (1200 ms, qui lance la démo) avant
+     * de figer l'état. */
+    next = t_ms + (step == 1 ? 900 : step == 2 ? 600 : 300);
+    return 1;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -179,8 +262,10 @@ int main(int argc, char *argv[])
     ui_init(disp);
 
     /* ------- Boucle principale ------- */
+    const char *shots_dir = getenv("RAIDMASTER_SHOTS");
     int running = 1;
-    uint32_t last_ms = SDL_GetTicks();
+    uint32_t start_ms = SDL_GetTicks();
+    uint32_t last_ms = start_ms;
     while (running) {
         SDL_Event ev;
         while (SDL_PollEvent(&ev)) {
@@ -196,6 +281,10 @@ int main(int argc, char *argv[])
         last_ms      = now;
         if (dt > 0) {
             ui_tick(dt);
+        }
+
+        if (shots_dir != NULL && !shots_step(shots_dir, now - start_ms)) {
+            running = 0;
         }
 
         uint32_t next = lv_timer_handler();
