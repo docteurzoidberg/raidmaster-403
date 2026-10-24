@@ -50,14 +50,25 @@ enclosure/cad/
 .DS_Store
 Thumbs.db
 
-# Python (venv local optionnel pour Pillow)
+# Python (venv local optionnel pour Pillow, caches)
 .venv/
+__pycache__/
+*.pyc
 
 # Blender (sauvegardes automatiques)
 *.blend1
 
-# Skills Claude Code locaux (non partagés) ; sim-check et ship sont versionnés
+# Skills Claude Code locaux (non partagés) ; sim-check, ship et pcb-carte-fille sont versionnés
 .claude/skills/ui-shots/
 .claude/skills/boot-anim/
 .claude/skills/ui-font/
 .claude/settings.local.json
+
+# KiCad (sauvegardes, verrous, caches ; STEP exportés par le skill pcb-carte-fille, régénérables)
+*-backups/
+*.lck
+~*.lck
+fp-info-cache
+*.kicad_prl
+_autosave-*
+hardware/kicad/*/export/

@@ -204,7 +204,7 @@ software/        tout le code ; CMakeLists.txt et CMakePresets.json, build dans 
   tools/         scripts : check.sh (vérification complète), demo_gif.sh
   references/    non versionné : Open Rally Computer (inspiration), traces NMEA de test
 hardware/        électronique : datasheets des composants (hors git, fetch_datasheets.sh), index dans
-                 README ; plus tard BOM détaillée, schéma KiCad
+                 README ; kicad/carte-fille/ : projet KiCad de la carte fille (en cours)
 enclosure/       boîtier : modèle 3D et plan coté de la carte (cad/, hors git) ; plus tard exports
                  Fusion, 3MF
 docs/            documentation
@@ -213,7 +213,7 @@ docs/            documentation
   mockups/       copies locales des maquettes (écrans, flèche de cap, animation de démarrage)
   roadbooks/     roadbooks de rallye-raid d'exemple (fichiers hors git, sources dans le README)
 prompts/         cahier des charges découpé par rôle (features, hardware, boîtier, firmware, ui, simulation)
-.claude/         skills Claude Code du projet (sim-check, ship)
+.claude/         skills Claude Code du projet (sim-check, ship, pcb-carte-fille)
 ```
 
 Dans les briefs et le journal, les chemins de code (`core/…`, `ui/…`, `sim/…`, `tests/…`) sont
