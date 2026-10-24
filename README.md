@@ -32,7 +32,7 @@ Distance **GPS uniquement**, sans capteur de roue ni intervention sur le câblag
 | 2 | Core portable + tests : `gps_parser` (NMEA, sur minmea), `trip_engine` (distance, moyenne, chrono, calibration), `app` (boutons, menu, sauvegarde) | fait |
 | 3 | Interface LVGL câblée sur le core : raid, balade, menu réglages actif, calibration auto, démarrage animé, mode nuit | fait |
 | 4 | Simulateur : rejeu de traces NMEA, trajet simulé, scénarios de bout en bout | 21 scénarios GPS en place ; boussole et matériel à venir |
-| 5-6 | HAL ESP32 et firmware sur la carte | en cours : firmware de démo validé sur la carte (écran, tactile, core et UI du sim, trajet GPS simulé, NVS, heure de la RTC, état USB / batterie) ; GPS, boutons, charge de la batterie à venir |
+| 5-6 | HAL ESP32 et firmware sur la carte | en cours : firmware de démo validé sur la carte (écran, tactile, core et UI du sim, trajet GPS simulé, NVS, heure de la RTC, état USB / batterie), jingle de démarrage par le codec ES8311 (à écouter sur la carte) ; GPS, boutons, charge de la batterie à venir |
 | 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B reçue, datasheets et modèle 3D rassemblés |
 
 Pas encore là : boussole (le cap affiché est la route GPS), réglages de charge de la batterie (l'état
@@ -54,7 +54,8 @@ cmake --build build-sim
 ```
 
 Le core tourne comme sur la carte : GPS fourni par le simulateur (trajet simulé ou fichier rejoué),
-réglages et distances sauvegardés dans `sim-storage.json`.
+réglages et distances sauvegardés dans `sim-storage.json`. Au lancement, le jingle de démarrage se joue
+avec l'animation par la sortie audio SDL (WSLg sous WSL) ; `SDL_AUDIODRIVER=dummy` le coupe.
 
 | Option | Effet |
 |---|---|
@@ -86,7 +87,7 @@ tools/check.sh        # build + avertissements + tests + GIF + build firmware, r
 ```
 
 - Tests unitaires du core avec [Unity](https://github.com/ThrowTheSwitch/Unity) : parseur NMEA, moteur
-  de distance, application (boutons, menu, sauvegarde).
+  de distance, application (boutons, menu, sauvegarde), synthétiseur et jingle de démarrage.
 - Scénarios de bout en bout (`software/tests/fixtures/scenarios/`, 21 au catalogue) : le simulateur sans fenêtre
   rejoue une trace, appuie sur les boutons et vérifie l'état, en temps virtuel (une étape de 12 h se
   joue en moins d'une seconde, la suite entière en ~1,5 s). Les traces sont générées au build depuis
@@ -113,6 +114,14 @@ par `ui/assets/boot_anim/build_boot_anim.py`. Deux formats, mêmes pixels, à tr
 par l'option CMake `RAIDMASTER_BOOT_ANIM_FORMAT`. Cette conversion demande Python avec Pillow et numpy,
 désigné par la variable CMake `RAIDMASTER_PYTHON`. Sans eux, l'écran de démarrage affiche une silhouette
 fixe.
+
+### Son
+
+Le jingle de démarrage « Grille néon » (arpèges la m · fa · sol puis accord de La majeur, ~2,9 s) est
+synthétisé à la volée par `core/synth.c` à partir d'une table de notes (`core/jingles.c`), en PCM 16 bits
+mono à 22 050 Hz, sans fichier audio. Sortie SDL sur le sim, codec ES8311 et ampli NS4150B sur la carte
+(volume dans `tools/fw.sh menuconfig`). Les propositions écartées s'écoutent sur la page
+[`docs/mockups/jingles-boot.html`](docs/mockups/jingles-boot.html).
 
 ### Version
 
@@ -201,15 +210,15 @@ Testé sous Ubuntu 24.04 (natif ou WSL2). Le dépôt est privé : demander un ac
 Projet ESP-IDF dans `software/firmware/`, construit avec **ESP-IDF v5.5.6** et les **mêmes** `core/` et
 `ui/` que le simulateur (leurs `CMakeLists.txt` servent aux deux builds) ; les pilotes de la carte sont
 dans `software/hal_esp32/`. Version actuelle : **démo** sans périphérique externe (trajet GPS simulé,
-tactile en guise de boutons, sauvegarde en NVS, animation de démarrage en flash, heure de la RTC, état
-USB / batterie lu sur le PMIC).
+tactile en guise de boutons, sauvegarde en NVS, animation de démarrage en flash, jingle de démarrage par
+le codec ES8311, heure de la RTC, état USB / batterie lu sur le PMIC).
 
 ```bash
 cd software
 tools/fw.sh build        # compile (ESP-IDF chargé par le script)
 tools/fw.sh flash        # programme + animation de démarrage, puis 10 s de journal de la carte
 tools/fw.sh log 20       # redémarre la carte et affiche 20 s de journal
-tools/fw.sh menuconfig   # menu « Raidmaster 403 » : sens de l'écran, rétroéclairage, tactile-boutons
+tools/fw.sh menuconfig   # menu « Raidmaster 403 » : sens de l'écran, rétroéclairage, volume, tactile-boutons
 ```
 
 Installation d'ESP-IDF, liaison de la carte à WSL (usbipd), réglages et dépannage :
@@ -221,11 +230,13 @@ Installation d'ESP-IDF, liaison de la carte à WSL (usbipd), réglages et dépan
 software/        tout le code ; CMakeLists.txt et CMakePresets.json, build dans software/build-sim/ ;
                  VERSION : numéro de version
   core/          logique métier en C11 portable (aucun accès matériel) : gps_parser, trip_engine, app,
-                 gps_synth (trajet simulé) ; core/include/hal/ : interfaces matériel ; core/third_party/minmea
+                 gps_synth (trajet simulé), synth et jingles (son) ; core/include/hal/ : interfaces matériel ;
+                 core/third_party/minmea
   ui/            interface LVGL v9 : écrans, thème jour / nuit, polices, images, animation de démarrage
   sim/           simulateur PC SDL2 : fenêtre, clavier, options, mode script, captures, GIF
-  hal_sim/       HAL du simulateur : GPS (rejeu, trajet simulé), stockage JSON, horloge, assets
-  hal_esp32/     HAL et pilotes de la carte (écran QSPI, tactile, RTC, PMIC, NVS, GPS de démo…), composant ESP-IDF
+  hal_sim/       HAL du simulateur : GPS (rejeu, trajet simulé), stockage JSON, horloge, assets, son SDL
+  hal_esp32/     HAL et pilotes de la carte (écran QSPI, tactile, RTC, PMIC, son ES8311, NVS, GPS de démo…),
+                 composant ESP-IDF
   firmware/      projet ESP-IDF (main/, sdkconfig.defaults, partitions.csv), build dans software/build-firmware/
   cmake/         modules CMake communs au sim et au firmware (animation de démarrage, version)
   tests/         tests unitaires Unity, scénarios (fixtures/scenarios/), tools/ : outils Python NMEA
@@ -238,7 +249,7 @@ enclosure/       boîtier : modèle 3D et plan coté de la carte (cad/, hors git
 docs/            documentation
   user/          notice d'utilisation (à venir)
   demo/          GIF de démo
-  mockups/       copies locales des maquettes (écrans, flèche de cap, animation de démarrage)
+  mockups/       copies locales des maquettes (écrans, flèche de cap, animation et jingle de démarrage)
   roadbooks/     roadbooks de rallye-raid d'exemple (fichiers hors git, sources dans le README)
 prompts/         cahier des charges découpé par rôle (features, hardware, boîtier, firmware, ui, simulation)
 .claude/         skills Claude Code du projet (sim-check, firmware, ship, pcb-carte-fille)
@@ -253,7 +264,7 @@ relatifs à `software/`.
 - [`prompts/`](prompts/) : un brief par rôle.
 - [`AGENTS.md`](AGENTS.md) et [`CLAUDE.md`](CLAUDE.md) : organisation du travail entre agents.
 - [`docs/mockups/`](docs/mockups/) : maquettes des écrans, styles de flèche de cap, propositions
-  d'animation de démarrage.
+  d'animation et de jingle de démarrage.
 
 ## Licence
 
@@ -266,6 +277,7 @@ Composants tiers :
 | [LVGL](https://lvgl.io) v9.2.2 | MIT | interface, téléchargé au build (FetchContent pour le sim, registre ESP-IDF pour le firmware) |
 | [ESP-IDF](https://github.com/espressif/esp-idf) v5.5.6 | Apache-2.0 | framework du firmware, installé à part |
 | [esp_lcd_axs15231b](https://components.espressif.com/components/espressif/esp_lcd_axs15231b) 1.0.1, [esp_io_expander_tca9554](https://components.espressif.com/components/espressif/esp_io_expander_tca9554) 2.0.3 | Apache-2.0 | pilotes d'écran et d'expandeur, téléchargés au build |
+| [esp_codec_dev](https://components.espressif.com/components/espressif/esp_codec_dev) 1.3.4 | Apache-2.0 | pilote du codec audio ES8311, téléchargé au build |
 | Séquence d'init du panneau ([exemples Waveshare](https://github.com/waveshareteam/ESP32-S3-Touch-LCD-3.5B)) | Apache-2.0 | dans `hal_esp32/board_display.c` |
 | [minmea](https://github.com/kosma/minmea) | MIT (au choix WTFPL / MIT / LGPL-3) | décodage NMEA, dans `core/third_party/minmea/` |
 | [Unity](https://github.com/ThrowTheSwitch/Unity) v2.6.1 | MIT | tests, téléchargé au build |

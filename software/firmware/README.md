@@ -10,7 +10,9 @@ NMEA, l'UI affiche son état.
 sauvegardés en NVS. L'animation de démarrage est lue dans sa partition flash. L'heure affichée est
 celle de la RTC (PCF85063), réglée au premier fix d'un vrai GPS : sans pile de sauvegarde ni GPS, elle
 reste inconnue (`--:--`), le GPS de démonstration ne la règle pas. La barre d'état montre l'alimentation
-lue sur le PMIC (éclair sur USB, « USB » sans batterie, animation en charge).
+lue sur le PMIC (éclair sur USB, « USB » sans batterie, animation en charge). Le jingle de démarrage
+(`core/jingles`) sort par le codec ES8311 et l'ampli NS4150B, sur le haut-parleur branché au connecteur
+MX1.25 de la carte.
 
 ## Prérequis
 
@@ -22,7 +24,7 @@ lue sur le PMIC (éclair sur USB, « USB » sans batterie, animation en charge).
   ```
 
   `tools/fw.sh` charge lui-même l'environnement (`export.sh`) : rien à sourcer à la main. Les
-  composants (LVGL, pilote d'écran, expandeur) sont téléchargés au premier build, aux versions de
+  composants (LVGL, pilote d'écran, expandeur, codec audio) sont téléchargés au premier build, aux versions de
   `dependencies.lock`.
 - **Python + Pillow + numpy** pour l'animation de démarrage, comme pour le sim (voir le README du dépôt). Sans eux,
   le firmware démarre sur la silhouette fixe.
@@ -73,6 +75,7 @@ Si le flash n'arrive pas à se connecter : maintenir **BOOT**, appuyer sur **RES
 | Sens de l'écran | 90° | UI paysage tournée vers le panneau portrait ; 270° si l'image est à l'envers |
 | Horloge QSPI | 40 MHz | comme Waveshare ; plus haut à valider sur la carte |
 | Rétroéclairage jour / nuit | 100 % / 30 % | suit le mode nuit du menu |
+| Volume du haut-parleur | 70 | volume du codec ES8311 pour tous les sons, 0 à 100 (0 = muet) |
 | Tactile en guise de boutons | oui | 5 bandes verticales invisibles, un cinquième de la largeur chacune : **A, B, −, +, Menu** (de gauche à droite) ; appui long ≥ 800 ms |
 
 **Bouton PWR** (sur la tranche, relié au PMIC ; pas le bouton BOOT) : appui long (1,5 s) = extinction
@@ -89,7 +92,7 @@ touchée (sélection une ligne plus haut ou plus bas, ou validation de l'item en
 | Fichier | Rôle |
 |---|---|
 | `CMakeLists.txt` | projet ESP-IDF ; composants `core`, `ui`, `hal_esp32` ; `LV_CONF_PATH` ; animation → partition `boot_anim` |
-| `sdkconfig.defaults` | flash 16 Mo QIO, PSRAM octale 80 MHz, 240 MHz, console USB, FreeRTOS 1 kHz |
+| `sdkconfig.defaults` | flash 16 Mo QIO, PSRAM octale 80 MHz, 240 MHz, console USB, FreeRTOS 1 kHz, nouveau pilote I²C pour `esp_codec_dev` |
 | `partitions.csv` | `nvs`, `factory` (4 Mo), `boot_anim` (6 Mo : de quoi garder le format 1) ; OTA plus tard |
 | `main/main.c` | initialisation et boucle principale (une seule tâche : pas de verrou LVGL) |
 | `main/touch_buttons.c` | tactile → boutons A/B/−/+/Menu (banc) |
@@ -100,7 +103,8 @@ touchée (sélection une ligne plus haut ou plus bas, ou validation de l'item en
 Côté `hal_esp32/` : `board.c` (I²C, TCA9554, reset de l'écran), `board_display.c` (AXS15231B en QSPI,
 rotation logicielle, envoi par bandes, rétroéclairage), `board_touch.c`, `board_rtc.c` (RTC PCF85063,
 horloge de la carte), `board_pmu.c` (AXP2101 en lecture : USB, batterie, charge), `hal_time_esp.c`,
-`hal_storage_nvs.c`, `hal_gps_demo.c`, `hal_asset_partition.c`. Brochage : `hal_esp32/board.h`.
+`hal_storage_nvs.c`, `hal_gps_demo.c`, `hal_asset_partition.c`, `hal_audio_es8311.c` (son : codec,
+ampli, tâche audio sur le cœur 1). Brochage : `hal_esp32/board.h`.
 
 ## Journal de la carte
 
@@ -109,6 +113,7 @@ jusqu'au premier fix GPS), `pmu: AXP2101 : REG00 …, VBUS … mV` (relevé brut
 `pmu: alimentation : USB, batterie absente` (une ligne à chaque changement ensuite), puis
 `raidmaster: extinction (appui long sur PWR)` à l'extinction,
 `board: carte prête (UI tournée de 90°, QSPI 40 MHz)`, `hal_gps: GPS de démonstration`,
-`raidmaster: démarré, libre : interne … Ko, PSRAM … Ko`. Puis toutes les 10 s :
+`raidmaster: démarré, libre : interne … Ko, PSRAM … Ko`, `audio: codec ES8311 prêt, volume 70` (ou
+`audio: son indisponible (…)`). Puis toutes les 10 s :
 `raidmaster: <n> images/s, envoi <t> ms, libre : …` (images réellement envoyées à l'écran, durée de
 rotation + envoi). Chaque contact du tactile : `touch_buttons: tactile (x, y) → bouton …`.

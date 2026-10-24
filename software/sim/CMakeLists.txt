@@ -1,30 +1,15 @@
 # Simulateur PC : fenêtre SDL 480x320 landscape, résolution exacte de l'écran (AXS15231B).
 # Étape 1 du plan : squelette seul, aucune logique métier ni LVGL (ça vient en étape 3).
 
-# SDL2 : essaie find_package (standard CMake), tombe sur pkg-config sinon (Debian/Ubuntu/WSL
-# installent SDL2 via libsdl2-dev qui pose les .pc mais pas toujours les SDL2Config.cmake).
-find_package(SDL2 QUIET)
-if(NOT SDL2_FOUND)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
-    set(SIM_SDL2_TARGET PkgConfig::SDL2)
-else()
-    # Les deux formes selon la version du module trouvé : cible SDL2::SDL2 moderne, sinon variables.
-    if(TARGET SDL2::SDL2)
-        set(SIM_SDL2_TARGET SDL2::SDL2)
-    else()
-        add_library(sim_sdl2_fallback INTERFACE)
-        target_include_directories(sim_sdl2_fallback INTERFACE ${SDL2_INCLUDE_DIRS})
-        target_link_libraries(sim_sdl2_fallback INTERFACE ${SDL2_LIBRARIES})
-        set(SIM_SDL2_TARGET sim_sdl2_fallback)
-    endif()
-endif()
+# SDL2 (${SIM_SDL2_TARGET}) : trouvé par le CMakeLists.txt racine, partagé avec hal_sim (son).
 
 # demo_record.c + gif_writer.c : mode enregistrement d'un GIF de démo (tools/demo_gif.sh).
 add_executable(raidmaster-sim main.c demo_record.c gif_writer.c)
 # UI-agent exception: integration LVGL (voir prompts/ui.md).
 # On link l'UI pour piloter LVGL depuis la fenêtre SDL que ce binaire ouvre déjà.
-target_link_libraries(raidmaster-sim PRIVATE ${SIM_SDL2_TARGET} raidmaster_ui raidmaster_hal_sim)
+# raidmaster_core avant raidmaster_hal_sim : le core appelle le HAL (hal_audio_play depuis jingles.c),
+# CMake le répète après raidmaster_hal_sim pour les appels dans l'autre sens.
+target_link_libraries(raidmaster-sim PRIVATE ${SIM_SDL2_TARGET} raidmaster_ui raidmaster_core raidmaster_hal_sim)
 
 # libm pour sinf() dans ui_demo.c (via raidmaster_ui). CMake ne le propage pas tout seul.
 if(UNIX AND NOT APPLE)

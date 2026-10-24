@@ -13,6 +13,8 @@ set(RAIDMASTER_CORE_SRCS
     gps_synth.c
     trip_engine.c
     app.c
+    synth.c
+    jingles.c
     third_party/minmea/minmea.c
 )
 

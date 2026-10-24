@@ -55,6 +55,13 @@ extern "C" {
 #define BOARD_EXIO_PWR_KEY  6       /* bouton PWR (SYS_OUT, actif haut) */
 #define BOARD_EXIO_PA_CTRL  7       /* ampli audio NS4150B */
 
+/* Son : codec ES8311 (I²C 0x18, alimenté par ALDO1 de l'AXP2101) en I²S standard, ampli NS4150B
+ * activé par EXIO7. Le micro (DIN) ne sert pas. */
+#define BOARD_I2S_MCLK      44
+#define BOARD_I2S_BCLK      13
+#define BOARD_I2S_WS        15
+#define BOARD_I2S_DOUT      16      /* vers le codec */
+
 /* Panneau natif (portrait) et UI (paysage). */
 #define BOARD_LCD_W         320
 #define BOARD_LCD_H         480
@@ -73,7 +80,7 @@ typedef struct {
 } board_config_t;
 
 /* Bus I²C, expandeur, reset et initialisation de l'écran (éteint, rétroéclairage à 0), tactile,
- * horloge (RTC) et PMIC. */
+ * horloge (RTC), PMIC ; ampli audio coupé. */
 esp_err_t board_init(const board_config_t *cfg);
 
 /* Pour les pilotes à venir (PMIC, IMU, RTC, audio) sur le même bus. */
@@ -105,6 +112,9 @@ bool board_pwr_key_long_press(void);
 /* Coupe l'alimentation (extinction logicielle du PMIC) ; un appui sur PWR rallume la carte. */
 void board_power_off(void);
 
+/* Ampli audio NS4150B (EXIO7) : allumé seulement pendant les sons (souffle et consommation). */
+esp_err_t board_amp_enable(bool on);
+
 /* Date et heure de compilation du firmware (esp_app_desc, heure locale de la machine de build
  * prise pour UTC+1) en ms UTC, -1 si illisibles. Borne basse de toute heure valable. */
 int64_t board_build_time_utc_ms(void);
@@ -114,6 +124,7 @@ esp_err_t board_display_init(uint32_t pclk_hz);
 esp_err_t board_touch_init(void);
 esp_err_t board_rtc_init(void);     /* RTC PCF85063 → heure système si elle n'a pas perdu l'heure */
 esp_err_t board_pmu_init(void);     /* AXP2101, lecture seule */
+esp_err_t board_pmu_codec_power(void);  /* ALDO1 à 3,3 V et allumé (codec ES8311) */
 
 #ifdef __cplusplus
 }

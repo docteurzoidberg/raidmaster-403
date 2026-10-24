@@ -29,6 +29,11 @@ add_executable(test_app test_app.c fake_storage.c fake_clock.c)
 target_link_libraries(test_app PRIVATE raidmaster_core unity)
 add_test(NAME app COMMAND test_app)
 
+# core/synth et core/jingles : hal_audio factice dans le test.
+add_executable(test_synth test_synth.c)
+target_link_libraries(test_synth PRIVATE raidmaster_core unity)
+add_test(NAME synth COMMAND test_synth)
+
 # Scénarios de bout en bout : le simulateur sans fenêtre rejoue une trace et un script
 # d'actions avec vérifications (tests/fixtures/scenarios/<id>/actions.txt). La trace est
 # trace.nmea (versionnée, ex. enregistrement réel) ou générée au build depuis route.txt par

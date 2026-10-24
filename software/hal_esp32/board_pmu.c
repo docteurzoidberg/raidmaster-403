@@ -21,6 +21,9 @@
  * de sauvegarde RTC (REG18 bit 2, laissée active à 3,3 V par le firmware d'usine) : une pile bouton
  * CR branchée sur VBACKUP n'est pas rechargeable (choix du propriétaire, 2026-10-24).
  *
+ * Son : ALDO1 (LVCC3V3, alimentation du codec ES8311 et de lui seul d'après le schéma) mis à 3,3 V
+ * (REG92 bits 4:0, 0,5 V + 100 mV par pas) et allumé (REG90 bit 0) au premier son.
+ *
  * Licence : GPL-3.0.
  */
 
@@ -28,6 +31,8 @@
 
 #include "esp_check.h"
 #include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 #include "board.h"
 #include "hal/hal_power.h"
@@ -44,6 +49,8 @@ static const char *TAG = "pmu";
 #define REG_PWRON_LEVEL  0x27     /* durées de l'appui long, de l'extinction forcée, de l'allumage */
 #define REG_IRQ_STATUS1  0x49     /* bits 3 appui court, 2 appui long, 1-0 fronts ; 1 écrit = effacé */
 #define REG_ADC_CTRL     0x30
+#define REG_LDO_ONOFF0   0x90     /* bit 0 : ALDO1 */
+#define REG_ALDO1_VOL    0x92     /* bits 4:0 : 0,5 V + 100 mV par pas */
 #define REG_VBAT_H       0x34     /* 14 bits en mV, H puis L */
 #define REG_VBUS_H       0x38
 #define REG_BAT_PERCENT  0xA4
@@ -55,6 +62,10 @@ static const char *TAG = "pmu";
 #define PKEY_IRQ_MASK    0x0F
 #define PKEY_LONG        0x04
 #define PKEY_POLL_MS     50U
+#define ALDO1_EN         0x01
+#define ALDO1_VOL_MASK   0x1F
+#define ALDO1_3V3        ((3300U - 500U) / 100U)
+#define ALDO1_SETTLE_MS  10U
 
 static i2c_master_dev_handle_t s_dev;
 static hal_power_t s_last;
@@ -172,4 +183,16 @@ void board_power_off(void)
 {
     uint8_t v;
     if (s_dev != NULL && rd(REG_COMMON_CFG, &v)) wr(REG_COMMON_CFG, (uint8_t)(v | 0x01));
+}
+
+esp_err_t board_pmu_codec_power(void)
+{
+    uint8_t on, vol;
+    if (s_dev == NULL || !rd(REG_LDO_ONOFF0, &on) || !rd(REG_ALDO1_VOL, &vol)) return ESP_ERR_NOT_FOUND;
+    if ((vol & ALDO1_VOL_MASK) == ALDO1_3V3 && (on & ALDO1_EN)) return ESP_OK;
+    const uint8_t new_vol = (uint8_t)((vol & ~ALDO1_VOL_MASK) | ALDO1_3V3);
+    if (!wr(REG_ALDO1_VOL, new_vol) || !wr(REG_LDO_ONOFF0, (uint8_t)(on | ALDO1_EN))) return ESP_FAIL;
+    ESP_LOGI(TAG, "ALDO1 (codec) : REG90 %02x → %02x, REG92 %02x → %02x", on, on | ALDO1_EN, vol, new_vol);
+    vTaskDelay(pdMS_TO_TICKS(ALDO1_SETTLE_MS));
+    return ESP_OK;
 }

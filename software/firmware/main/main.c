@@ -10,8 +10,10 @@
  * ligne de journal donne images/s, durée d'envoi d'une image et mémoire libre. Appui long sur
  * PWR : extinction propre (le PMIC rallume la carte au prochain appui).
  *
+ * Le jingle de démarrage (core/jingles, codec ES8311) part avec l'animation, une fois l'écran allumé.
+ *
  * Réglages (tools/fw.sh menuconfig → « Raidmaster 403 ») : sens de l'écran, horloge QSPI,
- * rétroéclairage jour / nuit, tactile en guise de boutons.
+ * rétroéclairage jour / nuit, volume du son, tactile en guise de boutons.
  *
  * Licence : GPL-3.0.
  */
@@ -28,6 +30,7 @@
 
 #include "app.h"
 #include "board.h"
+#include "jingles.h"
 #include "hal/hal_gps.h"
 #include "hal/hal_time.h"
 #include "theme.h"
@@ -117,6 +120,7 @@ void app_main(void)
     lv_refr_now(disp);
     bool night = s_app.set.night;
     board_backlight_set(backlight_pct(night));
+    jingle_play(&JINGLE_BOOT);      /* tâche audio : la boucle n'attend pas */
     ESP_LOGI(TAG, "démarré, libre : interne %u Ko, PSRAM %u Ko",
              (unsigned)(heap_caps_get_free_size(MALLOC_CAP_INTERNAL) / 1024U),
              (unsigned)(heap_caps_get_free_size(MALLOC_CAP_SPIRAM) / 1024U));

@@ -35,3 +35,7 @@ CONFIG_ESP_MAIN_TASK_STACK_SIZE=16384
 # LVGL : configuration par lv_conf.h (LV_CONF_PATH, voir CMakeLists.txt), ni exemples ni démos.
 CONFIG_LV_CONF_SKIP=n
 CONFIG_LV_BUILD_EXAMPLES=n
+
+# Son (esp_codec_dev) : nouveau pilote I²C (i2c_master) comme le reste de la carte ; l'ancien,
+# choisi par défaut, fait avorter le démarrage (« CONFLICT! driver_ng is not allowed… »).
+CONFIG_CODEC_I2C_BACKWARD_COMPATIBLE=n

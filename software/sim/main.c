@@ -9,7 +9,9 @@
  * driver clavier interne de LVGL. Fallback acceptable d'après prompts/ui.md (dérogation UI-agent).
  *
  * Le core (core/app) tourne comme sur l'ESP32 : GPS fourni par hal_sim (rejeu d'un .nmea ou
- * trajet simulé), réglages et distances sauvegardés dans sim-storage.json.
+ * trajet simulé), réglages et distances sauvegardés dans sim-storage.json. Le jingle de démarrage
+ * (core/jingles) se joue avec l'animation, par la sortie audio SDL (muet : SDL_AUDIODRIVER=dummy ;
+ * jamais en modes script, captures et GIF).
  *
  *   raidmaster-sim [--replay trace.nmea] [--speed N] [--loop] [--storage fichier.json | --no-storage]
  *                  [--script actions.txt --out dossier]
@@ -75,6 +77,7 @@
 #include "screen_menu.h"
 #include "demo_record.h"
 #include "app.h"
+#include "jingles.h"
 #include "hal/hal_gps.h"
 #include "hal/hal_time.h"
 #include "hal_sim.h"
@@ -512,6 +515,7 @@ int main(int argc, char *argv[])
     if (s_app_on) {
         hal_gps_init(on_gps_line, &s_app);
         ui_app_attach(&s_app);
+        if (s_script == NULL) jingle_play(&JINGLE_BOOT);   /* avec l'animation de démarrage */
         printf("[sim] GPS : %s (×%g%s), sauvegarde : %s\n", replay ? replay : "trajet simulé", speed,
                loop ? ", en boucle" : "", storage ? storage : "mémoire");
     }

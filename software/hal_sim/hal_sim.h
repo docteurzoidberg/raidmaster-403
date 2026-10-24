@@ -2,8 +2,8 @@
  * Raidmaster 403 — HAL du simulateur PC : réglages propres au sim.
  *
  * Implémente hal/hal_storage.h (fichier JSON), hal/hal_gps.h (rejeu d'un .nmea ou trajet
- * simulé), hal/hal_time.h (CLOCK_MONOTONIC, horloge de la carte émulée) et hal/hal_power.h
- * (état d'alimentation choisi au clavier).
+ * simulé), hal/hal_time.h (CLOCK_MONOTONIC, horloge de la carte émulée), hal/hal_power.h
+ * (état d'alimentation choisi au clavier) et hal/hal_audio.h (sortie audio SDL).
  *
  * Licence : GPL-3.0.
  */

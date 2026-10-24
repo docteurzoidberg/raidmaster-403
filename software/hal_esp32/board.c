@@ -57,12 +57,22 @@ static esp_err_t lcd_reset(void)
     return ESP_OK;
 }
 
+esp_err_t board_amp_enable(bool on)
+{
+    const uint32_t pa = 1U << BOARD_EXIO_PA_CTRL;
+    if (s_exio == NULL) return ESP_ERR_INVALID_STATE;
+    ESP_RETURN_ON_ERROR(esp_io_expander_set_dir(s_exio, pa, IO_EXPANDER_OUTPUT), TAG, "EXIO7 en sortie");
+    return esp_io_expander_set_level(s_exio, pa, on ? 1 : 0);
+}
+
 esp_err_t board_init(const board_config_t *cfg)
 {
     s_rotation = cfg->rotation;
     ESP_RETURN_ON_ERROR(i2c_init(), TAG, "bus I²C");
     ESP_RETURN_ON_ERROR(lcd_reset(), TAG, "reset écran");
     ESP_RETURN_ON_ERROR(board_display_init(cfg->lcd_pclk_hz), TAG, "écran");
+    /* L'ampli, tiré à l'état haut tant qu'EXIO7 est en entrée, reste coupé hors des sons. */
+    if (board_amp_enable(false) != ESP_OK) ESP_LOGW(TAG, "ampli audio : EXIO7 inaccessible");
     /* Le tactile, la RTC et le PMIC ne sont pas indispensables : la démo tourne sans. */
     if (board_touch_init() != ESP_OK) ESP_LOGW(TAG, "tactile absent");
     if (board_rtc_init() != ESP_OK) ESP_LOGW(TAG, "RTC absente");

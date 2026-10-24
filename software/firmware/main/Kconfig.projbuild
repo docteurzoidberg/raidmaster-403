@@ -31,6 +31,14 @@ menu "Raidmaster 403"
         range 1 100
         default 30
 
+    config RAIDMASTER_AUDIO_VOLUME
+        int "Volume du haut-parleur (codec ES8311, 0 à 100)"
+        range 0 100
+        default 70
+        help
+            Volume de sortie du codec pour tous les sons (jingle de démarrage…), avec le HP 6 Ω
+            1 W sur l'ampli NS4150B. À régler à l'oreille sur la carte ; 0 coupe le son.
+
     config RAIDMASTER_TOUCH_BUTTONS
         bool "Tactile en guise de boutons (banc, sans carte boutons)"
         default y
