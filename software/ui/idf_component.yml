@@ -1,0 +1,6 @@
+# Dépendances du composant ESP-IDF « ui » (build firmware). Le sim prend la même version de
+# LVGL par FetchContent (ui/CMakeLists.txt) : les deux numéros vont ensemble.
+dependencies:
+  lvgl/lvgl:
+    version: "9.2.2"
+    require: public

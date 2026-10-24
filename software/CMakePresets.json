@@ -17,16 +17,6 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             }
-        },
-        {
-            "name": "firmware",
-            "displayName": "Firmware ESP32-S3 (stub)",
-            "description": "Preset stub — à finaliser en étape 5 (HAL ESP32 drivers, voir PROMPT.md § 6).",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build-firmware",
-            "cacheVariables": {
-                "RAIDMASTER_TARGET": "firmware"
-            }
         }
     ],
     "buildPresets": [

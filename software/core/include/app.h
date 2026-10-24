@@ -9,6 +9,9 @@
  *   app_get_state()     pour l'affichage
  *   app_<action>()      boutons et menu ; les réglages sont sauvegardés tout de suite
  *
+ * Heure affichée : celle de l'horloge de la carte (hal_time_utc_ms), réglée sur l'heure GPS au
+ * premier fix de chaque démarrage (pas de synchronisation permanente).
+ *
  * Licence : GPL-3.0.
  */
 
@@ -49,7 +52,7 @@ typedef struct {
     app_settings_t set;
     app_trip_t     active;          /* trip que corrigent +/− */
     bool           speed_alarm;     /* vitesse au-dessus du seuil (seuil actif) */
-    int8_t         local_hh;        /* heure locale, -1 si inconnue */
+    int8_t         local_hh;        /* heure locale (horloge de la carte), -1 si pas réglée */
     int8_t         local_mm;
     bool           autocal_running;
     double         autocal_raw_m;
@@ -61,6 +64,7 @@ typedef struct {
     app_settings_t set;
     app_trip_t     active;
     bool           chrono_armed;    /* chrono remis à 0, démarre au premier mouvement */
+    bool           clock_synced;    /* horloge de la carte réglée sur le GPS depuis le démarrage */
     bool           dirty;           /* distances à sauvegarder */
     uint64_t       last_save_ms;
     uint64_t       now_ms;

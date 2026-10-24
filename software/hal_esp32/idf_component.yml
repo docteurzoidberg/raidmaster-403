@@ -1,0 +1,10 @@
+# Dépendances du composant ESP-IDF « hal_esp32 » (pilotes de la carte Waveshare 3.5B).
+# Versions exactes : ce sont celles essayées sur la carte (le firmware d'usine Waveshare prend les
+# mêmes à un correctif près) ; les monter seulement après un essai sur la carte. Pilote d'écran :
+# disp_on_off() a un sens inversé en v1.0.x (voir board_display.c), à revérifier à chaque montée.
+# La version de LVGL est fixée par ui/idf_component.yml.
+dependencies:
+  idf: ">=5.5,<5.6"
+  lvgl/lvgl: ">=9.2,<10"
+  espressif/esp_lcd_axs15231b: "1.0.1"
+  espressif/esp_io_expander_tca9554: "2.0.3"

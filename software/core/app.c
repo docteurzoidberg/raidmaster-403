@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "hal/hal_storage.h"
+#include "hal/hal_time.h"
 
 #define STORE_KEY   "state"
 #define STORE_MAGIC 0x524D0001u     /* « RM », version 1 : changer à chaque évolution du format */
@@ -95,6 +96,11 @@ void app_gps_line(app_t *a, const char *line, uint64_t now_ms)
     a->now_ms = now_ms;
     if (!gps_parser_feed(&a->parser, line, &fix))
         return;
+    /* Premier fix depuis le démarrage : l'horloge de la carte prend l'heure GPS, une fois. */
+    if (!a->clock_synced && fix.valid && fix.t_utc_ms >= 0) {
+        hal_time_set_utc_ms(fix.t_utc_ms);
+        a->clock_synced = true;
+    }
     const double odo_before = a->engine.p.odo_m;
     trip_engine_feed(&a->engine, &fix, now_ms);
     if (a->engine.p.odo_m != odo_before)
@@ -124,8 +130,9 @@ void app_get_state(const app_t *a, uint64_t now_ms, app_state_t *out)
     out->speed_alarm = a->set.speed_alarm_kmh > 0 && out->trip.fix_ok &&
                        out->trip.speed_kmh > (float)a->set.speed_alarm_kmh;
     out->local_hh = out->local_mm = -1;
-    if (out->trip.t_utc_ms >= 0) {
-        int64_t m = (out->trip.t_utc_ms / 60000 + a->set.tz_min) % (24 * 60);
+    const int64_t utc_ms = hal_time_utc_ms();
+    if (utc_ms >= 0) {
+        int64_t m = (utc_ms / 60000 + a->set.tz_min) % (24 * 60);
         if (m < 0)
             m += 24 * 60;
         out->local_hh = (int8_t)(m / 60);

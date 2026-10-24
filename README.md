@@ -32,10 +32,11 @@ Distance **GPS uniquement**, sans capteur de roue ni intervention sur le câblag
 | 2 | Core portable + tests : `gps_parser` (NMEA, sur minmea), `trip_engine` (distance, moyenne, chrono, calibration), `app` (boutons, menu, sauvegarde) | fait |
 | 3 | Interface LVGL câblée sur le core : raid, balade, menu réglages actif, calibration auto, démarrage animé, mode nuit | fait |
 | 4 | Simulateur : rejeu de traces NMEA, trajet simulé, scénarios de bout en bout | 21 scénarios GPS en place ; boussole et matériel à venir |
-| 5-6 | HAL ESP32 et firmware sur la carte | à faire |
-| 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B commandée, datasheets et modèle 3D rassemblés |
+| 5-6 | HAL ESP32 et firmware sur la carte | en cours : firmware de démo validé sur la carte (écran, tactile, core et UI du sim, trajet GPS simulé, NVS, heure de la RTC, état USB / batterie) ; GPS, boutons, charge de la batterie à venir |
+| 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B reçue, datasheets et modèle 3D rassemblés |
 
-Pas encore là : boussole (le cap affiché est la route GPS), batterie et température réelles, log GPX.
+Pas encore là : boussole (le cap affiché est la route GPS), réglages de charge de la batterie (l'état
+USB / batterie est lu, pas configuré), température réelle, log GPX.
 Le plan détaillé et le journal des décisions sont dans [`PROMPT.md`](PROMPT.md).
 
 ## Démarrage rapide (simulateur PC)
@@ -71,6 +72,7 @@ réglages et distances sauvegardés dans `sim-storage.json`.
 | `Maj` + touche | appui long : `Maj`+`m` entre dans le menu ou en sort, `Maj`+`+`/`−` ±100 m |
 | `n` ou `Tab` | bascule jour / nuit |
 | `d` | coupe / rétablit le signal GPS (tunnel) |
+| `p` | alimentation suivante (barre d'état) : batterie 68 %, USB en charge, USB batterie pleine, USB sans batterie, batterie 8 % |
 | `v` | écran suivant (debug) |
 | `Échap` | quitter (sauvegarde) |
 
@@ -79,7 +81,8 @@ réglages et distances sauvegardés dans `sim-storage.json`.
 ```bash
 cd software
 ctest --preset sim
-tools/check.sh        # build + avertissements + tests + état du GIF, résumé en 3 lignes (-c : tout recompiler)
+tools/check.sh        # build + avertissements + tests + GIF + build firmware, résumé en 4 lignes
+                      # (-c : tout recompiler, -s : sim seul)
 ```
 
 - Tests unitaires du core avec [Unity](https://github.com/ThrowTheSwitch/Unity) : parseur NMEA, moteur
@@ -104,10 +107,18 @@ produit.
 ### Animation de démarrage
 
 La 403 tourne sur une grille cyan lumineuse. Elle est rendue dans Blender
-(`ui/assets/boot_anim/boot_anim.blend`), puis convertie au build en `boot_anim.bin` (palette 256 couleurs,
-environ 5,5 Mo) par `ui/assets/boot_anim/build_boot_anim.py`. Cette conversion demande Python avec Pillow,
+(`ui/assets/boot_anim/boot_anim.blend`), puis convertie au build en `boot_anim.bin` (palette 256 couleurs)
+par `ui/assets/boot_anim/build_boot_anim.py`. Deux formats, mêmes pixels, à trancher : **2** par défaut
+(chaque image codée par différence avec la précédente, 1,1 Mo) ou **1** (images brutes, 5,5 Mo), choisi
+par l'option CMake `RAIDMASTER_BOOT_ANIM_FORMAT`. Cette conversion demande Python avec Pillow et numpy,
 désigné par la variable CMake `RAIDMASTER_PYTHON`. Sans eux, l'écran de démarrage affiche une silhouette
 fixe.
+
+### Version
+
+Le numéro de version est dans `software/VERSION` (seule source). L'écran de démarrage l'affiche avec la
+plateforme : `v0.1.0 · SIM` sur le sim, `v0.1.0 · ESP32 · fe63e9e` sur la carte (hash git du firmware,
+suivi de `*` s'il a été compilé avec des modifications non commitées). ESP-IDF reprend le même numéro.
 
 ### Polices
 
@@ -135,16 +146,16 @@ Testé sous Ubuntu 24.04 (natif ou WSL2). Le dépôt est privé : demander un ac
    cd raidmaster-403
    ```
 
-3. **Python + Pillow** (optionnel, pour l'animation de démarrage)
+3. **Python + Pillow + numpy** (optionnel, pour l'animation de démarrage)
 
    ```bash
    python3 -m venv .venv
-   .venv/bin/pip install pillow
+   .venv/bin/pip install pillow numpy
    ```
 
    CMake prend `.venv/` à la racine du dépôt (à côté de `software/`) s'il existe, sinon le `python3` du système. Pour en
-   imposer un autre : `-DRAIDMASTER_PYTHON=/chemin/vers/python`. Sans Pillow, le build passe quand même :
-   le démarrage affiche une silhouette fixe.
+   imposer un autre : `-DRAIDMASTER_PYTHON=/chemin/vers/python`. Sans Pillow ou numpy, le build passe
+   quand même : le démarrage affiche une silhouette fixe.
 
 4. **Configurer, compiler, tester, lancer**
 
@@ -187,21 +198,38 @@ Testé sous Ubuntu 24.04 (natif ou WSL2). Le dépôt est privé : demander un ac
 
 ## Firmware ESP32
 
-Pas encore commencé : étapes 5 et 6 du plan. Le preset CMake `firmware` n'est qu'un squelette.
+Projet ESP-IDF dans `software/firmware/`, construit avec **ESP-IDF v5.5.6** et les **mêmes** `core/` et
+`ui/` que le simulateur (leurs `CMakeLists.txt` servent aux deux builds) ; les pilotes de la carte sont
+dans `software/hal_esp32/`. Version actuelle : **démo** sans périphérique externe (trajet GPS simulé,
+tactile en guise de boutons, sauvegarde en NVS, animation de démarrage en flash, heure de la RTC, état
+USB / batterie lu sur le PMIC).
+
+```bash
+cd software
+tools/fw.sh build        # compile (ESP-IDF chargé par le script)
+tools/fw.sh flash        # programme + animation de démarrage, puis 10 s de journal de la carte
+tools/fw.sh log 20       # redémarre la carte et affiche 20 s de journal
+tools/fw.sh menuconfig   # menu « Raidmaster 403 » : sens de l'écran, rétroéclairage, tactile-boutons
+```
+
+Installation d'ESP-IDF, liaison de la carte à WSL (usbipd), réglages et dépannage :
+[`software/firmware/README.md`](software/firmware/README.md).
 
 ## Organisation du dépôt
 
 ```
-software/        tout le code ; CMakeLists.txt et CMakePresets.json, build dans software/build-sim/
-  core/          logique métier en C11 portable (aucun accès matériel) : gps_parser, trip_engine, app ;
-                 core/include/hal/ : interfaces matériel ; core/third_party/minmea
+software/        tout le code ; CMakeLists.txt et CMakePresets.json, build dans software/build-sim/ ;
+                 VERSION : numéro de version
+  core/          logique métier en C11 portable (aucun accès matériel) : gps_parser, trip_engine, app,
+                 gps_synth (trajet simulé) ; core/include/hal/ : interfaces matériel ; core/third_party/minmea
   ui/            interface LVGL v9 : écrans, thème jour / nuit, polices, images, animation de démarrage
   sim/           simulateur PC SDL2 : fenêtre, clavier, options, mode script, captures, GIF
-  hal_sim/       HAL du simulateur : GPS (rejeu, trajet simulé), stockage JSON, horloge
-  hal_esp32/     pilotes ESP32 (à venir)
-  firmware/      projet ESP-IDF (à venir)
+  hal_sim/       HAL du simulateur : GPS (rejeu, trajet simulé), stockage JSON, horloge, assets
+  hal_esp32/     HAL et pilotes de la carte (écran QSPI, tactile, RTC, PMIC, NVS, GPS de démo…), composant ESP-IDF
+  firmware/      projet ESP-IDF (main/, sdkconfig.defaults, partitions.csv), build dans software/build-firmware/
+  cmake/         modules CMake communs au sim et au firmware (animation de démarrage, version)
   tests/         tests unitaires Unity, scénarios (fixtures/scenarios/), tools/ : outils Python NMEA
-  tools/         scripts : check.sh (vérification complète), demo_gif.sh
+  tools/         scripts : check.sh (vérification complète), fw.sh (firmware), demo_gif.sh
   references/    non versionné : Open Rally Computer (inspiration), traces NMEA de test
 hardware/        électronique : datasheets des composants (hors git, fetch_datasheets.sh), index dans
                  README ; kicad/carte-fille/ : projet KiCad de la carte fille (en cours)
@@ -213,7 +241,7 @@ docs/            documentation
   mockups/       copies locales des maquettes (écrans, flèche de cap, animation de démarrage)
   roadbooks/     roadbooks de rallye-raid d'exemple (fichiers hors git, sources dans le README)
 prompts/         cahier des charges découpé par rôle (features, hardware, boîtier, firmware, ui, simulation)
-.claude/         skills Claude Code du projet (sim-check, ship, pcb-carte-fille)
+.claude/         skills Claude Code du projet (sim-check, firmware, ship, pcb-carte-fille)
 ```
 
 Dans les briefs et le journal, les chemins de code (`core/…`, `ui/…`, `sim/…`, `tests/…`) sont
@@ -235,7 +263,10 @@ Composants tiers :
 
 | Composant | Licence | Usage |
 |---|---|---|
-| [LVGL](https://lvgl.io) v9.2.2 | MIT | interface, téléchargé au build |
+| [LVGL](https://lvgl.io) v9.2.2 | MIT | interface, téléchargé au build (FetchContent pour le sim, registre ESP-IDF pour le firmware) |
+| [ESP-IDF](https://github.com/espressif/esp-idf) v5.5.6 | Apache-2.0 | framework du firmware, installé à part |
+| [esp_lcd_axs15231b](https://components.espressif.com/components/espressif/esp_lcd_axs15231b) 1.0.1, [esp_io_expander_tca9554](https://components.espressif.com/components/espressif/esp_io_expander_tca9554) 2.0.3 | Apache-2.0 | pilotes d'écran et d'expandeur, téléchargés au build |
+| Séquence d'init du panneau ([exemples Waveshare](https://github.com/waveshareteam/ESP32-S3-Touch-LCD-3.5B)) | Apache-2.0 | dans `hal_esp32/board_display.c` |
 | [minmea](https://github.com/kosma/minmea) | MIT (au choix WTFPL / MIT / LGPL-3) | décodage NMEA, dans `core/third_party/minmea/` |
 | [Unity](https://github.com/ThrowTheSwitch/Unity) v2.6.1 | MIT | tests, téléchargé au build |
 | [Share Tech Mono](https://fonts.google.com/specimen/Share+Tech+Mono) | SIL OFL 1.1 | police, dans `ui/assets/` |

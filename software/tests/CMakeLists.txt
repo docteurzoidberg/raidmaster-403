@@ -24,8 +24,8 @@ target_compile_definitions(test_trip_engine PRIVATE
     RAIDMASTER_TRACES_DIR="${CMAKE_SOURCE_DIR}/references/traces-brutes")
 add_test(NAME trip_engine COMMAND test_trip_engine)
 
-# core/app : hal_storage remplacé par une version en mémoire.
-add_executable(test_app test_app.c fake_storage.c)
+# core/app : hal_storage en mémoire, horloge de la carte figée.
+add_executable(test_app test_app.c fake_storage.c fake_clock.c)
 target_link_libraries(test_app PRIVATE raidmaster_core unity)
 add_test(NAME app COMMAND test_app)
 

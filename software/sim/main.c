@@ -42,6 +42,8 @@
  *   n ou Tab                      → bascule mode nuit
  *   v                             → cycle entre écrans raid / balade / menu / calib (debug)
  *   d                             → coupe / rétablit le signal GPS (tunnel)
+ *   p                             → alimentation suivante : batterie, USB en charge, USB batterie
+ *                                   pleine, USB sans batterie, batterie faible (barre d'état)
  *   Échap                         → quitter (sauvegarde)
  *
  * Mode captures (vérification visuelle sans interaction) : RAIDMASTER_SHOTS=<dossier>
@@ -165,8 +167,8 @@ static void save_ppm(const char *dir, const char *name)
     printf("capture : %s\n", path);
 }
 
-/* État fixe = valeurs de la maquette mode raid jour. */
-static void push_mockup_state(void)
+/* État fixe = valeurs de la maquette mode raid jour, avec l'alimentation donnée. */
+static void push_mockup_state(uint8_t power, uint8_t battery_pct)
 {
     ui_trip_state_t st;
     memset(&st, 0, sizeof(st));
@@ -178,7 +180,8 @@ static void push_mockup_state(void)
     st.heading_deg = 127;
     st.chrono_s    = 14U * 60U + 27U;
     st.fix_type    = UI_FIX_3D;
-    st.battery_pct = 68;
+    st.battery_pct = battery_pct;
+    st.power       = power;
     st.t_cabin_c   = 22.0f;
     snprintf(st.time_hhmm, sizeof(st.time_hhmm), "14:23");
     ui_push_trip_state(&st);
@@ -192,7 +195,7 @@ static int shots_step(const char *dir, uint32_t t_ms)
     if (t_ms < next) return 1;
     switch (step++) {
         case 0:  save_ppm(dir, "1-boot"); break;
-        case 1:  ui_demo_stop(); ui_show_screen(UI_SCREEN_RAID); push_mockup_state(); break;
+        case 1:  ui_demo_stop(); ui_show_screen(UI_SCREEN_RAID); push_mockup_state(UI_PWR_BATTERY, 68); break;
         case 2:  save_ppm(dir, "2-raid"); ui_show_screen(UI_SCREEN_BALADE); break;
         case 3:  save_ppm(dir, "3-balade"); ui_show_screen(UI_SCREEN_MENU);
                  screen_menu_move(+1); break;
@@ -200,7 +203,11 @@ static int shots_step(const char *dir, uint32_t t_ms)
         case 5:  save_ppm(dir, "5-calib"); ui_show_screen(UI_SCREEN_RAID);
                  ui_theme_toggle_night(); break;
         case 6:  save_ppm(dir, "6-raid-nuit"); ui_show_screen(UI_SCREEN_BALADE); break;
-        case 7:  save_ppm(dir, "7-balade-nuit"); return 0;
+        case 7:  save_ppm(dir, "7-balade-nuit"); ui_theme_toggle_night();
+                 ui_show_screen(UI_SCREEN_RAID); push_mockup_state(UI_PWR_CHARGING, 68); break;
+        case 8:  save_ppm(dir, "8-raid-charge");
+                 push_mockup_state(UI_PWR_EXTERNAL, UI_BATT_UNKNOWN); break;
+        case 9:  save_ppm(dir, "9-raid-usb"); return 0;
         default: return 0;
     }
     /* Après le boot, on attend la fin du timer boot→raid (qui lance la démo) avant de figer
@@ -245,6 +252,9 @@ static void handle_key(const SDL_KeyboardEvent *k, int *running)
             break;
         case SDLK_v:
             ui_cycle_screen();
+            break;
+        case SDLK_p:
+            printf("[sim] alimentation : %s\n", hal_power_sim_cycle());
             break;
         case SDLK_d:
             if (s_app_on) {

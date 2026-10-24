@@ -24,6 +24,14 @@ typedef enum {
     UI_FIX_3D,
 } ui_fix_type_t;
 
+typedef enum {
+    UI_PWR_BATTERY = 0,     /* sur batterie */
+    UI_PWR_EXTERNAL,        /* alimentation externe (USB-C), batterie absente ou pas en charge */
+    UI_PWR_CHARGING,        /* alimentation externe, batterie en charge */
+} ui_power_t;
+
+#define UI_BATT_UNKNOWN 0xFFu   /* battery_pct : pas de batterie, ou charge inconnue */
+
 typedef struct {
     double   trip_a_km;      /* Trip A (distance partielle principale, point-à-point) */
     double   trip_b_km;      /* Trip B (distance partielle intermédiaire) */
@@ -33,7 +41,8 @@ typedef struct {
     int      heading_deg;    /* Cap boussole 0..359 */
     uint32_t chrono_s;       /* Chrono (s) */
     uint8_t  fix_type;       /* ui_fix_type_t */
-    uint8_t  battery_pct;    /* 0..100 */
+    uint8_t  battery_pct;    /* 0..100, UI_BATT_UNKNOWN sans batterie ou si inconnue */
+    uint8_t  power;          /* ui_power_t */
     float    t_cabin_c;      /* Température habitacle (°C), NAN si inconnue */
     char     time_hhmm[6];   /* "HH:MM" zéro-terminé, vide si heure inconnue */
     uint8_t  active_trip;    /* 0 : Trip A, 1 : Trip B (celui que corrigent +/−) */

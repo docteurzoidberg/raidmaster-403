@@ -2,7 +2,8 @@
  * Raidmaster 403 — HAL du simulateur PC : réglages propres au sim.
  *
  * Implémente hal/hal_storage.h (fichier JSON), hal/hal_gps.h (rejeu d'un .nmea ou trajet
- * simulé) et hal/hal_time.h (CLOCK_MONOTONIC).
+ * simulé), hal/hal_time.h (CLOCK_MONOTONIC, horloge de la carte émulée) et hal/hal_power.h
+ * (état d'alimentation choisi au clavier).
  *
  * Licence : GPL-3.0.
  */
@@ -33,6 +34,14 @@ bool hal_gps_sim_signal(void);
 /* Horloge virtuelle : hal_time ne bouge plus que par hal_time_sim_advance_ms (mode script). */
 void hal_time_sim_virtual(bool on);
 void hal_time_sim_advance_ms(uint32_t ms);
+
+/* Vitesse de l'horloge de la carte émulée (celle du GPS simulé, réglée par hal_gps_sim_config). */
+void hal_time_sim_clock_rate(double rate);
+
+/* Alimentation : passe à l'état suivant (touche `p` du sim) et renvoie son nom :
+ * batterie 68 % → USB, batterie en charge → USB, batterie pleine → USB sans batterie
+ * (comme la carte au banc) → batterie 8 %, faible → batterie 68 %… */
+const char *hal_power_sim_cycle(void);
 
 #ifdef __cplusplus
 }

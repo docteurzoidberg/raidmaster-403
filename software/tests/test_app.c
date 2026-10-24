@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include "app.h"
+#include "fake_clock.h"
 #include "fake_storage.h"
 #include "hal/hal_storage.h"
 #include "unity.h"
@@ -18,6 +19,7 @@ static app_state_t S;
 void setUp(void)
 {
     fake_storage_clear();
+    fake_clock_clear();
     app_init(&A, 0);
 }
 
@@ -85,7 +87,7 @@ static void test_distance_via_nmea(void)
     TEST_ASSERT_DOUBLE_WITHIN(0.5, 1000.0, S.trip.trip_a_m);
     TEST_ASSERT_TRUE(S.trip.fix_ok);
     TEST_ASSERT_EQUAL_INT(11, S.local_hh);      /* UTC+1 */
-    TEST_ASSERT_EQUAL_INT(1, S.local_mm);       /* 10:01:40 UTC */
+    TEST_ASSERT_EQUAL_INT(0, S.local_mm);       /* horloge réglée au premier fix (10:00:00), figée ici */
 }
 
 static void test_correction_sur_trip_actif(void)
@@ -139,6 +141,36 @@ static void test_heure_locale_minuit_et_fuseaux(void)
     app_set_tz(&A, 75);                                 /* pas de 30 min */
     state(0);
     TEST_ASSERT_EQUAL_INT(60, S.set.tz_min);
+}
+
+/* L'heure affichée est celle de l'horloge de la carte, réglée au premier fix de chaque
+ * démarrage seulement (la fausse horloge n'avance pas : un second réglage se verrait). */
+static void test_horloge_reglee_au_premier_fix(void)
+{
+    char line[160];
+    state(0);
+    TEST_ASSERT_EQUAL_INT(-1, S.local_hh);              /* horloge pas réglée, pas de GPS */
+    sentence(line, sizeof(line), "GPRMC,100000.00,V,,,,,,,091026,,,N");
+    app_gps_line(&A, line, 0);                          /* heure GPS sans fix : ignorée */
+    state(0);
+    TEST_ASSERT_EQUAL_INT(-1, S.local_hh);
+    TEST_ASSERT_EQUAL_UINT(0, fake_clock_sets);
+
+    epoch(10 * 3600000U, 0.0, 0.0f);                    /* premier fix, 10:00 UTC */
+    state(0);
+    TEST_ASSERT_EQUAL_UINT(1, fake_clock_sets);
+    TEST_ASSERT_EQUAL_INT(11, S.local_hh);              /* UTC+1 */
+    TEST_ASSERT_EQUAL_INT(0, S.local_mm);
+    drive(10 * 3600000U + 100U, 0.0, 30.0f, 10);        /* fixes suivants : pas de réglage */
+    TEST_ASSERT_EQUAL_UINT(1, fake_clock_sets);
+
+    app_init(&A, 0);                                    /* redémarrage : nouveau réglage */
+    state(0);
+    TEST_ASSERT_EQUAL_INT(11, S.local_hh);              /* l'horloge a gardé l'heure */
+    epoch(10 * 3600000U + 5U * 60000U, 0.0, 0.0f);
+    state(0);
+    TEST_ASSERT_EQUAL_UINT(2, fake_clock_sets);
+    TEST_ASSERT_EQUAL_INT(5, S.local_mm);
 }
 
 static void test_alarme_vitesse(void)
@@ -234,6 +266,7 @@ int main(void)
     RUN_TEST(test_correction_sur_trip_actif);
     RUN_TEST(test_raz_a_et_chrono);
     RUN_TEST(test_heure_locale_minuit_et_fuseaux);
+    RUN_TEST(test_horloge_reglee_au_premier_fix);
     RUN_TEST(test_alarme_vitesse);
     RUN_TEST(test_sauvegarde_et_relecture);
     RUN_TEST(test_sauvegarde_differee);

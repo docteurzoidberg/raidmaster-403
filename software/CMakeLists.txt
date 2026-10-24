@@ -9,10 +9,10 @@ set(CMAKE_C_EXTENSIONS OFF)
 # Racine du dépôt : le code est dans software/, la doc (GIF de démo, maquettes) dans ../docs/.
 get_filename_component(RAIDMASTER_REPO_DIR "${CMAKE_SOURCE_DIR}/.." ABSOLUTE)
 
-# Cible de build : "sim" (PC SDL, défaut) ou "firmware" (ESP-IDF, étape 5+).
-# Peut être forcée par un preset ou en ligne de commande (-DRAIDMASTER_TARGET=sim).
+# Cible de build : "sim" (PC SDL, défaut). Le firmware ESP32 est un projet ESP-IDF à part
+# (firmware/, construit par idf.py via tools/fw.sh) qui reprend les mêmes core/ et ui/.
 if(NOT DEFINED RAIDMASTER_TARGET)
-    set(RAIDMASTER_TARGET "sim" CACHE STRING "Build target: sim or firmware" FORCE)
+    set(RAIDMASTER_TARGET "sim" CACHE STRING "Build target: sim (firmware : tools/fw.sh)" FORCE)
 endif()
 set_property(CACHE RAIDMASTER_TARGET PROPERTY STRINGS "sim" "firmware")
 message(STATUS "Raidmaster target: ${RAIDMASTER_TARGET}")
@@ -38,8 +38,7 @@ if(RAIDMASTER_TARGET STREQUAL "sim")
     endif()
 elseif(RAIDMASTER_TARGET STREQUAL "firmware")
     message(FATAL_ERROR
-        "La cible 'firmware' sera finalisée à l'étape 5 du plan (voir PROMPT.md § 6). "
-        "Utiliser le preset 'sim' pour le moment.")
+        "Le firmware se construit avec ESP-IDF : tools/fw.sh build (voir firmware/README.md).")
 else()
     message(FATAL_ERROR "RAIDMASTER_TARGET inconnu : ${RAIDMASTER_TARGET} (attendu : sim ou firmware)")
 endif()

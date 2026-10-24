@@ -2,13 +2,16 @@
 # Raidmaster 403 — vérification complète en une commande, sortie courte.
 #
 # Build du preset sim (configure si besoin), avertissements et erreurs de compilation,
-# tests ctest (avec le décompte Unity : réussis / échoués / ignorés), état du GIF de démo.
-# Les journaux complets restent dans build-sim/check-build.log et build-sim/Testing/.
+# tests ctest (avec le décompte Unity : réussis / échoués / ignorés), état du GIF de démo, puis
+# build du firmware ESP32 (mêmes core/ et ui/, tools/fw.sh build) si ESP-IDF est installé.
+# Les journaux complets restent dans build-sim/check-build.log, build-sim/Testing/ et
+# build-firmware/fw-build.log.
 #
-# Usage : tools/check.sh [-c]
-#   -c  reconstruit tout (--clean-first) : un build incrémental ne réaffiche pas les
+# Usage : tools/check.sh [-c] [-s]
+#   -c  reconstruit tout le sim (--clean-first) : un build incrémental ne réaffiche pas les
 #       avertissements des fichiers déjà compilés.
-# Code de sortie : 0 si build propre (aucun avertissement) et tests verts, 1 sinon.
+#   -s  sim seul (pas de build firmware).
+# Code de sortie : 0 si builds propres (aucun avertissement) et tests verts, 1 sinon.
 #
 # Licence : GPL-3.0.
 set -uo pipefail
@@ -16,10 +19,12 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 CLEAN=()
-while getopts "ch" opt; do
+FIRMWARE=1
+while getopts "csh" opt; do
     case "$opt" in
         c) CLEAN=(--clean-first) ;;
-        *) sed -n '2,12p' "$0"; exit 2 ;;
+        s) FIRMWARE=0 ;;
+        *) sed -n '2,15p' "$0"; exit 2 ;;
     esac
 done
 
@@ -68,5 +73,13 @@ case "$(git status --porcelain -- "$gif" 2>/dev/null)" in
     "") echo "GIF : inchangé" ;;
     *)  echo "GIF : modifié ($(du -h "$gif" | cut -f1)) — à commiter avec la modification d'UI, sinon git checkout -- $gif" ;;
 esac
+
+if [ "$FIRMWARE" = 1 ]; then
+    if [ -f "${RAIDMASTER_IDF_PATH:-$HOME/esp/esp-idf-v5.5.6}/export.sh" ]; then
+        tools/fw.sh build || status=1
+    else
+        echo "FIRMWARE : non vérifié (ESP-IDF absent, voir firmware/README.md)"
+    fi
+fi
 
 exit "$status"

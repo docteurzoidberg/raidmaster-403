@@ -22,11 +22,13 @@ CTestTestfile.cmake
 Testing/
 compile_commands.json
 
-# ESP-IDF
+# ESP-IDF (sdkconfig dans build-firmware/, sdkconfig.defaults fait foi). Le dependencies.lock du
+# firmware est versionné : versions exactes des composants, builds reproductibles.
 sdkconfig
 sdkconfig.old
 managed_components/
 dependencies.lock
+!software/firmware/dependencies.lock
 
 # Références externes (clones en lecture seule, traces NMEA longues)
 software/references/
@@ -58,7 +60,7 @@ __pycache__/
 # Blender (sauvegardes automatiques)
 *.blend1
 
-# Skills Claude Code locaux (non partagés) ; sim-check, ship et pcb-carte-fille sont versionnés
+# Skills Claude Code locaux (non partagés) ; sim-check, firmware, ship et pcb-carte-fille sont versionnés
 .claude/skills/ui-shots/
 .claude/skills/boot-anim/
 .claude/skills/ui-font/

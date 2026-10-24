@@ -35,7 +35,7 @@ for px in 12 13 14 15 16 17; do
 done
 
 # Grandes tailles : glyphes utiles seulement.
-gen 25  "" " 0123456789°,.-NSEOkmC"        # valeurs bas d'écran balade
+gen 25  "" " 0123456789°,.-NSEOkmCXTI"     # valeurs bas d'écran balade, « EXTINCTION » (firmware)
 gen 29  "" " 0123456789,.%+-−"             # facteur calibration
 gen 34  "" " 0123456789,.-km"              # lectures calibration
 gen 38  "" "0123456789°-"                  # V / CAP mode raid

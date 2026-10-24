@@ -1,0 +1,42 @@
+menu "Raidmaster 403"
+
+    choice RAIDMASTER_LCD_ROTATION
+        prompt "Sens de l'écran (UI paysage sur le panneau portrait)"
+        default RAIDMASTER_LCD_ROTATION_90
+        help
+            L'UI 480 × 320 est tournée par logiciel vers le panneau natif 320 × 480. À changer si
+            l'image (et le tactile) apparaissent à l'envers dans le sens de montage voulu.
+
+        config RAIDMASTER_LCD_ROTATION_90
+            bool "90° (sens horaire)"
+        config RAIDMASTER_LCD_ROTATION_270
+            bool "270°"
+    endchoice
+
+    config RAIDMASTER_LCD_PCLK_MHZ
+        int "Horloge QSPI de l'écran (MHz)"
+        range 10 80
+        default 40
+        help
+            40 MHz comme les exemples Waveshare. Plus haut : images plus rapides, à valider sur la
+            carte (parasites, image corrompue).
+
+    config RAIDMASTER_BACKLIGHT_DAY
+        int "Rétroéclairage de jour (%)"
+        range 5 100
+        default 100
+
+    config RAIDMASTER_BACKLIGHT_NIGHT
+        int "Rétroéclairage de nuit (%)"
+        range 1 100
+        default 30
+
+    config RAIDMASTER_TOUCH_BUTTONS
+        bool "Tactile en guise de boutons (banc, sans carte boutons)"
+        default y
+        help
+            L'écran est découpé en 5 bandes verticales, de gauche à droite : A, B, −, +, Menu.
+            Appui court au relâchement, appui long après 800 ms de maintien. Pour essayer l'UI
+            au banc tant que la carte boutons n'existe pas.
+
+endmenu

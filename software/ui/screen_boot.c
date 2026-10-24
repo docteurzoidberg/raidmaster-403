@@ -17,6 +17,7 @@
 #include "ui_tokens.h"
 #include "ui_widgets.h"
 #include "boot_anim.h"
+#include "raidmaster_version.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -112,8 +113,15 @@ static void anim_timer_cb(lv_timer_t *t)
     (void)t;
     if (s_anim_img == NULL || s_anim_buf == NULL) return;
     s_anim_frame = (uint16_t)((s_anim_frame + 1) % boot_anim_frame_count());
-    boot_anim_render(s_anim_frame, s_anim_buf);
-    lv_obj_invalidate(s_anim_img);
+    uint16_t y0, y1;
+    boot_anim_render(s_anim_frame, s_anim_buf, &y0, &y1);
+    if (y0 > y1) return;
+    /* Seules les lignes qui ont changé sont redessinées. */
+    lv_area_t a;
+    lv_obj_get_coords(s_anim_img, &a);
+    a.y2 = a.y1 + y1;
+    a.y1 += y0;
+    lv_obj_invalidate_area(s_anim_img, &a);
 }
 
 static void build_dots(lv_obj_t *scr, int32_t y)
@@ -150,7 +158,7 @@ static bool build_animated(lv_obj_t *scr)
         return false;
     }
     s_anim_frame = 0;
-    boot_anim_render(0, s_anim_buf);
+    boot_anim_render(0, s_anim_buf, NULL, NULL);
     memset(&s_anim_dsc, 0, sizeof(s_anim_dsc));
     s_anim_dsc.header.magic  = LV_IMAGE_HEADER_MAGIC;
     s_anim_dsc.header.cf     = LV_COLOR_FORMAT_RGB565;
@@ -188,9 +196,9 @@ static bool build_animated(lv_obj_t *scr)
     lv_obj_set_style_text_letter_space(brand, 4, 0);
     ui_place_baseline(brand, UI_SCREEN_W / 2, 282, LV_TEXT_ALIGN_CENTER, 300);
 
-    lv_obj_t *ver = ui_label(scr, UI_FONT_SMALL, UI_C_MUTED, "v0.1.0 · SIM");
+    lv_obj_t *ver = ui_label(scr, UI_FONT_SMALL, UI_C_MUTED, RAIDMASTER_VERSION_STR);
     lv_obj_set_style_text_letter_space(ver, 2, 0);
-    ui_place_baseline(ver, UI_SCREEN_W - 10, UI_SCREEN_H - 8, LV_TEXT_ALIGN_RIGHT, 200);
+    ui_place_baseline(ver, UI_SCREEN_W - 10, UI_SCREEN_H - 8, LV_TEXT_ALIGN_RIGHT, 300);
 
     /* Les points s'allument régulièrement sur toute la durée. */
     s_dot_period_ms = s_duration_ms / DOT_COUNT;
@@ -235,7 +243,9 @@ lv_obj_t *screen_boot_create(void)
     lv_obj_set_style_text_letter_space(brand, 4, 0);
     ui_place_baseline(brand, UI_SCREEN_W / 2, 266, LV_TEXT_ALIGN_CENTER, 300);
 
-    lv_obj_t *ver = ui_label(scr, UI_FONT_SMALL, UI_C_MUTED, "v0.1.0 · SIM · LVGL 9.2");
+    lv_obj_t *ver = ui_label(scr, UI_FONT_SMALL, UI_C_MUTED, "");
+    lv_label_set_text_fmt(ver, "%s · LVGL %d.%d", RAIDMASTER_VERSION_STR, LVGL_VERSION_MAJOR,
+                          LVGL_VERSION_MINOR);
     lv_obj_set_style_text_letter_space(ver, 3, 0);
     ui_place_baseline(ver, UI_SCREEN_W / 2, 290, LV_TEXT_ALIGN_CENTER, 440);
 

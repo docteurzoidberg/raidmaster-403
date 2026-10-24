@@ -1,0 +1,37 @@
+# Raidmaster 403 — configuration ESP-IDF par défaut (carte Waveshare ESP32-S3-Touch-LCD-3.5B).
+# Le sdkconfig est généré dans build-firmware/ à partir de ce fichier : c'est lui qui fait foi
+# (tools/fw.sh menuconfig pour essayer, puis reporter ici ce qu'on garde).
+
+CONFIG_IDF_TARGET="esp32s3"
+
+# ESP32-S3R8 : flash 16 Mo QIO, PSRAM 8 Mo octale.
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_ESPTOOLPY_FLASHMODE_QIO=y
+CONFIG_ESPTOOLPY_FLASHFREQ_80M=y
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+# Gros blocs (tampon d'écran, image de l'animation) en PSRAM, petits en RAM interne.
+CONFIG_SPIRAM_USE_MALLOC=y
+CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=16384
+
+# Performances du rendu LVGL (logiciel, tampons en PSRAM).
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+CONFIG_COMPILER_OPTIMIZATION_PERF=y
+CONFIG_ESP32S3_DATA_CACHE_64KB=y
+CONFIG_ESP32S3_DATA_CACHE_LINE_64B=y
+CONFIG_ESP32S3_INSTRUCTION_CACHE_32KB=y
+
+# Console sur l'USB natif (USB-C de la carte, USB Serial/JTAG) : journaux et moniteur.
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+
+# FreeRTOS à 1 kHz : pas de 1 ms pour la boucle principale (LVGL, GPS, tactile).
+CONFIG_FREERTOS_HZ=1000
+# La boucle principale (LVGL, core) tourne dans app_main.
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=16384
+
+# LVGL : configuration par lv_conf.h (LV_CONF_PATH, voir CMakeLists.txt), ni exemples ni démos.
+CONFIG_LV_CONF_SKIP=n
+CONFIG_LV_BUILD_EXAMPLES=n

@@ -39,8 +39,9 @@ void ui_place_baseline(lv_obj_t *lbl, int32_t x, int32_t baseline_y, lv_text_ali
  * comme sur la maquette (« 48 273 », « 12,3 »). */
 void ui_fmt_km(char *buf, size_t len, double km, int decimals);
 
-/* Barre d'état commune (maquette) : heure, [10Hz], pastille fix, jauge batterie,
- * [température], mode. */
+/* Barre d'état commune (maquette) : heure, [10Hz], pastille fix, jauge batterie (éclair par-dessus
+ * sur alimentation externe, cellules qui se remplissent une à une en charge), [température],
+ * mode. */
 typedef struct {
     lv_obj_t *time;
     lv_obj_t *hz;
@@ -48,6 +49,7 @@ typedef struct {
     lv_obj_t *fix;
     lv_obj_t *batt_box;
     lv_obj_t *cells[4];
+    lv_obj_t *bolt;
     lv_obj_t *batt;
     lv_obj_t *temp;
     lv_obj_t *mode;

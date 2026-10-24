@@ -102,6 +102,8 @@ void ui_fmt_km(char *buf, size_t len, double km, int decimals)
 /* ------------------------------------------------------------------------- */
 /* Barre d'état                                                              */
 
+#define CHARGE_STEP_MS 500U     /* animation de charge : une cellule de plus toutes les 500 ms */
+
 static lv_obj_t *sb_label(lv_obj_t *parent, const char *text)
 {
     return ui_label(parent, UI_FONT_STATUS, UI_C_MUTED, text);
@@ -161,6 +163,21 @@ void ui_statusbar_create(lv_obj_t *parent, ui_statusbar_t *sb, bool show_hz, boo
         lv_obj_set_style_bg_color(sb->cells[i], UI_C_MUTED, 0);
         lv_obj_set_style_bg_opa(sb->cells[i], LV_OPA_COVER, 0);
     }
+    /* Éclair par-dessus la jauge (alimentation externe) : symbole de la police LVGL, détouré à la
+     * couleur du panneau par quatre copies décalées d'un pixel pour rester lisible sur les
+     * cellules pleines. Il déborde de la jauge en hauteur. */
+    lv_obj_add_flag(battg, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
+    lv_obj_add_flag(sb->batt_box, LV_OBJ_FLAG_OVERFLOW_VISIBLE);
+    sb->bolt = ui_box(sb->batt_box);
+    lv_obj_add_flag(sb->bolt, LV_OBJ_FLAG_IGNORE_LAYOUT | LV_OBJ_FLAG_OVERFLOW_VISIBLE | LV_OBJ_FLAG_HIDDEN);
+    lv_obj_set_size(sb->bolt, 14, 18);
+    lv_obj_align(sb->bolt, LV_ALIGN_CENTER, 0, 0);
+    static const int8_t halo[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    for (int i = 0; i <= 4; i++) {
+        lv_obj_t *l = ui_label(sb->bolt, &lv_font_montserrat_14, i < 4 ? UI_C_PANEL : UI_C_TEXT,
+                               LV_SYMBOL_CHARGE);
+        lv_obj_align(l, LV_ALIGN_CENTER, i < 4 ? halo[i][0] : 0, i < 4 ? halo[i][1] : 0);
+    }
     sb->batt = sb_label(battg, "--%");
 
     /* Poussoir : le reste est calé à droite. */
@@ -185,19 +202,35 @@ void ui_statusbar_update(ui_statusbar_t *sb, const ui_trip_state_t *s)
     lv_obj_set_style_shadow_color(sb->fix_dot, dot, 0);
 
     /* Jauge : une cellule par tranche de 25 %, arrondi au supérieur dès qu'il reste du jus.
-     * Couleur d'alerte sous 30 % / 10 %, neutre sinon (maquette). */
-    int pct = s->battery_pct;
-    int on  = (pct + 24) / 25;
+     * Sur batterie, couleur d'alerte sous 30 % / 10 %, neutre sinon (maquette). En charge : vert,
+     * et les cellules au-dessus du niveau s'allument une à une (au moins la dernière clignote).
+     * Alimentation externe : éclair par-dessus ; sans batterie, jauge vide et « USB ». */
+    const bool known = s->battery_pct <= 100;
+    const bool ext   = s->power != UI_PWR_BATTERY;
+    const int  pct   = known ? s->battery_pct : 0;
+    int on = (pct + 24) / 25;
     lv_color_t c = UI_C_MUTED;
-    if (pct <= 10)      c = UI_C_CRIT;
-    else if (pct <= 30) c = UI_C_WARN;
+    if (s->power == UI_PWR_CHARGING) {
+        const int base = on < 3 ? on : 3;
+        on = base + (int)(lv_tick_get() / CHARGE_STEP_MS % (uint32_t)(4 - base + 1));
+        c = UI_C_OK;
+    } else if (!ext && known) {
+        if (pct <= 10)      c = UI_C_CRIT;
+        else if (pct <= 30) c = UI_C_WARN;
+    }
     for (int i = 0; i < 4; i++) {
         lv_obj_set_style_bg_color(sb->cells[i], c, 0);
         lv_obj_set_style_bg_opa(sb->cells[i], i < on ? LV_OPA_COVER : LV_OPA_TRANSP, 0);
     }
     lv_obj_set_style_border_color(sb->batt_box, c, 0);
     lv_obj_set_style_text_color(sb->batt, c, 0);
-    lv_label_set_text_fmt(sb->batt, "%d%%", pct);
+    if (known)    lv_label_set_text_fmt(sb->batt, "%d%%", pct);
+    else if (ext) lv_label_set_text(sb->batt, "USB");
+    else          lv_label_set_text(sb->batt, "--%");
+    if (lv_obj_has_flag(sb->bolt, LV_OBJ_FLAG_HIDDEN) == ext) {
+        if (ext) lv_obj_remove_flag(sb->bolt, LV_OBJ_FLAG_HIDDEN);
+        else     lv_obj_add_flag(sb->bolt, LV_OBJ_FLAG_HIDDEN);
+    }
 
     if (sb->temp != NULL) {
         if (isnan(s->t_cabin_c)) lv_label_set_text(sb->temp, "--°C");

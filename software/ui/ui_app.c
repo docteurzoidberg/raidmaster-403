@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "hal/hal_power.h"
 #include "hal/hal_time.h"
 #include "screen_calib.h"
 #include "screen_menu.h"
@@ -144,7 +145,14 @@ static void refresh(lv_timer_t *t)
     u.heading_deg = u.heading_unknown ? 0 : (int)lroundf(st.trip.course_deg) % 360;
     u.chrono_s = st.trip.chrono_ms / 1000U;
     u.fix_type = st.trip.fix_ok ? UI_FIX_3D : UI_FIX_NONE;
-    u.battery_pct = 100;            /* TODO firmware : AXP2101 */
+    hal_power_t pw;
+    u.battery_pct = UI_BATT_UNKNOWN;
+    u.power = UI_PWR_BATTERY;
+    if (hal_power_read(&pw)) {
+        if (pw.battery && pw.pct >= 0) u.battery_pct = (uint8_t)(pw.pct > 100 ? 100 : pw.pct);
+        if (pw.charging)      u.power = UI_PWR_CHARGING;
+        else if (pw.external) u.power = UI_PWR_EXTERNAL;
+    }
     u.t_cabin_c = NAN;              /* TODO firmware : capteur de température */
     if (st.local_hh >= 0)
         snprintf(u.time_hhmm, sizeof(u.time_hhmm), "%02u:%02u", (unsigned)st.local_hh % 24U,
