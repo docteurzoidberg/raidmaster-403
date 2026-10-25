@@ -116,8 +116,12 @@ void app_main(void)
     hal_gps_init(on_gps_line, &s_app);
     ui_app_attach(&s_app);
 
-    /* Première image envoyée avant d'allumer le rétroéclairage (pas de flash d'image aléatoire). */
+    /* Première image envoyée en entier, puis laissée au panneau le temps de l'afficher (il relit sa
+     * mémoire à ~60 Hz et les cristaux suivent en quelques dizaines de ms), avant d'allumer le
+     * rétroéclairage : pas d'éclair de l'image précédente. */
     lv_refr_now(disp);
+    board_display_wait_idle();
+    vTaskDelay(pdMS_TO_TICKS(50));
     bool night = s_app.set.night;
     board_backlight_set(backlight_pct(night));
     jingle_play(&JINGLE_BOOT);      /* tâche audio : la boucle n'attend pas */

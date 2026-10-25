@@ -15,6 +15,8 @@
 
 #include "board.h"
 
+#include <string.h>
+
 #include "driver/ledc.h"
 #include "driver/spi_master.h"
 #include "esp_check.h"
@@ -94,7 +96,7 @@ static bool on_chunk_done(esp_lcd_panel_io_handle_t io, esp_lcd_panel_io_event_d
     return woken == pdTRUE;
 }
 
-static void backlight_init(void)
+void board_backlight_init(void)
 {
     const ledc_timer_config_t timer = {
         .speed_mode = BL_MODE,
@@ -122,10 +124,26 @@ void board_backlight_set(uint8_t percent)
     ledc_update_duty(BL_MODE, BL_CHANNEL);
 }
 
+void board_display_wait_idle(void)
+{
+    for (int i = 0; i < 2; i++) xSemaphoreTake(s_free_chunks, portMAX_DELAY);
+    for (int i = 0; i < 2; i++) xSemaphoreGive(s_free_chunks);
+}
+
+/* Mémoire du panneau mise au noir : après le reset elle contient du bruit, que le panneau affiche
+ * jusqu'à la première image (et encore quelques dizaines de ms, le temps que les cristaux suivent). */
+static void clear_panel(void)
+{
+    for (int i = 0; i < 2; i++) memset(s_chunk[i], 0, CHUNK_PX * sizeof(uint16_t));
+    for (int c = 0; c < CHUNK_COUNT; c++) {
+        xSemaphoreTake(s_free_chunks, portMAX_DELAY);
+        esp_lcd_panel_draw_bitmap(s_panel, 0, c * CHUNK_ROWS, BOARD_LCD_W, (c + 1) * CHUNK_ROWS, s_chunk[c & 1]);
+    }
+    board_display_wait_idle();
+}
+
 esp_err_t board_display_init(uint32_t pclk_hz)
 {
-    backlight_init();
-
     s_free_chunks = xSemaphoreCreateCounting(2, 2);
     for (int i = 0; i < 2; i++) {
         s_chunk[i] = heap_caps_malloc(CHUNK_PX * sizeof(uint16_t), MALLOC_CAP_DMA | MALLOC_CAP_INTERNAL);
@@ -156,6 +174,7 @@ esp_err_t board_display_init(uint32_t pclk_hz)
     ESP_RETURN_ON_ERROR(esp_lcd_new_panel_axs15231b(io, &panel_cfg, &s_panel), TAG, "panneau");
     ESP_RETURN_ON_ERROR(esp_lcd_panel_reset(s_panel), TAG, "reset logiciel");
     ESP_RETURN_ON_ERROR(esp_lcd_panel_init(s_panel), TAG, "init panneau");
+    clear_panel();
     /* Pilote v1.0.x : le paramètre veut dire « éteindre » (false → DISPON), comme chez Waveshare. */
     ESP_RETURN_ON_ERROR(esp_lcd_panel_disp_on_off(s_panel, false), TAG, "allumage");
     return ESP_OK;

@@ -68,6 +68,8 @@ esp_err_t board_amp_enable(bool on)
 esp_err_t board_init(const board_config_t *cfg)
 {
     s_rotation = cfg->rotation;
+    /* Rétroéclairage tenu éteint avant tout : la base du transistor n'a pas de résistance de rappel. */
+    board_backlight_init();
     ESP_RETURN_ON_ERROR(i2c_init(), TAG, "bus I²C");
     ESP_RETURN_ON_ERROR(lcd_reset(), TAG, "reset écran");
     ESP_RETURN_ON_ERROR(board_display_init(cfg->lcd_pclk_hz), TAG, "écran");

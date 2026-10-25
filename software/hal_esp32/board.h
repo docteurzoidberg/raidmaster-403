@@ -13,7 +13,9 @@
  *   board_init(&cfg);              // I²C, TCA9554, reset et init de l'écran, tactile
  *   lv_init();
  *   disp = board_display_create(); // affichage LVGL 480 × 320
- *   board_backlight_set(100);      // après la première image
+ *   lv_refr_now(disp);             // première image…
+ *   board_display_wait_idle();     // …envoyée en entier, puis laissée au panneau le temps de l'afficher
+ *   board_backlight_set(100);
  *
  * Licence : GPL-3.0.
  */
@@ -95,6 +97,9 @@ lv_display_t *board_display_create(void);
  * dernière bande part en DMA après), puis remise à zéro. */
 void board_display_stats(uint32_t *frames, uint32_t *avg_send_us);
 
+/* Attend la fin de l'envoi en cours (dernières bandes en DMA). */
+void board_display_wait_idle(void);
+
 /* Rétroéclairage, 0 à 100 %. */
 void board_backlight_set(uint8_t percent);
 
@@ -120,6 +125,7 @@ esp_err_t board_amp_enable(bool on);
 int64_t board_build_time_utc_ms(void);
 
 /* Fonctions internes au composant. */
+void      board_backlight_init(void);   /* PWM à 0 % : rétroéclairage éteint */
 esp_err_t board_display_init(uint32_t pclk_hz);
 esp_err_t board_touch_init(void);
 esp_err_t board_rtc_init(void);     /* RTC PCF85063 → heure système si elle n'a pas perdu l'heure */
