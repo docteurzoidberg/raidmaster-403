@@ -245,8 +245,8 @@ software/        tout le code ; CMakeLists.txt et CMakePresets.json, build dans 
   references/    non versionné : Open Rally Computer (inspiration), traces NMEA de test
 hardware/        électronique : datasheets des composants (hors git, fetch_datasheets.sh), index dans
                  README ; kicad/carte-fille/ : projet KiCad de la carte fille (en cours)
-enclosure/       boîtier : modèle 3D et plan coté de la carte (cad/, hors git) ; plus tard exports
-                 Fusion, 3MF
+enclosure/       boîtier : modèle 3D et plan coté de la carte (cad/, hors git), boîtier de référence
+                 OpenSCAD (reference/) ; plus tard exports Fusion, 3MF
 docs/            documentation
   user/          notice d'utilisation (à venir)
   demo/          GIF de démo
@@ -283,3 +283,4 @@ Composants tiers :
 | [minmea](https://github.com/kosma/minmea) | MIT (au choix WTFPL / MIT / LGPL-3) | décodage NMEA, dans `core/third_party/minmea/` |
 | [Unity](https://github.com/ThrowTheSwitch/Unity) v2.6.1 | MIT | tests, téléchargé au build |
 | [Share Tech Mono](https://fonts.google.com/specimen/Share+Tech+Mono) | SIL OFL 1.1 | police, dans `ui/assets/` |
+| [Waveshare ESP32-S3 3.5" Case (Parametric)](https://makerworld.com/fr/models/2552125-waveshare-esp32-s3-3-5-case-parametric) | MakerWorld Standard Digital File License (pas de redistribution) | référence de cotes du boîtier, dans `enclosure/reference/` ; à retirer avant toute publication du dépôt |
