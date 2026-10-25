@@ -31,5 +31,10 @@ fichier ou d'une œuvre dérivée. Le `.scad` reste versionné tant que le dép�
 retiré (historique compris) avant de rendre le dépôt public. Notre boîtier est un dessin à part dans
 Fusion : on n'en reprend que des cotes, relevées dans `prompts/boitier.md` § 3.2.
 
-Rendu : OpenSCAD est installé sous WSL (2021.01) ; il faut y ajouter la bibliothèque
-[BOSL2](https://github.com/BelfrySCAD/BOSL2) (`~/.local/share/OpenSCAD/libraries/BOSL2`).
+Rendu : OpenSCAD 2021.01 (WSL et Windows) avec la bibliothèque
+[BOSL2](https://github.com/BelfrySCAD/BOSL2), installée dans `~/.local/share/OpenSCAD/libraries/BOSL2`
+(clone git : `git pull` pour la mettre à jour) et `D:\<sync>\Documents\OpenSCAD\libraries\BOSL2`
+(copie). Aperçu F5 rapide ; en 2021.01 le rendu F6 / export STL dépasse 20 min (la grille du
+haut-parleur surtout : `enable_speaker_grill = false`), quelques secondes avec une version récente et le
+moteur Manifold. Deux avertissements sans effet viennent du fichier lui-même (variable
+`west_lip_relief_round` jamais définie, pour un rayon inutilisé).
