@@ -107,10 +107,11 @@ produit.
 
 ### Animation de démarrage
 
-La 403 tourne sur une grille cyan lumineuse. Elle est rendue dans Blender
+La 403 fait un tour sur une grille cyan lumineuse, calé sur le jingle : elle s'élance sur les arpèges
+puis ralentit en roue libre et s'arrête avec la fin de l'accord. Elle est rendue dans Blender
 (`ui/assets/boot_anim/boot_anim.blend`), puis convertie au build en `boot_anim.bin` (palette 256 couleurs)
 par `ui/assets/boot_anim/build_boot_anim.py`. Deux formats, mêmes pixels, à trancher : **2** par défaut
-(chaque image codée par différence avec la précédente, 1,1 Mo) ou **1** (images brutes, 5,5 Mo), choisi
+(chaque image codée par différence avec la précédente, 0,95 Mo) ou **1** (images brutes, 5,5 Mo), choisi
 par l'option CMake `RAIDMASTER_BOOT_ANIM_FORMAT`. Cette conversion demande Python avec Pillow et numpy,
 désigné par la variable CMake `RAIDMASTER_PYTHON`. Sans eux, l'écran de démarrage affiche une silhouette
 fixe.

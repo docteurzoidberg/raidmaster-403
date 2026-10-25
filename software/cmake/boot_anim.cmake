@@ -32,7 +32,7 @@ function(raidmaster_boot_anim target output ok_var)
     endif()
     set(RAIDMASTER_BOOT_ANIM_FORMAT 2 CACHE STRING "Animation de démarrage : 2 (par différence, 1,1 Mo) ou 1 (brute, 5,5 Mo)")
     set_property(CACHE RAIDMASTER_BOOT_ANIM_FORMAT PROPERTY STRINGS 1 2)
-    set(sheet "${_rm_repo_dir}/docs/mockups/boot-anim/2e_selection_hd_glow_fort.png")
+    set(sheet "${_rm_repo_dir}/docs/mockups/boot-anim/6_synchro_glissade.png")
     set(script "${_rm_software_dir}/ui/assets/boot_anim/build_boot_anim.py")
     execute_process(COMMAND "${RAIDMASTER_PYTHON}" -c "import PIL, numpy"
                     RESULT_VARIABLE rc OUTPUT_QUIET ERROR_QUIET)
