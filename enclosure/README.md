@@ -1,40 +1,25 @@
 # Boîtier
 
-Conception du boîtier aimanté (brief `prompts/boitier.md`). Document Fusion prévu :
-`tableau-raidmaster-403` ; plus tard ici : exports (STEP, STL / 3MF), plans, photos d'essais. Les
-éprouvettes vont dans `../../console-epreuves/`, jamais ici.
+Le boîtier du Raidmaster 403 sera dessiné dans Fusion et imprimé en PETG ou ASA (pas de PLA : l'habitacle
+monte à 60 °C en été). Il n'est pas encore dessiné ; une [maquette 3D de principe](../mockup/) vérifie déjà
+l'encombrement des trois cartes ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/mockup/)).
 
-## Modèle 3D et plan coté de la carte Waveshare ESP32-S3-Touch-LCD-3.5B (`cad/`)
+## Fichiers STEP du projet (`stepfiles/`)
 
-| Fichier | Contenu | Source |
-|---|---|---|
-| `cad/esp32-s3-touch-lcd-3.5B.stp` | assemblage 3D complet (vitre, LCD, PCB, composants ; Creo, 17 Mo) | archive [2D & 3D](https://files.waveshare.com/wiki/ESP32-S3-Touch-LCD-3.5B/ESP32-S3-Touch-LCD-3_5B.rar) du wiki |
-| `cad/esp32-s3-touch-lcd-3.5B-dimensions.pdf` | plan coté (nom d'origine « … 外形尺寸.pdf », « dimensions extérieures ») | idem |
-
-Usage : conception du boîtier ; cotes principales reprises dans `prompts/boitier.md` § 3.1.
-
-Les fichiers de `cad/` restent hors git (droits Waveshare) : les récupérer depuis le lien ci-dessus.
-
-## Boîtier de référence MakerWorld (`reference/makerworld-2552125/`)
-
-[Waveshare ESP32-S3 3.5" Case (Parametric)](https://makerworld.com/fr/models/2552125-waveshare-esp32-s3-3-5-case-parametric#profileId-2810851),
-par oirbsiu : coque arrière OpenSCAD (BOSL2) imprimée et testée par son auteur sur la même carte, qui
-sert donc de **source de cotes déjà éprouvées** (vitre, colonnes, USB-C, carte SD, boutons et poussoirs).
+Exports STEP du boîtier depuis Fusion, à venir.
 
 | Fichier | Contenu |
 |---|---|
-| `reference/makerworld-2552125/waveshare-esp32-s3-case.scad` | source paramétrique (versionné, dépôt privé) |
-| `cad/makerworld-2552125/waveshare-esp32-s3-case.3mf` | projet Bambu Studio du modèle (maillage seul, hors git) |
+| — | aucun pour l'instant |
 
-Licence MakerWorld *Standard Digital File License* : usage personnel, ni partage ni redistribution du
-fichier ou d'une œuvre dérivée. Le `.scad` reste versionné tant que le dépôt est privé, et doit en être
-retiré (historique compris) avant de rendre le dépôt public. Notre boîtier est un dessin à part dans
-Fusion : on n'en reprend que des cotes, relevées dans `prompts/boitier.md` § 3.2.
+## Modèles 3D externes utilisés
 
-Rendu : OpenSCAD 2021.01 (WSL et Windows) avec la bibliothèque
-[BOSL2](https://github.com/BelfrySCAD/BOSL2), installée dans `~/.local/share/OpenSCAD/libraries/BOSL2`
-(clone git : `git pull` pour la mettre à jour) et `D:\<sync>\Documents\OpenSCAD\libraries\BOSL2`
-(copie). Aperçu F5 rapide ; en 2021.01 le rendu F6 / export STL dépasse 20 min (la grille du
-haut-parleur surtout : `enable_speaker_grill = false`), quelques secondes avec une version récente et le
-moteur Manifold. Deux avertissements sans effet viennent du fichier lui-même (variable
-`west_lip_relief_round` jamais définie, pour un rayon inutilisé).
+Ces modèles ne sont pas dans le dépôt (droits de leurs auteurs) : les récupérer à leur source.
+
+| Modèle | Description | Source |
+|---|---|---|
+| Waveshare ESP32-S3-Touch-LCD-3.5B, modèle 3D | assemblage STEP complet de la carte (vitre, LCD, PCB, composants), avec son plan coté ; sert à la conception du boîtier et à la maquette 3D | archive « 2D & 3D » du [wiki Waveshare](https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-3.5B) : [ESP32-S3-Touch-LCD-3_5B.rar](https://files.waveshare.com/wiki/ESP32-S3-Touch-LCD-3.5B/ESP32-S3-Touch-LCD-3_5B.rar) |
+| Boîtier Waveshare d'origine, version 3.5B-C | plan coté et photos du boîtier vendu avec la carte : principe de la collerette et passage de la prise USB-C | [ESP32-S3-Touch-LCD-3.5B-C.rar](https://files.waveshare.com/wiki/ESP32-S3-Touch-LCD-3.5B/ESP32-S3-Touch-LCD-3.5B-C.rar) |
+| [Waveshare ESP32-S3 3.5" Case (Parametric)](https://makerworld.com/fr/models/2552125-waveshare-esp32-s3-3-5-case-parametric), par oirbsiu | coque arrière OpenSCAD ([BOSL2](https://github.com/BelfrySCAD/BOSL2)) imprimée et testée sur la même carte : source de cotes éprouvées (vitre, colonnes, USB-C, carte SD, boutons). Seules des cotes en sont reprises, le boîtier du projet est un dessin à part | MakerWorld, licence *Standard Digital File License* (pas de redistribution) |
+| u-blox NEO (module GPS NEO-M9N) | modèle STEP du module, pour la carte fille | [u-blox/3D-Step-Models-Library](https://github.com/u-blox/3D-Step-Models-Library), fichier `POS/NEO.STEP` |
+| Bouton poussoir 12 mm Würth 430476085716 | modèle des 5 boutons de la carte boutons | bibliothèque 3D livrée avec KiCad (`Button_Switch_THT.3dshapes`) |
