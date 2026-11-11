@@ -103,7 +103,8 @@
 			(symbol "Conn_01x05_Socket_1_1"
 				(polyline
 					(pts
-						(xy -1.27 5.08) (xy -0.508 5.08)
+						(xy -1.27 5.08)
+						(xy -0.508 5.08)
 					)
 					(stroke
 						(width 0.1524)
@@ -115,7 +116,8 @@
 				)
 				(polyline
 					(pts
-						(xy -1.27 2.54) (xy -0.508 2.54)
+						(xy -1.27 2.54)
+						(xy -0.508 2.54)
 					)
 					(stroke
 						(width 0.1524)
@@ -127,7 +129,8 @@
 				)
 				(polyline
 					(pts
-						(xy -1.27 0) (xy -0.508 0)
+						(xy -1.27 0)
+						(xy -0.508 0)
 					)
 					(stroke
 						(width 0.1524)
@@ -139,7 +142,8 @@
 				)
 				(polyline
 					(pts
-						(xy -1.27 -2.54) (xy -0.508 -2.54)
+						(xy -1.27 -2.54)
+						(xy -0.508 -2.54)
 					)
 					(stroke
 						(width 0.1524)
@@ -151,7 +155,8 @@
 				)
 				(polyline
 					(pts
-						(xy -1.27 -5.08) (xy -0.508 -5.08)
+						(xy -1.27 -5.08)
+						(xy -0.508 -5.08)
 					)
 					(stroke
 						(width 0.1524)
@@ -402,7 +407,8 @@
 			(symbol "Conn_Coaxial_0_1"
 				(polyline
 					(pts
-						(xy -2.54 0) (xy -0.508 0)
+						(xy -2.54 0)
+						(xy -0.508 0)
 					)
 					(stroke
 						(width 0)
@@ -449,7 +455,8 @@
 				)
 				(polyline
 					(pts
-						(xy 0 -2.54) (xy 0 -1.778)
+						(xy 0 -2.54)
+						(xy 0 -1.778)
 					)
 					(stroke
 						(width 0)
@@ -2017,7 +2024,8 @@
 			(symbol "C_0_1"
 				(polyline
 					(pts
-						(xy -2.032 0.762) (xy 2.032 0.762)
+						(xy -2.032 0.762)
+						(xy 2.032 0.762)
 					)
 					(stroke
 						(width 0.508)
@@ -2029,7 +2037,8 @@
 				)
 				(polyline
 					(pts
-						(xy -2.032 -0.762) (xy 2.032 -0.762)
+						(xy -2.032 -0.762)
+						(xy 2.032 -0.762)
 					)
 					(stroke
 						(width 0.508)
@@ -2171,7 +2180,11 @@
 			(symbol "D_TVS_0_1"
 				(polyline
 					(pts
-						(xy -2.54 1.27) (xy -2.54 -1.27) (xy 2.54 1.27) (xy 2.54 -1.27) (xy -2.54 1.27)
+						(xy -2.54 1.27)
+						(xy -2.54 -1.27)
+						(xy 2.54 1.27)
+						(xy 2.54 -1.27)
+						(xy -2.54 1.27)
 					)
 					(stroke
 						(width 0.254)
@@ -2183,7 +2196,10 @@
 				)
 				(polyline
 					(pts
-						(xy 0.508 1.27) (xy 0 1.27) (xy 0 -1.27) (xy -0.508 -1.27)
+						(xy 0.508 1.27)
+						(xy 0 1.27)
+						(xy 0 -1.27)
+						(xy -0.508 -1.27)
 					)
 					(stroke
 						(width 0.254)
@@ -2195,7 +2211,8 @@
 				)
 				(polyline
 					(pts
-						(xy 1.27 0) (xy -1.27 0)
+						(xy 1.27 0)
+						(xy -1.27 0)
 					)
 					(stroke
 						(width 0)
@@ -2526,7 +2543,11 @@
 			(symbol "LED_0_1"
 				(polyline
 					(pts
-						(xy -3.048 -0.762) (xy -4.572 -2.286) (xy -3.81 -2.286) (xy -4.572 -2.286) (xy -4.572 -1.524)
+						(xy -3.048 -0.762)
+						(xy -4.572 -2.286)
+						(xy -3.81 -2.286)
+						(xy -4.572 -2.286)
+						(xy -4.572 -1.524)
 					)
 					(stroke
 						(width 0)
@@ -2538,7 +2559,11 @@
 				)
 				(polyline
 					(pts
-						(xy -1.778 -0.762) (xy -3.302 -2.286) (xy -2.54 -2.286) (xy -3.302 -2.286) (xy -3.302 -1.524)
+						(xy -1.778 -0.762)
+						(xy -3.302 -2.286)
+						(xy -2.54 -2.286)
+						(xy -3.302 -2.286)
+						(xy -3.302 -1.524)
 					)
 					(stroke
 						(width 0)
@@ -2550,7 +2575,8 @@
 				)
 				(polyline
 					(pts
-						(xy -1.27 0) (xy 1.27 0)
+						(xy -1.27 0)
+						(xy 1.27 0)
 					)
 					(stroke
 						(width 0)
@@ -2562,7 +2588,8 @@
 				)
 				(polyline
 					(pts
-						(xy -1.27 -1.27) (xy -1.27 1.27)
+						(xy -1.27 -1.27)
+						(xy -1.27 1.27)
 					)
 					(stroke
 						(width 0.254)
@@ -2574,7 +2601,10 @@
 				)
 				(polyline
 					(pts
-						(xy 1.27 -1.27) (xy 1.27 1.27) (xy -1.27 0) (xy 1.27 -1.27)
+						(xy 1.27 -1.27)
+						(xy 1.27 1.27)
+						(xy -1.27 0)
+						(xy 1.27 -1.27)
 					)
 					(stroke
 						(width 0.254)
@@ -2856,7 +2886,8 @@
 			(symbol "SolderJumper_2_Open_0_1"
 				(polyline
 					(pts
-						(xy -0.254 1.016) (xy -0.254 -1.016)
+						(xy -0.254 1.016)
+						(xy -0.254 -1.016)
 					)
 					(stroke
 						(width 0.1524)
@@ -2892,7 +2923,8 @@
 				)
 				(polyline
 					(pts
-						(xy 0.254 1.016) (xy 0.254 -1.016)
+						(xy 0.254 1.016)
+						(xy 0.254 -1.016)
 					)
 					(stroke
 						(width 0.1524)
@@ -3932,7 +3964,12 @@
 			(symbol "PWR_FLAG_0_1"
 				(polyline
 					(pts
-						(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
+						(xy 0 0)
+						(xy 0 1.27)
+						(xy -1.016 1.905)
+						(xy 0 2.54)
+						(xy 1.016 1.905)
+						(xy 0 1.27)
 					)
 					(stroke
 						(width 0)
@@ -3945,62 +3982,6 @@
 			)
 			(embedded_fonts no)
 		)
-	)
-	(text "V_USB du M9N a GND (USB non utilise, u-center via passerelle ESP32) ; D_SEL ouvert = UART"
-		(exclude_from_sim no)
-		(at 30.48 171.45 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "476da73d-9eca-4c44-93b8-e94b183c901f")
-	)
-	(text "A verifier a reception : ordre des broches du GY-271 (VCC GND SCL SDA DRDY)"
-		(exclude_from_sim no)
-		(at 30.48 179.07 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "55c00206-bdef-4e42-ab50-7387d3482a46")
-	)
-	(text "Carte fille raidmaster 403 - brochage J1 = J8 Waveshare 3.5B"
-		(exclude_from_sim no)
-		(at 30.48 162.56 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-				(bold yes)
-			)
-			(justify left bottom)
-		)
-		(uuid "642b187b-8652-4bd3-bcd1-45b1c0e263e8")
-	)
-	(text "Bias-T ref. u-blox : R1 22R 2010 (court-circuit < 150 mA), L1 27nH bobinee (>500R a 1,5 GHz), D1 ESD RF 0,06 pF"
-		(exclude_from_sim no)
-		(at 30.48 167.64 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "b2ce5b28-6b42-44cc-b9bd-f58fca5f9d09")
-	)
-	(text "Firmware : IO17 en haute impedance quand GPS_EN = 0 (pas d'alimentation fantome du module)"
-		(exclude_from_sim no)
-		(at 30.48 175.26 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "ff35e602-9a77-48fd-84a4-f4e3ba8fd624")
 	)
 	(no_connect
 		(at 50.8 93.98)
@@ -4029,10 +4010,6 @@
 	(no_connect
 		(at 50.8 91.44)
 		(uuid "39150aa5-45b8-45d4-a16b-36f5c4c2d38a")
-	)
-	(no_connect
-		(at 38.1 91.44)
-		(uuid "3e7290ab-1625-4491-b750-718dd1b88cdd")
 	)
 	(no_connect
 		(at 38.1 68.58)
@@ -4092,7 +4069,8 @@
 	)
 	(wire
 		(pts
-			(xy 228.6 134.62) (xy 228.6 130.81)
+			(xy 228.6 134.62)
+			(xy 228.6 130.81)
 		)
 		(stroke
 			(width 0)
@@ -4102,7 +4080,8 @@
 	)
 	(wire
 		(pts
-			(xy 172.72 95.25) (xy 172.72 99.06)
+			(xy 172.72 95.25)
+			(xy 172.72 99.06)
 		)
 		(stroke
 			(width 0)
@@ -4112,7 +4091,8 @@
 	)
 	(wire
 		(pts
-			(xy 228.6 118.11) (xy 228.6 123.19)
+			(xy 228.6 118.11)
+			(xy 228.6 123.19)
 		)
 		(stroke
 			(width 0)
@@ -4122,7 +4102,8 @@
 	)
 	(wire
 		(pts
-			(xy 215.9 110.49) (xy 228.6 110.49)
+			(xy 215.9 110.49)
+			(xy 228.6 110.49)
 		)
 		(stroke
 			(width 0)
@@ -4132,13 +4113,65 @@
 	)
 	(wire
 		(pts
-			(xy 172.72 110.49) (xy 172.72 106.68)
+			(xy 172.72 110.49)
+			(xy 172.72 106.68)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "a51cc9c2-c192-4569-8472-c86db53e1340")
+	)
+	(text "V_USB du M9N a GND (USB non utilise, u-center via passerelle ESP32) ; D_SEL ouvert = UART"
+		(at 30.48 171.45 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "476da73d-9eca-4c44-93b8-e94b183c901f")
+	)
+	(text "A verifier a reception : ordre des broches du GY-271 (VCC GND SCL SDA DRDY)"
+		(at 30.48 179.07 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "55c00206-bdef-4e42-ab50-7387d3482a46")
+	)
+	(text "Carte fille raidmaster 403 - brochage J1 = J8 Waveshare 3.5B"
+		(at 30.48 162.56 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+				(bold yes)
+			)
+			(justify left bottom)
+		)
+		(uuid "642b187b-8652-4bd3-bcd1-45b1c0e263e8")
+	)
+	(text "Bias-T ref. u-blox : R1 22R 2010 (court-circuit < 150 mA), L1 27nH bobinee (>500R a 1,5 GHz), D1 ESD RF 0,06 pF"
+		(at 30.48 167.64 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "b2ce5b28-6b42-44cc-b9bd-f58fca5f9d09")
+	)
+	(text "Firmware : IO17 en haute impedance quand GPS_EN = 0 (pas d'alimentation fantome du module)"
+		(at 30.48 175.26 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ff35e602-9a77-48fd-84a4-f4e3ba8fd624")
 	)
 	(label "VBAT"
 		(at 50.8 63.5 0)
@@ -5060,15 +5093,94 @@
 		)
 		(uuid "ffba15ae-51ff-499f-8b18-74f9c1343478")
 	)
+	(sheet
+		(at 325.12 147.32)
+		(size 76.2 25.4)
+		(fields_autoplaced)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0)
+		)
+		(uuid "c0da300e-d0cb-4239-aee1-71db5163548d")
+		(property "Sheetname" "carte-boutons (partie détachable)"
+			(at 325.12 146.685 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "carte-boutons.kicad_sch"
+			(at 325.12 173.355 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "carte-fille"
+				(path "/5ac51337-5f25-427c-a030-02688d3b4193"
+					(page "2")
+				)
+			)
+		)
+	)
+  (label "PWRON"
+    (at 38.1 91.44 180)
+    (fields_autoplaced yes)
+    (effects (font (size 1.27 1.27)) (justify right bottom))
+    (uuid "25627a41-377c-473b-b5a7-0c05f79a1cad")
+  )
+  (label "PWRON"
+    (at 82.55 137.16 180)
+    (fields_autoplaced yes)
+    (effects (font (size 1.27 1.27)) (justify right bottom))
+    (uuid "80626d2c-2934-41d8-b9c5-2b7eeb85e337")
+  )
+  (label "PWR_BTN"
+    (at 90.17 137.16 0)
+    (fields_autoplaced yes)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid "a7ee944b-7dc1-4b45-a18b-c7cc75b61628")
+  )
+  (label "PWR_BTN"
+    (at 104.14 137.16 0)
+    (fields_autoplaced yes)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid "dc223783-e9fb-48ec-94f1-d4af35209302")
+  )
+  (label "GND"
+    (at 116.84 137.16 0)
+    (fields_autoplaced yes)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid "b30b491b-0565-4387-82e5-c12d7b1fcdca")
+  )
+  (text "Bouton PWR déporté (réserve) : bouton à câbler entre TP5 et TP6 ; R9 510R comme le bouton K3 de la Waveshare (PWRON, J8 broche 23, à la masse)"
+    (at 30.48 182.88 0)
+    (effects (font (size 1.27 1.27)) (justify left bottom))
+    (uuid "42a01be6-4355-456f-884f-f64aa461ac97")
+  )
 	(symbol
 		(lib_id "Device:R")
 		(at 86.36 71.12 90)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "065b2bf8-5bcf-4aa4-935b-b2dc8bc532b4")
 		(property "Reference" "R4"
@@ -5124,6 +5236,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "2"
 			(uuid "a44f9d1b-b1eb-4722-8c39-f02c15ae9e95")
 		)
@@ -5143,11 +5257,9 @@
 		(lib_id "Connector_Generic:Conn_01x06")
 		(at 229.87 64.77 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "0b33a56f-6cd6-4cde-8666-198a2cc7188b")
 		(property "Reference" "J4"
@@ -5203,6 +5315,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "4a9c1694-46ce-44bf-9a7f-e425bb7bf961")
 		)
@@ -5234,11 +5348,9 @@
 		(lib_id "Device:C")
 		(at 191.77 58.42 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "0de34421-f852-4be5-9208-2c8da6a38d7a")
 		(property "Reference" "C7"
@@ -5296,6 +5408,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "691e2976-2ae4-4f98-931d-90fba3b5983a")
 		)
@@ -5315,11 +5429,9 @@
 		(lib_id "Regulator_Linear:AP2112K-3.3")
 		(at 162.56 22.86 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "39c55fbc-dae5-407d-953f-06dfb15ac327")
 		(property "Reference" "U2"
@@ -5377,6 +5489,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "15d9ae80-71b8-494c-90bc-a30a7393821c")
 		)
@@ -5405,11 +5519,9 @@
 		(lib_id "Connector_Generic:Conn_02x16_Odd_Even")
 		(at 43.18 81.28 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "3d4c4e4f-bea5-47d3-94a7-b902dc3d4485")
 		(property "Reference" "J1"
@@ -5465,6 +5577,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "5"
 			(uuid "1de9a062-7285-4590-b490-f96be5a50b0e")
 		)
@@ -5574,11 +5688,9 @@
 		(lib_id "Device:D_TVS")
 		(at 172.72 102.87 90)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "419244fb-c5c1-402b-8b2f-5f67b4afd968")
 		(property "Reference" "D1"
@@ -5634,6 +5746,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "2"
 			(uuid "e072aebe-31b9-48aa-98b0-f9e831a672e9")
 		)
@@ -5653,11 +5767,9 @@
 		(lib_id "Connector:TestPoint")
 		(at 114.3 54.61 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "45097efa-3df9-4a07-81c7-6aaf0a706bec")
 		(property "Reference" "TP4"
@@ -5713,6 +5825,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "17e53cf7-1147-4515-8bc6-22f0419494a3")
 		)
@@ -5729,11 +5843,9 @@
 		(lib_id "power:PWR_FLAG")
 		(at 50.8 45.72 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "489cb45a-1b7b-46ba-94dd-70e629864263")
 		(property "Reference" "#FLG03"
@@ -5790,6 +5902,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "5f77c70b-4d01-4249-b36d-d2e9c9063335")
 		)
@@ -5806,11 +5920,9 @@
 		(lib_id "Device:R")
 		(at 228.6 114.3 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "4e502023-07c6-43d8-90e2-38d859d73227")
 		(property "Reference" "R5"
@@ -5866,6 +5978,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "988ab83b-477d-45dd-83ec-03c7eb32a240")
 		)
@@ -5885,11 +5999,9 @@
 		(lib_id "Connector:TestPoint")
 		(at 92.71 54.61 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "51f767fd-3d74-4d8a-bbde-c87e8e1f1858")
 		(property "Reference" "TP2"
@@ -5945,6 +6057,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "908bd317-9079-421d-8b81-80e95169febd")
 		)
@@ -5961,11 +6075,9 @@
 		(lib_id "Device:L")
 		(at 170.18 114.3 90)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "562b65ff-f227-4e86-a287-701a1fa131ca")
 		(property "Reference" "L1"
@@ -6021,6 +6133,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "bb6b0478-735a-4596-ad81-4a7a06be3332")
 		)
@@ -6040,11 +6154,9 @@
 		(lib_id "Connector:Conn_01x05_Socket")
 		(at 229.87 36.83 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "606cda06-72b0-45c6-b5d4-ba4eb2e4cbb0")
 		(property "Reference" "J3"
@@ -6100,6 +6212,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "3"
 			(uuid "a0ab65f3-462b-4165-b0c6-d4fc4156d03e")
 		)
@@ -6128,11 +6242,9 @@
 		(lib_id "Device:R")
 		(at 146.05 120.65 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "6971bb5d-3be0-4506-b5a9-8ab049ae8404")
 		(property "Reference" "R1"
@@ -6188,6 +6300,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "2"
 			(uuid "c4ad9e8c-8eb4-4a9b-9c3b-97792d382689")
 		)
@@ -6207,11 +6321,9 @@
 		(lib_id "power:PWR_FLAG")
 		(at 40.64 45.72 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "6d1815f8-c87c-4fca-a442-4e86e137ddff")
 		(property "Reference" "#FLG02"
@@ -6268,6 +6380,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "d86efc17-4bc0-4fc7-8a72-a5d8babb6a60")
 		)
@@ -6284,11 +6398,9 @@
 		(lib_id "Device:LED")
 		(at 228.6 127 90)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "713ebdbc-1314-4704-9fd7-0964d60c79ac")
 		(property "Reference" "D2"
@@ -6344,6 +6456,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "f38ac8b3-a2d6-447e-be52-096fbb3c4592")
 		)
@@ -6363,11 +6477,9 @@
 		(lib_id "RF_GPS:NEO-M9N")
 		(at 132.08 86.36 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "7a5803b2-4ff9-4f80-b3a9-bcf2d0695680")
 		(property "Reference" "U1"
@@ -6423,6 +6535,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "22"
 			(uuid "725b0925-ec49-4d4d-8aec-11a5ba1aa999")
 		)
@@ -6508,11 +6622,9 @@
 		(lib_id "Device:R")
 		(at 181.61 50.8 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "8acc2378-e961-4d97-b177-9e76142930fd")
 		(property "Reference" "R6"
@@ -6568,6 +6680,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "29a5f1d1-0478-4795-859d-01334f738a18")
 		)
@@ -6587,11 +6701,9 @@
 		(lib_id "Connector:TestPoint")
 		(at 93.98 119.38 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "961ed23e-6c89-4f00-b690-4d3535cfbb3a")
 		(property "Reference" "TP1"
@@ -6647,6 +6759,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "ce862205-080b-4c3a-928e-8553daa664bb")
 		)
@@ -6663,11 +6777,9 @@
 		(lib_id "Device:R")
 		(at 161.29 50.8 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "a5c449ae-b562-48d3-977d-c2bf1ff04195")
 		(property "Reference" "R8"
@@ -6723,6 +6835,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "2"
 			(uuid "f2a0e688-652e-4de6-8362-fd8683247a3a")
 		)
@@ -6742,11 +6856,9 @@
 		(lib_id "Device:R")
 		(at 86.36 78.74 90)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "b2a2da38-ff65-4c25-8081-11376794dbe7")
 		(property "Reference" "R3"
@@ -6802,6 +6914,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "823cd76e-1fd5-4cda-ad76-c7e686e4bd12")
 		)
@@ -6821,11 +6935,9 @@
 		(lib_id "Regulator_Linear:XC6206PxxxMR")
 		(at 88.9 24.13 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "bb384e83-9516-4e09-89e4-95674e2c049c")
 		(property "Reference" "U3"
@@ -6882,6 +6994,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "fa10a505-45f3-48ac-93a7-869fb8ce73d4")
 		)
@@ -6904,11 +7018,9 @@
 		(lib_id "Jumper:SolderJumper_2_Open")
 		(at 210.82 110.49 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "bb391241-fa38-44ab-97a8-9229bce7ac21")
 		(property "Reference" "JP1"
@@ -6964,6 +7076,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "2"
 			(uuid "b2451f46-c44f-4391-b120-274c229c1ed5")
 		)
@@ -6983,11 +7097,9 @@
 		(lib_id "Connector:TestPoint")
 		(at 104.14 54.61 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "c0959f33-3a5f-4523-98a7-098deef55de6")
 		(property "Reference" "TP3"
@@ -7043,6 +7155,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "9e2a84f9-3d92-4ea2-8533-3069da487d0f")
 		)
@@ -7059,11 +7173,9 @@
 		(lib_id "Device:C")
 		(at 128.27 46.99 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "c6e79082-ceec-421e-97b4-d30b06a70e6b")
 		(property "Reference" "C6"
@@ -7121,6 +7233,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "f217024b-8ae6-4eb2-b13e-32d4d52fc2c0")
 		)
@@ -7140,11 +7254,9 @@
 		(lib_id "Device:R")
 		(at 171.45 50.8 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "cd8a87ef-f492-4c07-8082-279d9e8ffd98")
 		(property "Reference" "R7"
@@ -7200,6 +7312,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "2"
 			(uuid "73d06c34-bac7-4b2e-8278-1e521abb16c2")
 		)
@@ -7219,11 +7333,9 @@
 		(lib_id "Device:C")
 		(at 71.12 31.75 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "d6b6a584-dede-4255-bae6-798468a8e8a2")
 		(property "Reference" "C5"
@@ -7281,6 +7393,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "39f26be8-15d5-4cc0-9e33-1a9441adf8cd")
 		)
@@ -7300,11 +7414,9 @@
 		(lib_id "Device:C")
 		(at 193.04 30.48 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "d87c7331-2348-4211-99fd-a4926586494d")
 		(property "Reference" "C4"
@@ -7362,6 +7474,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "b646ef32-9832-45ad-b87a-5207ecc8765c")
 		)
@@ -7381,11 +7495,9 @@
 		(lib_id "Device:C")
 		(at 130.81 27.94 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "e1957070-953d-49dd-8e4e-1835dbeb790a")
 		(property "Reference" "C2"
@@ -7443,6 +7555,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "da18f335-9cae-43c3-ba2f-c506bb4d5819")
 		)
@@ -7462,11 +7576,9 @@
 		(lib_id "Device:C")
 		(at 182.88 30.48 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "eae28f8f-79cf-4898-b756-bdab61453c6c")
 		(property "Reference" "C3"
@@ -7524,6 +7636,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "213be455-3984-4428-8cbb-8d49a8dcd32c")
 		)
@@ -7543,11 +7657,9 @@
 		(lib_id "Device:R")
 		(at 123.19 27.94 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "efab9929-c950-4d02-ad21-305754d681b9")
 		(property "Reference" "R2"
@@ -7603,6 +7715,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "e0590eb3-befa-47ed-a475-88368a021919")
 		)
@@ -7622,11 +7736,9 @@
 		(lib_id "Connector:Conn_Coaxial")
 		(at 228.6 92.71 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "f02094c9-c3b6-4843-bafc-864a9a918fac")
 		(property "Reference" "J2"
@@ -7682,6 +7794,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "3cd87c30-7ccd-4ef6-a449-18b5422d4e2d")
 		)
@@ -7701,11 +7815,9 @@
 		(lib_id "Device:C")
 		(at 157.48 121.92 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "f26a107d-0b68-484f-bf89-c395a38aa3b8")
 		(property "Reference" "C1"
@@ -7763,6 +7875,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "2"
 			(uuid "8e07e8e5-9de3-47e5-b07a-2ac66f463ff6")
 		)
@@ -7782,11 +7896,9 @@
 		(lib_id "power:PWR_FLAG")
 		(at 30.48 45.72 0)
 		(unit 1)
-		(body_style 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(in_pos_files yes)
 		(dnp no)
 		(uuid "fd4f8a0a-5b4d-4b39-98e7-041005b8d71b")
 		(property "Reference" "#FLG01"
@@ -7843,6 +7955,8 @@
 				)
 			)
 		)
+		(body_style 1)
+		(in_pos_files yes)
 		(pin "1"
 			(uuid "3ab63bf8-4598-407e-852f-0ce6f68ad6fb")
 		)
@@ -7855,56 +7969,190 @@
 			)
 		)
 	)
-	(sheet
-		(at 325.12 147.32)
-		(size 76.2 25.4)
-		(exclude_from_sim no)
+	(symbol
+		(lib_id "Device:R")
+		(at 86.36 137.16 90)
+		(unit 1)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(fill
-			(color 0 0 0 0)
-		)
-		(uuid "c0da300e-d0cb-4239-aee1-71db5163548d")
-		(property "Sheetname" "carte-boutons (partie détachable)"
-			(at 325.12 146.685 0)
-			(show_name no)
-			(do_not_autoplace no)
+		(uuid "df79b14d-13cf-4c88-a505-cbd4f40ef6b4")
+		(property "Reference" "R9"
+			(at 86.36 135.128 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left bottom)
 			)
 		)
-		(property "Sheetfile" "carte-boutons.kicad_sch"
-			(at 325.12 173.355 0)
-			(show_name no)
-			(do_not_autoplace no)
+		(property "Value" "510R"
+			(at 86.36 137.16 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left top)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
+			(at 86.36 137.16 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 86.36 137.16 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 86.36 137.16 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(instances
 			(project "carte-fille"
 				(path "/5ac51337-5f25-427c-a030-02688d3b4193"
-					(page "2")
+					(reference "R9")
+					(unit 1)
 				)
 			)
 		)
 	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 104.14 137.16 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c90fe57f-345f-4b4e-85b9-fe82ba6d9470")
+		(property "Reference" "TP5"
+			(at 104.14 130.302 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "PWR_BTN"
+			(at 104.14 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D2.0mm"
+			(at 104.14 137.16 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 104.14 137.16 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "test point"
+			(at 104.14 137.16 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "carte-fille"
+				(path "/5ac51337-5f25-427c-a030-02688d3b4193"
+					(reference "TP5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 116.84 137.16 0)
+		(unit 1)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "0f660548-39ea-49c9-a10c-d34894733419")
+		(property "Reference" "TP6"
+			(at 116.84 130.302 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND (PWR)"
+			(at 116.84 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D2.0mm"
+			(at 116.84 137.16 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 116.84 137.16 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "test point"
+			(at 116.84 137.16 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(instances
+			(project "carte-fille"
+				(path "/5ac51337-5f25-427c-a030-02688d3b4193"
+					(reference "TP6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(embedded_fonts no)
 	(sheet_instances
 		(path "/"
 			(page "1")
 		)
 	)
-	(embedded_fonts no)
 )
