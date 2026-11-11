@@ -20,7 +20,7 @@ tableau de bord : distances partielles A et B, odomètre, vitesse, cap, moyenne,
 | Cap | magnétomètre QMC5883L (I²C) |
 | Alimentation | batterie Li-ion interne gérée par l'AXP2101, recharge USB-C, aucun fil 12 V |
 | Commandes | 5 boutons (A, B, +, −, menu) + tactile |
-| Boîtier | PETG / ASA imprimé, aimants au dos (pas de PLA : habitacle à 60 °C en été) |
+| Boîtier | PETG / ASA imprimé (pas de PLA : habitacle à 60 °C en été) ; fixation sur la tôle à définir (plus d'aimants noyés dans le boîtier ; des aimants rapportés au dos restent possibles) |
 
 Distance **GPS uniquement**, sans capteur de roue ni intervention sur le câblage de la voiture.
 
@@ -33,7 +33,7 @@ Distance **GPS uniquement**, sans capteur de roue ni intervention sur le câblag
 | 3 | Interface LVGL câblée sur le core : raid, balade, menu réglages actif, calibration auto, démarrage animé, mode nuit | fait |
 | 4 | Simulateur : rejeu de traces NMEA, trajet simulé, scénarios de bout en bout | 21 scénarios GPS en place ; boussole et matériel à venir |
 | 5-6 | HAL ESP32 et firmware sur la carte | en cours : firmware de démo validé sur la carte (écran, tactile, core et UI du sim, trajet GPS simulé, NVS, heure de la RTC, état USB / batterie), jingle de démarrage par le codec ES8311 (à écouter sur la carte) ; GPS, boutons, charge de la batterie à venir |
-| 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B reçue, datasheets et modèle 3D rassemblés |
+| 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B reçue, datasheets et modèle 3D rassemblés ; PCB placé, non routé ; maquette 3D des cartes dans un boîtier de principe validée ([`docs/mockups/maquette-3d/`](docs/mockups/maquette-3d/)) |
 
 Pas encore là : boussole (le cap affiché est la route GPS), réglages de charge de la batterie (l'état
 USB / batterie est lu, pas configuré), température réelle, log GPX.
@@ -250,10 +250,11 @@ enclosure/       boîtier : modèle 3D et plan coté de la carte (cad/, hors git
 docs/            documentation
   user/          notice d'utilisation (à venir)
   demo/          GIF de démo
-  mockups/       copies locales des maquettes (écrans, flèche de cap, animation et jingle de démarrage)
+  mockups/       copies locales des maquettes (écrans, flèche de cap, animation et jingle de démarrage) ;
+                 maquette-3d/ : maquette 3D des cartes dans leur boîtier (scène Blender, page three.js)
   roadbooks/     roadbooks de rallye-raid d'exemple (fichiers hors git, sources dans le README)
 prompts/         cahier des charges découpé par rôle (features, hardware, boîtier, firmware, ui, simulation)
-.claude/         skills Claude Code du projet (sim-check, firmware, ship, pcb-carte-fille)
+.claude/         skills Claude Code du projet (sim-check, firmware, ship, pcb-carte-fille, maquette-3d)
 ```
 
 Dans les briefs et le journal, les chemins de code (`core/…`, `ui/…`, `sim/…`, `tests/…`) sont
@@ -265,7 +266,8 @@ relatifs à `software/`.
 - [`prompts/`](prompts/) : un brief par rôle.
 - [`AGENTS.md`](AGENTS.md) et [`CLAUDE.md`](CLAUDE.md) : organisation du travail entre agents.
 - [`docs/mockups/`](docs/mockups/) : maquettes des écrans, styles de flèche de cap, propositions
-  d'animation et de jingle de démarrage.
+  d'animation et de jingle de démarrage ; [`maquette-3d/`](docs/mockups/maquette-3d/) : maquette 3D des
+  cartes dans leur boîtier, essais et décisions (`ESSAIS.md`).
 
 ## Licence
 

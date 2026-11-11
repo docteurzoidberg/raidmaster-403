@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Raidmaster éclaté</title>
+<meta name="description" content="Maquette 3D du Raidmaster 403 : la carte Waveshare, la carte fille et la carte boutons dans leur boîtier, assemblé ou éclaté.">
+<meta name="theme-color" content="#0f1011">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1><span class="marque">RAIDMASTER</span> <span class="num">403</span></h1>
+    <p class="chapeau">Les trois cartes du tripmaster dans leur boîtier, assemblé ou éclaté, avec la trappe de la carte micro-SD et le câble en démonstration.</p>
+  </header>
+
+  <main class="banc">
+    <section class="scene" id="scene" aria-label="Maquette 3D : glisser pour tourner, molette ou pincement pour zoomer">
+      <canvas id="vue"></canvas>
+      <p class="attente" id="attente" role="status">Chargement du modèle…</p>
+      <div class="fiche" id="fiche" aria-live="polite">
+        <b id="fiche-nom">Maquette</b>
+        <span id="fiche-detail">Glisser pour tourner, molette pour zoomer. Survoler une pièce pour la nommer.</span>
+      </div>
+    </section>
+
+    <aside class="rack" aria-label="Commandes de la maquette">
+      <fieldset>
+        <legend>Ouverture</legend>
+        <div class="touches">
+          <button class="touche" type="button" id="assemble" aria-pressed="false">Assemblé</button>
+          <button class="touche" type="button" id="eclate" aria-pressed="false">Éclaté</button>
+        </div>
+        <input type="range" id="ouverture" min="0" max="100" value="0" aria-label="Ouverture de l'éclaté, en pour cent">
+      </fieldset>
+
+      <fieldset id="bloc-demo" hidden>
+        <legend>Démonstration</legend>
+        <div class="touches">
+          <button class="touche" type="button" id="demo" aria-pressed="false">Rejouer</button>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Vue</legend>
+        <div class="touches deux" id="vues">
+          <button class="touche" type="button" data-vue="iso" aria-pressed="true">Trois quarts</button>
+          <button class="touche" type="button" data-vue="face" aria-pressed="false">Face</button>
+          <button class="touche" type="button" data-vue="cote" aria-pressed="false">Côté</button>
+          <button class="touche" type="button" data-vue="dos" aria-pressed="false">Dos</button>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Pièces</legend>
+        <div class="liste" id="liste"></div>
+      </fieldset>
+
+      <p class="note" id="note"></p>
+    </aside>
+  </main>
+</div>
+<script type="module" src="main.js"></script>
+</body>
+</html>

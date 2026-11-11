@@ -1,0 +1,90 @@
+/* Scène à gauche, commandes à droite ; un seul thème, sombre, celui des autres maquettes du raidmaster. */
+:root {
+  color-scheme: dark;
+  --fond: #0f1011;
+  --panneau: #17191b;
+  --enfonce: #24272a;
+  --trait: #2a2d31;
+  --texte: #e7e8e9;
+  --gris: #949aa0;
+  --ambre: #ffb547;      /* accent des maquettes, légendes ambre de la façade */
+  --cyan: #4fd6e8;       /* grille de l'écran de démarrage */
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--fond); color: var(--texte); font: 15px/1.45 var(--sans); }
+
+.page {
+  height: 100vh; height: 100dvh; max-width: 1680px; margin: 0 auto;
+  display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 12px;
+  padding-block: 12px 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 22px; }
+h1 { font: 600 clamp(18px, 2.2vw, 22px)/1.1 var(--mono); letter-spacing: .16em; margin: 0; }
+h1 .num { color: var(--ambre); }
+.chapeau { margin: 0; color: var(--gris); max-width: 70ch; }
+
+.banc { display: grid; grid-template-columns: minmax(0, 1fr) 272px; gap: 14px; min-height: 0; }
+
+.scene {
+  position: relative; min-height: 0; overflow: hidden; border: 1px solid var(--trait); border-radius: 6px;
+  background: radial-gradient(110% 90% at 50% 38%, #4a4f55 0, #33373c 55%, #1f2225 100%);
+}
+#vue { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+#vue:active { cursor: grabbing; }
+.attente {
+  position: absolute; inset: 0; margin: 0; display: grid; place-items: center; padding: 16px; text-align: center;
+  font: 500 14px/1.4 var(--mono); letter-spacing: .06em; color: var(--texte);
+}
+.fiche {
+  position: absolute; left: 10px; bottom: 10px; max-width: min(52ch, calc(100% - 20px)); padding: 8px 12px 9px;
+  display: grid; gap: 2px; pointer-events: none; font-size: 14px; line-height: 1.4;
+  background: rgb(15 16 17 / .88); border: 1px solid var(--trait); border-radius: 4px;
+}
+.fiche b { font: 600 13px/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ambre); }
+.fiche span { color: var(--texte); }
+
+.rack { display: grid; align-content: start; gap: 16px; min-height: 0; overflow-y: auto; scrollbar-width: thin; padding-right: 2px; }
+fieldset { min-width: 0; margin: 0; padding: 0; border: 0; display: grid; gap: 6px; }
+legend { padding: 0 0 6px; font: 600 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--gris); }
+
+.touches { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; }
+.touches.deux { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.touche {
+  min-width: 0; min-height: 36px; padding: 6px; cursor: pointer; background: var(--panneau); color: var(--gris); border: 0;
+  border-top: 3px solid var(--trait); font: 500 14px/1.2 var(--sans);
+}
+.touche:hover { color: var(--texte); }
+.touche[aria-pressed="true"] { background: var(--enfonce); color: var(--texte); border-top-color: var(--ambre); }
+:is(.touche, .piece input, #ouverture):focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+
+#ouverture { width: 100%; height: 24px; margin: 0; accent-color: var(--ambre); cursor: pointer; }
+
+.liste { display: grid; gap: 1px; }
+.piece {
+  display: grid; grid-template-columns: 16px minmax(0, 1fr); align-items: center; gap: 9px; min-height: 30px; padding: 2px 6px;
+  cursor: pointer; border-radius: 3px; font: 500 14px/1.2 var(--sans); color: var(--gris);
+}
+.piece input { width: 15px; height: 15px; margin: 0; accent-color: var(--ambre); cursor: pointer; }
+.piece:has(input:checked) { color: var(--texte); }
+.piece:hover, .piece.marque { background: var(--enfonce); }
+.piece.visserie { margin-top: 5px; padding-top: 7px; border-top: 1px solid var(--trait); border-radius: 0; }
+
+.note { margin: 0; color: var(--gris); font-size: 13px; line-height: 1.45; }
+
+@media (max-width: 860px) {
+  .page { height: auto; }
+  .banc { grid-template-columns: minmax(0, 1fr); }
+  .scene { height: 60vh; height: 60dvh; min-height: 320px; }
+  .rack { overflow: visible; padding-right: 0; }
+  .liste { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px 8px; }
+  .piece { min-height: 40px; }
+  .piece.visserie { grid-column: 1 / -1; }
+  .touche { min-height: 44px; }
+}
