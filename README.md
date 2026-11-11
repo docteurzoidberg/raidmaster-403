@@ -45,6 +45,29 @@ assemblé ou éclaté, à faire tourner dans le navigateur : **<https://docteurz
 dans [`mockup/`](mockup/) ; modèles 3D externes et futurs fichiers STEP du boîtier dans
 [`enclosure/`](enclosure/README.md).
 
+<p align="center">
+  <img src="docs/demo/boitier-assemble.png" alt="Boîtier de principe assemblé : écran 3,5 pouces, cinq boutons, deux voyants" width="520">
+</p>
+<p align="center">
+  <img src="docs/demo/boitier-eclate.png" alt="Vue éclatée : capuchons, façade, carte boutons et sa nappe, carte Waveshare, carte fille, fond du boîtier" width="820">
+</p>
+
+<p align="center"><sub>Rendus Blender de la maquette : boîtier de principe de 123 × 94 × 32 mm, pas encore dessiné pour l'impression.</sub></p>
+
+## Cartes électroniques
+
+Deux circuits fabriqués d'un seul tenant puis séparés : la **carte fille** (78 × 54 mm, 4 couches), enfichée
+au dos de la Waveshare, porte le GPS NEO-M9N, la prise d'antenne et la boussole ; la **carte boutons**
+(108 × 20 mm), vissée derrière la façade, porte les 5 poussoirs, les 2 voyants et deux expandeurs I²C, et
+rejoint la carte fille par une nappe souple de 6 voies. Tout se soude au fer.
+
+<p align="center">
+  <img src="docs/demo/pcb-dessus.png" alt="Les deux cartes vues de dessus : GPS, boussole et régulateurs sur la carte fille ; expandeurs et connecteur de nappe au dos de la carte boutons" width="410">
+  <img src="docs/demo/pcb-dessous.png" alt="Les deux cartes vues de dessous : connecteur 2 × 16 vers la Waveshare et connecteur de nappe sur la carte fille ; poussoirs et voyants de la carte boutons" width="410">
+</p>
+
+<p align="center"><sub>Rendus du visualiseur 3D de KiCad, dessus (côté batterie) et dessous (côté écran) : composants placés, routage à venir.</sub></p>
+
 ## Démarrage rapide (simulateur PC)
 
 Prérequis : CMake ≥ 3.20, Ninja, un compilateur C11, SDL2 (`sudo apt install libsdl2-dev` sous
@@ -253,7 +276,7 @@ software/        tout le code ; CMakeLists.txt et CMakePresets.json, build dans 
 enclosure/       boîtier : modèles 3D externes utilisés (README.md), stepfiles/ : exports STEP du boîtier
 mockup/          maquette 3D des cartes dans leur boîtier (page three.js, publiée sur GitHub Pages)
 .github/         workflow de publication de mockup/ sur GitHub Pages
-docs/demo/       GIF de démo
+docs/demo/       GIF de démo, rendus des cartes (KiCad) et du boîtier (Blender)
 ```
 
 ## Documentation
