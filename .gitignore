@@ -66,10 +66,7 @@ __pycache__/
 docs/mockups/boot-anim/
 docs/mockups/boot-synchro/
 
-# Skills Claude Code locaux (non partagés) ; sim-check, firmware, ship et pcb-carte-fille sont versionnés
-.claude/skills/ui-shots/
-.claude/skills/boot-anim/
-.claude/skills/ui-font/
+# Claude Code : réglages locaux (tous les skills du projet sont versionnés, dépôt privé seulement)
 .claude/settings.local.json
 
 # KiCad (sauvegardes, verrous, caches ; STEP exportés par le skill pcb-carte-fille, régénérables)
