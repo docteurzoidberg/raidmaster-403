@@ -60,6 +60,12 @@ __pycache__/
 # Blender (sauvegardes automatiques)
 *.blend1
 
+# Animation de démarrage : images rendues dans Blender (planches lues au build par boot_anim.cmake,
+# images de boot-synchro) ; locales, sans elles le sim et la carte démarrent sur l'écran de boot statique.
+# Les scènes ui/assets/boot_anim/*.blend restent versionnées (dépôt privé, hors de la liste blanche publique)
+docs/mockups/boot-anim/
+docs/mockups/boot-synchro/
+
 # Skills Claude Code locaux (non partagés) ; sim-check, firmware, ship et pcb-carte-fille sont versionnés
 .claude/skills/ui-shots/
 .claude/skills/boot-anim/
