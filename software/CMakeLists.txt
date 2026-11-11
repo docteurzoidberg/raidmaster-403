@@ -41,7 +41,7 @@ if(RAIDMASTER_TARGET STREQUAL "sim")
         endif()
     endif()
 
-    # UI-agent exception: integration LVGL (voir prompts/ui.md).
+    # Intégration LVGL :
     # Pour que la cible sim puisse afficher quelque chose, on construit la lib UI (LVGL + nos
     # écrans) et le binaire sim. Les warnings LVGL sont silencés sur sa propre cible depuis
     # ui/CMakeLists.txt sans toucher aux warnings de notre code.

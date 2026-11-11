@@ -1,7 +1,7 @@
 /*
  * Raidmaster 403 — menu réglages.
  *
- * Spec : prompts/ui.md § 3.3 — liste scrollable, surbrillance amber, navigation +/−, entrée menu.
+ * Contenu : liste scrollable, surbrillance amber, navigation +/−, entrée menu.
  *
  * Licence : GPL-3.0.
  */

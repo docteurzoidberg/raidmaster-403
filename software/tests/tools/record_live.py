@@ -8,7 +8,7 @@ NMEA « vrai » pour alimenter le catalogue de scénarios avec le bruit propre d
 
 Nécessite `pyserial` (voir `requirements.txt`).
 
-STAGING v0 — à revoir par l'agent simulation (notamment : stratégie d'auto-découverte
+Version v0, à revoir (notamment : stratégie d'auto-découverte
 de la vitesse série, détection automatique du port, interface interactive).
 """
 

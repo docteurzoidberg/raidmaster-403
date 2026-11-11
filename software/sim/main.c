@@ -6,7 +6,7 @@
  *
  * Pourquoi ce chemin plutôt que LV_USE_SDL=1 : on garde le contrôle total des SDL_Event, ce qui
  * permet de router les touches a/b/+/-/m vers notre ui_input_dispatch() sans combat avec le
- * driver clavier interne de LVGL. Fallback acceptable d'après prompts/ui.md (dérogation UI-agent).
+ * driver clavier interne de LVGL.
  *
  * Le core (core/app) tourne comme sur l'ESP32 : GPS fourni par hal_sim (rejeu d'un .nmea ou
  * trajet simulé), réglages et distances sauvegardés dans sim-storage.json. Le jingle de démarrage
@@ -38,7 +38,7 @@
  *                « @<s> » à la place : instant <s> de la trace rejouée (= s × 1000 / --speed ms).
  *                Code de sortie 1 si un expect échoue.
  *
- * Touches clavier (voir prompts/ui.md § 4 et prompts/simulation.md § 1) :
+ * Touches clavier (aussi dans le README) :
  *   a / b / + ou = / - / m        → boutons physiques A, B, +, -, Menu (appui court)
  *   Shift + touche                → appui long (Shift + m : entrée / sortie du menu réglages)
  *   n ou Tab                      → bascule mode nuit
@@ -55,8 +55,6 @@
  * Mode enregistrement démo : RAIDMASTER_RECORD=<fichier.gif> [RAIDMASTER_RECORD_SCALE=1..4]
  * joue le scénario de démo en temps virtuel et écrit un GIF animé en boucle (voir
  * demo_record.h). Commande à la demande : tools/demo_gif.sh.
- *
- * UI-agent exception: integration LVGL (voir prompts/ui.md).
  *
  * Licence : GPL-3.0.
  */

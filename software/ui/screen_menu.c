@@ -147,7 +147,7 @@ void screen_menu_set_editing(bool on)
 void screen_menu_activate(void)
 {
     if (s_scr == NULL) return;
-    /* Stub : impression console seulement — le câblage effectif est TODO cross-agent. */
+    /* Stub : impression console seulement — le câblage effectif reste à faire. */
     printf("[ui] menu activate -> %s\n", s_items[s_selected].name);
 }
 

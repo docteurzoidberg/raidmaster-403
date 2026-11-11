@@ -1,7 +1,7 @@
 /*
  * Raidmaster 403 — écran calibration auto distance.
  *
- * Spec : prompts/ui.md § 3.4 — procédure guidée « rouler X km, A au départ, A à l'arrivée ».
+ * Contenu : procédure guidée « rouler X km, A au départ, A à l'arrivée ».
  * Pour le MVP, stub statique avec valeurs mockées.
  *
  * Licence : GPL-3.0.

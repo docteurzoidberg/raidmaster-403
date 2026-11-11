@@ -9,7 +9,7 @@ testant précisément un cas limite.
 
 Pure stdlib Python 3.8+.
 
-STAGING v0 — à revoir par l'agent simulation.
+Version v0.
 """
 
 import argparse

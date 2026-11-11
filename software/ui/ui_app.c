@@ -1,7 +1,7 @@
 /*
  * Raidmaster 403 — câblage de l'UI sur le core. Voir ui_app.h.
  *
- * Boutons (prompts/ui.md § 4.1) :
+ * Boutons :
  *   écrans raid / balade : A RAZ Trip A, B RAZ Trip B, +/− ±10 m sur le trip actif (long : ±100 m),
  *                          Menu bascule le trip actif, Menu long entre dans le menu ;
  *   menu : + monte, − descend, Menu choisit (édition, bascule ou écran dédié), Menu long sort ;

@@ -1,7 +1,7 @@
 /*
  * Raidmaster 403 — écran mode balade.
  *
- * Spec : prompts/ui.md § 3.2 — compteur de vitesse central énorme, ODO discret, footer CAP/TRIP/T°.
+ * Contenu : compteur de vitesse central énorme, ODO discret, footer CAP/TRIP/T°.
  *
  * Licence : GPL-3.0.
  */

@@ -6,7 +6,7 @@
 # Usage :
 #   ./gpx_to_nmea.sh input.gpx output.nmea
 #
-# STAGING v0 — à revoir par l'agent simulation.
+# Version v0.
 # Licence : GPL-3.0.
 
 set -euo pipefail

@@ -5,7 +5,7 @@
  * chrono / cap, pousse l'état à l'écran courant via ui_push_trip_state().
  *
  * Permet de voir l'UI vivre avant que le simulateur rejoue de vraies traces NMEA (étape 4
- * du plan, cf. PROMPT.md § 6).
+ * du plan, voir le tableau « État » du README).
  *
  * Licence : GPL-3.0.
  */

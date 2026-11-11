@@ -1,7 +1,7 @@
 /*
  * Raidmaster 403 — hal_gps de démonstration sur l'ESP32 : le trajet simulé du sim
  * (core/gps_synth), en temps réel, tant qu'aucun récepteur n'est branché. Le pilote du NEO-M9N
- * (UART1, GPIO 17/18, prompts/hardware.md § 9.1) prendra sa place.
+ * (UART1, GPIO 17/18) prendra sa place.
  *
  * Heure de départ : horloge de la carte (RTC) si elle a l'heure, sinon date et heure du build
  * (heure locale de la machine de build, prise pour UTC+1 comme le fuseau par défaut du core).

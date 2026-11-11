@@ -1,7 +1,7 @@
 /*
  * Raidmaster 403 — écran mode raid (vue par défaut).
  *
- * Spec : prompts/ui.md § 3.1 — barre d'état, Trip A dominant (amber), Trip B secondaire (cyan),
+ * Contenu : barre d'état, Trip A dominant (amber), Trip B secondaire (cyan),
  * V + CAP au milieu, footer ODO / MOY / CHRONO.
  *
  * Licence : GPL-3.0.

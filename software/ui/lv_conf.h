@@ -477,7 +477,7 @@
 /* Use `float` as `lv_value_precise_t`
  * RAIDMASTER : activé pour que lv_label_set_text_fmt supporte %f (sinon
  * trip/odo/moy restent sur le format brut "%.1f km" → affiche "f km").
- * Cross-agent fix 2026-10-09 — bug visible repéré par l'utilisateur. */
+ * Correctif du 2026-10-09 (bug visible à l'écran). */
 #define LV_USE_FLOAT            1
 
 /*Enable matrix support
@@ -493,9 +493,8 @@
 
 /*Montserrat fonts with ASCII range and some symbols using bpp = 4
  *https://fonts.google.com/specimen/Montserrat*/
-/* RAIDMASTER : palette de tailles pour le MVP. Les tailles 32/42/48 servent de fallback
- * aux font_digit_32/54/96 décrits dans prompts/ui.md § 2.3 — à remplacer par des bitmaps
- * Share Tech Mono générés par lv_font_conv en phase 2 (TODO documenté dans prompts/ui.md). */
+/* RAIDMASTER : l'affichage utilise les polices bitmap Share Tech Mono de ui/fonts/ ; seule la
+ * Montserrat 14 reste activée, pour les symboles LVGL de la barre d'état. */
 #define LV_FONT_MONTSERRAT_8  0
 #define LV_FONT_MONTSERRAT_10 0
 #define LV_FONT_MONTSERRAT_12 0
@@ -825,7 +824,7 @@
 /*FreeType library
  * RAIDMASTER : activé pour charger Share Tech Mono + Inter à l'exécution,
  * en remplacement des Montserrat intégrées par défaut.
- * Cross-agent fix 2026-10-09. */
+ * Correctif du 2026-10-09. */
 #define LV_USE_FREETYPE 0   /* polices bitmap compilées (ui/fonts/), pas de chargement TTF */
 #if LV_USE_FREETYPE
     /*Let FreeType to use LVGL memory and file porting*/

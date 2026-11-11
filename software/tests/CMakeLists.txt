@@ -37,7 +37,7 @@ add_test(NAME synth COMMAND test_synth)
 # Scénarios de bout en bout : le simulateur sans fenêtre rejoue une trace et un script
 # d'actions avec vérifications (tests/fixtures/scenarios/<id>/actions.txt). La trace est
 # trace.nmea (versionnée, ex. enregistrement réel) ou générée au build depuis route.txt par
-# tests/tools/gen_route.py. Liste « id|vitesse de rejeu », par phase de prompts/simulation.md § 3.
+# tests/tools/gen_route.py. Liste « id|vitesse de rejeu », rangée par phase.
 set(SCENARIOS
     # Phase 1 — fondations
     "s10_stationary_noise|100"

@@ -2,7 +2,8 @@
  * Raidmaster 403 — carte Waveshare ESP32-S3-Touch-LCD-3.5B : brochage et pilotes de base (bus
  * I²C, expandeur TCA9554, écran AXS15231B en QSPI, rétroéclairage, tactile).
  *
- * Brochage lu sur le schéma (hardware/datasheets/waveshare-esp32-s3-touch-lcd-3.5B-schematic.pdf),
+ * Brochage lu sur le schéma de Waveshare
+ * (https://files.waveshare.com/wiki/ESP32-S3-Touch-LCD-3.5B/ESP32-S3-Touch-LCD-3.5B-Schematic.pdf),
  * recoupé avec les exemples ESP-IDF de Waveshare (dépôt waveshareteam/ESP32-S3-Touch-LCD-3.5B).
  *
  * Écran : panneau natif portrait 320 × 480 ; l'UI est en paysage 480 × 320, tournée par logiciel

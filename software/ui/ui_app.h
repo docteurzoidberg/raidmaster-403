@@ -4,7 +4,7 @@
  * ui_app_attach() après ui_init() :
  *   - toutes les 100 ms, l'état du core est converti en ui_trip_state_t et poussé aux écrans,
  *     avec les valeurs du menu et de l'écran de calibration ;
- *   - les boutons pilotent le core (prompts/ui.md § 4.1) ;
+ *   - les boutons pilotent le core ;
  *   - à la fin du démarrage, l'écran principal choisi au menu (raid ou balade) s'affiche ;
  *   - le mode nuit sauvegardé est appliqué.
  *

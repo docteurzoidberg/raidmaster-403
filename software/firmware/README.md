@@ -48,7 +48,7 @@ BOOT_ANIM_FORMAT=1 tools/fw.sh flash   # animation au format brut (5,5 Mo) pour 
 
 L'écran de démarrage affiche `v<numéro> · ESP32 · <hash git>` (`software/VERSION`, `*` après le hash si le
 firmware a été compilé avec des modifications non commitées). Animation : format 2 par défaut (codée par
-différence, 0,95 Mo) ou 1 (brute, 5,5 Mo), mêmes pixels, à trancher (`PROMPT.md` § 8) ; le choix est gardé
+différence, 0,95 Mo) ou 1 (brute, 5,5 Mo), mêmes pixels, pas encore tranché ; le choix est gardé
 dans `build-firmware/` et il faut un `flash` complet (pas `app-flash`) pour changer celle de la carte.
 
 Build dans `software/build-firmware/` (`sdkconfig` compris) : **`sdkconfig.defaults` fait foi**. Un essai

@@ -5,7 +5,7 @@
 
 # demo_record.c + gif_writer.c : mode enregistrement d'un GIF de démo (tools/demo_gif.sh).
 add_executable(raidmaster-sim main.c demo_record.c gif_writer.c)
-# UI-agent exception: integration LVGL (voir prompts/ui.md).
+# Intégration LVGL :
 # On link l'UI pour piloter LVGL depuis la fenêtre SDL que ce binaire ouvre déjà.
 # raidmaster_core avant raidmaster_hal_sim : le core appelle le HAL (hal_audio_play depuis jingles.c),
 # CMake le répète après raidmaster_hal_sim pour les appels dans l'autre sens.

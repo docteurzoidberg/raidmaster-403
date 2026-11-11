@@ -13,7 +13,7 @@ Les timestamps relatifs des `--fix-loss` démarrent au premier timestamp de la t
 
 Pure stdlib Python 3.8+.
 
-STAGING v0 — à revoir par l'agent simulation.
+Version v0.
 """
 
 import argparse

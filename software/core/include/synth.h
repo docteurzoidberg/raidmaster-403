@@ -5,8 +5,7 @@
  * Chaque note a sa forme d'onde (impulsion à rapport cyclique réglable, dents de scie, sinus,
  * bruit), son enveloppe (montée linéaire, décroissance exponentielle vers le niveau tenu,
  * relâchement linéaire) et, en option, deux voix désaccordées de part et d'autre ; un écho
- * (retard réinjecté) s'applique au mélange. Même calcul que la page d'écoute des jingles
- * (docs/mockups/jingles-boot.html).
+ * (retard réinjecté) s'applique au mélange.
  *
  * C portable, sans matériel ni allocation : le rendu se fait dans le fil audio (tâche ESP32, rappel
  * SDL du sim) bloc par bloc, le résultat ne dépend pas de la taille des blocs.

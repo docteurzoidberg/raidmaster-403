@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Size: 134 px
  * Bpp: 4
- * Opts: --size 134 --bpp 4 --format lvgl --no-compress --lv-include lvgl.h --lv-font-name stm_134 --font ~/403/tableau-bord/raidmaster-403/ui/fonts/../assets/ShareTechMono-Regular.ttf --symbols 0123456789 -o ~/403/tableau-bord/raidmaster-403/ui/fonts/stm_134.c
+ * Opts: --size 134 --bpp 4 --format lvgl --no-compress --lv-include lvgl.h --lv-font-name stm_134 --font ../assets/ShareTechMono-Regular.ttf --symbols 0123456789 -o stm_134.c
  ******************************************************************************/
 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE

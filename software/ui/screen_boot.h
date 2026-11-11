@@ -1,7 +1,7 @@
 /*
  * Raidmaster 403 — écran de démarrage (splash).
  *
- * Spec : prompts/ui.md § 3.5 — logo 403 grand format, dots de progression, ~1-2 s puis switch
+ * Contenu : logo 403 grand format, dots de progression, ~1-2 s puis switch
  * vers l'écran raid. Pour le MVP on reste textuel (silhouette SVG en TODO phase 2).
  *
  * Licence : GPL-3.0.

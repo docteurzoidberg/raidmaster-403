@@ -2,7 +2,7 @@
  * Raidmaster 403 — boutons de banc (voir touch_buttons.h).
  *
  * Mêmes évènements que les touches du sim : appui court au relâchement, appui long dès 800 ms
- * de maintien (prompts/ui.md § 4.1). Le relâchement n'est pris qu'après deux lectures « pas de
+ * de maintien. Le relâchement n'est pris qu'après deux lectures « pas de
  * contact » de suite (40 ms), pour qu'une lecture manquée ne fasse pas un appui court.
  *
  * Licence : GPL-3.0.

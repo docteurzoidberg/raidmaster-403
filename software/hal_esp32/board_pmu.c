@@ -7,7 +7,7 @@
  * (REG34-35, REG38-39). Seule écriture : la mesure de VBUS (REG30 bit 2) ; détection de la
  * batterie, mesure de sa tension et jauge sont actives au démarrage du PMIC (REG68, REG30,
  * REG18). Les réglages de charge (courant, tension, NTC, DCDC1 en PWM…) viendront avec
- * l'intégration complète du PMIC (prompts/firmware.md § 6 quater).
+ * l'intégration complète du PMIC.
  *
  * Sans batterie (relevé sur la carte, 2026-10-24), l'AXP2101 se trompe : la broche BAT remonte à
  * ~4,8 V par le chemin d'alimentation, il signale une batterie pleine qui se décharge et laisse

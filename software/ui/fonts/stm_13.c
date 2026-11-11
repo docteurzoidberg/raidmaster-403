@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Size: 13 px
  * Bpp: 4
- * Opts: --size 13 --bpp 4 --format lvgl --no-compress --lv-include lvgl.h --lv-font-name stm_13 --font ~/403/tableau-bord/raidmaster-403/ui/fonts/../assets/ShareTechMono-Regular.ttf -r 0x20-0x7E,0xA0-0xFF,0x2212,0x203A,0x2026 -o ~/403/tableau-bord/raidmaster-403/ui/fonts/stm_13.c
+ * Opts: --size 13 --bpp 4 --format lvgl --no-compress --lv-include lvgl.h --lv-font-name stm_13 --font ../assets/ShareTechMono-Regular.ttf -r 0x20-0x7E,0xA0-0xFF,0x2212,0x203A,0x2026 -o stm_13.c
  ******************************************************************************/
 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE

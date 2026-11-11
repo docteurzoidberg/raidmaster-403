@@ -1,8 +1,8 @@
 /*
  * Raidmaster 403 — tokens de design partagés par tous les écrans LVGL.
  *
- * Valeurs issues de prompts/ui.md § 2.1 (palette LCD jour) et § 2.2 (palette LCD nuit).
- * Toute évolution doit être répliquée dans prompts/ui.md et dans la maquette publiée (lien § 1).
+ * Palette LCD jour et palette LCD nuit des maquettes d'écran : toute évolution se fait ici, pour
+ * tous les écrans à la fois.
  *
  * Licence : GPL-3.0 — voir LICENSE à la racine.
  */

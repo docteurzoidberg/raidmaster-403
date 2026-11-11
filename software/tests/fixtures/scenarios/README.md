@@ -5,7 +5,7 @@ Chaque dossier contient `actions.txt` (appuis de boutons et vérifications horod
 `build-sim/tests/scenarios/<id>.nmea`), soit `trace.nmea` (trace versionnée, ex. enregistrement réel).
 Le simulateur sans fenêtre rejoue la trace, joue les actions et échoue si une vérification `expect`
 échoue. Lancés par `ctest --preset sim` (tests `scenario_*`, liste et vitesse de rejeu dans
-`tests/CMakeLists.txt`). Format : `prompts/simulation.md` § 2.1.
+`tests/CMakeLists.txt`). Format des deux fichiers : voir « Format » plus bas.
 
 ```bash
 python3 tests/tools/gen_route.py tests/fixtures/scenarios/s02_highway_cruise/route.txt --out /tmp/s02.nmea
@@ -14,6 +14,39 @@ SDL_VIDEODRIVER=dummy ./build-sim/raidmaster-sim --no-storage --speed 200 \
 ```
 
 `gen_route.py` imprime la distance vérité à chaque repère `mark` : c'est la référence des `expect`.
+
+## Format
+
+**`route.txt`** décrit le trajet en segments (`drive`, `stop`, `wander`, `repeat`) et les événements GPS
+(`loss`, `silence`, `hdop_at`, `fix2d`, bruit `jitter` / `speed_noise`) ; le détail est en tête de
+`tests/tools/gen_route.py`. La génération est déterministe (graine fixe) : seule la description est
+versionnée, la trace (jusqu'à 6 Mo pour 12 h) reste dans le dossier de build.
+
+**`actions.txt`** : une action par ligne, `<ms> <action>`, `#` commente. Le temps est compté depuis le
+lancement du sim sur une horloge virtuelle (pas de 10 ms, sans attente : un scénario de quelques minutes
+se joue en une fraction de seconde). L'écran de démarrage dure 3 s et ignore les boutons.
+
+```
+3500 expect trip_a 3.000 0.005   # <champ> <valeur> [tolérance]
+@600 expect odo 0                # « @<s> » : instant de la trace (= s × 1000 / --speed ms)
+3600 m                           # bouton : a b plus minus m ; en majuscules = appui long (A, PLUS, M…)
+3900 a
+4000 signal                      # coupe / rétablit le signal GPS
+4050 power_cut                   # coupure d'alimentation : le core repart de la dernière sauvegarde
+4100 night                       # bascule jour / nuit
+4100 shot raid-apres-raz         # capture <dossier --out>/<nom>.ppm
+4200 quit
+```
+
+Champs de `expect` : `trip_a`, `trip_b`, `odo` (km), `speed`, `avg`, `max` (km/h), `calib` (%), `active`
+(0 A, 1 B), `fix`, `night`, `view` (0 raid, 1 balade), `hhmm` (heure locale, −1 inconnue), `alarm`,
+`chrono` (en marche), `gps_err` (phrases rejetées). Le sim sort en code 1 si une vérification échoue.
+
+Les instants `@<s>` sont comptés depuis la première phrase horodatée de la trace ; un silence du module
+en tête de trace se joue donc avec `signal`. Le démarrage (3 s simulées) couvre `3 × --speed` secondes
+de trace. À vitesse de rejeu élevée, ce qui dépend de l'horloge du boîtier (perte de fix après 2 s,
+chrono, sauvegarde toutes les 10 s) s'étire d'autant : les scénarios qui testent ces délais tournent
+à ×1 ou ×10.
 
 | Phase | Scénario | Rejeu | Ce qui est vérifié |
 |---|---|---|---|

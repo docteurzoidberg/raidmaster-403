@@ -1,12 +1,12 @@
 /*
  * Raidmaster 403 — abstraction clavier/boutons pour l'UI (côté sim).
  *
- * Les 5 boutons physiques du MVP (voir prompts/ui.md § 4.1) sont émulés côté sim par le
+ * Les 5 boutons physiques du MVP sont émulés côté sim par le
  * clavier (voir sim/main.c). Ce header expose l'enum stable et le prototype du callback
  * que l'UI (ou le futur core) peut enregistrer.
  *
- * TODO cross-agent (firmware) : aligner avec hal_buttons.h (prompts/firmware.md § 5) une
- * fois ce dernier écrit. Les enums BTN_* ci-dessous reprennent exactement les mêmes
+ * TODO : aligner avec le futur hal_buttons.h (pilote des boutons de la carte) une fois ce
+ * dernier écrit. Les enums BTN_* ci-dessous reprennent exactement les mêmes
  * valeurs pour éviter toute conversion.
  *
  * Licence : GPL-3.0.

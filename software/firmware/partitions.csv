@@ -1,7 +1,7 @@
 # Raidmaster 403 — table de partitions (flash 16 Mo de l'ESP32-S3R8).
-# boot_anim : animation de démarrage (format RMBA : 1,1 Mo en v2, 5,5 Mo en v1, à trancher, PROMPT.md
-# § 8 ; 2 Mo suffiront si la v2 est retenue), mappée en mémoire par hal_asset.
-# OTA (2 × app) : à réorganiser le jour où elle arrive (PROMPT.md § 6, étape 14) ; il reste
+# boot_anim : animation de démarrage (format RMBA : 1,1 Mo en v2, 5,5 Mo en v1, format pas encore
+# tranché ; 2 Mo suffiront si la v2 est retenue), mappée en mémoire par hal_asset.
+# OTA (2 × app) : à réorganiser le jour où elle arrive ; il reste
 # ≈ 5,9 Mo libres après boot_anim.
 # Name,     Type, SubType, Offset,   Size
 nvs,        data, nvs,     0x9000,   0x6000

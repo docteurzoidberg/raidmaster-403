@@ -5,7 +5,7 @@ positions dans les bornes WGS84, fix type cohérent.
 
 Pure stdlib Python 3.8+. Code de sortie 0 si tout est OK, 1 sinon.
 
-STAGING v0 — à revoir par l'agent simulation.
+Version v0.
 """
 
 import datetime as dt

@@ -1,7 +1,7 @@
 /*******************************************************************************
  * Size: 29 px
  * Bpp: 4
- * Opts: --size 29 --bpp 4 --format lvgl --no-compress --lv-include lvgl.h --lv-font-name stm_29 --font ~/403/tableau-bord/raidmaster-403/ui/fonts/../assets/ShareTechMono-Regular.ttf --symbols  0123456789,.%+-− -o ~/403/tableau-bord/raidmaster-403/ui/fonts/stm_29.c
+ * Opts: --size 29 --bpp 4 --format lvgl --no-compress --lv-include lvgl.h --lv-font-name stm_29 --font ../assets/ShareTechMono-Regular.ttf --symbols  0123456789,.%+-− -o stm_29.c
  ******************************************************************************/
 
 #ifdef LV_LVGL_H_INCLUDE_SIMPLE

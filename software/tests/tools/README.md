@@ -1,10 +1,8 @@
 # `tests/tools/` — outils NMEA pour les scénarios de simulation
 
-> **Statut : staging v0.** Ces scripts ont été préparés par l'agent orchestrateur en même temps
-> que l'agent UI tournait, pour avoir une base de travail quand l'agent simulation prendra la
-> main (étape 2 puis étape 4 du plan dans `PROMPT.md` § 6).
-> **À revoir / valider par l'agent simulation** avant de bâtir le catalogue complet de
-> scénarios décrit dans `prompts/simulation.md` § 3.
+> **Statut : v0.** Scripts de base pour générer, bruiter, valider et enregistrer des traces NMEA.
+> Les scénarios de bout en bout qui les utilisent sont décrits dans
+> [`../fixtures/scenarios/README.md`](../fixtures/scenarios/README.md).
 
 ## Contenu
 
@@ -81,7 +79,7 @@ Calculer la distance de référence (Haversine) :
 python3 tests/tools/compute_reference.py references/traces-brutes/stage_highway_1h.nmea
 ```
 
-## À faire (TODO agent simulation)
+## À faire
 
 1. **Lecture critique de ces scripts** et refonte si nécessaire (interface, défaut, format
    de sortie des logs).

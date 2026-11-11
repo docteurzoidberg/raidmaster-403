@@ -2,7 +2,7 @@
  * Raidmaster 403 — thème LVGL custom basé sur les tokens de ui_tokens.h.
  *
  * Deux modes : jour (`ui_theme_apply_day`) et nuit (`ui_theme_apply_night`), bascule par
- * `ui_theme_toggle_night()` (voir prompts/ui.md § 2.2 : bascule manuelle, pas de LDR).
+ * `ui_theme_toggle_night()` (bascule manuelle, pas de capteur de lumière).
  *
  * Licence : GPL-3.0.
  */

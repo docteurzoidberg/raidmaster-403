@@ -1,7 +1,7 @@
 /*
  * Raidmaster 403 — API top-level de l'UI LVGL (côté sim pour le MVP).
  *
- * Appels côté sim (voir sim/main.c, exception dérogatoire documentée dans prompts/ui.md § 9) :
+ * Appels côté sim (voir sim/main.c) :
  *   ui_init(disp);                 // après création du display LVGL
  *   while (running) {              // boucle sim
  *     ui_tick(ms_elapsed);

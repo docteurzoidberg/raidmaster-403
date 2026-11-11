@@ -1,6 +1,6 @@
 # s12 — ×50. HDOP 8 pendant 2 min (fixs refusés, trou comblé à vol d'oiseau : la corde d'une
 # route sinueuse sous-estime un peu), puis HDOP 2,5 / 4 / 2,5 sur 1 min. Vérité 21,8333 km,
-# tolérance ±2 % (prompts/simulation.md § 4).
+# tolérance ±2 %.
 @310 expect fix    1
 @415 expect fix    0                 # plus de fix accepté depuis 300 s
 @1390 expect trip_a 21.8333 0.44

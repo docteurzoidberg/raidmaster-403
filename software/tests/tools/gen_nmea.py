@@ -3,7 +3,7 @@
 Génère une trace NMEA synthétique propre (sans bruit) pour les scénarios de simulation.
 
 Pure stdlib Python 3.8+. Format : RMC + GGA à chaque échantillon, pas de VTG/GSA
-(l'agent simulation pourra les ajouter si le parseur en a besoin).
+(à ajouter si le parseur en a besoin).
 
 Modes :
   * linear      : ligne droite, vitesse et cap constants
@@ -21,7 +21,7 @@ Exemple :
 
 Licence : GPL-3.0 (voir ../LICENSE).
 
-STAGING v0 — à revoir par l'agent simulation. Voir tests/tools/README.md.
+Version v0. Voir tests/tools/README.md.
 """
 
 import argparse

@@ -2,8 +2,8 @@
 """Raidmaster 403 — construit l'animation de démarrage (format binaire « RMBA ») depuis une planche.
 
 Entrée : une planche PNG (images rangées de gauche à droite puis de haut en bas, COLS par ligne),
-rendue dans Blender depuis ui/assets/boot_anim/boot_anim.blend (variante retenue : HD sur grille
-lisse, glow fort → docs/mockups/boot-anim/2e_selection_hd_glow_fort.png).
+rendue dans Blender (variante retenue : HD sur grille lisse, glow fort, un tour calé sur le jingle ;
+chemin de la planche lue au build : cmake/boot_anim.cmake). La scène et la planche ne sont pas publiées.
 
 Sortie : fichier binaire petit-boutiste, identique pour le simulateur et l'ESP32 (partition flash
 dédiée, lue en place), décodé par ui/boot_anim.c. Deux formats (--format, à trancher) :
@@ -26,7 +26,7 @@ fichier est relu et comparé pixel à pixel aux images avant d'être écrit.
 
 Usage : build_boot_anim.py <planche.png> <sortie.bin> [--format 2] [--frames 36] [--cols 6]
         [--width 480] [--height 320] [--fps 12]
-Prérequis : Pillow et numpy (venv du projet 403 : ~/403/.venv).
+Prérequis : Pillow et numpy (CMake cherche un .venv à la racine du dépôt, voir le README).
 Licence : GPL-3.0.
 """
 import argparse
