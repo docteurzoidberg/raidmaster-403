@@ -33,11 +33,17 @@ Distance **GPS uniquement**, sans capteur de roue ni intervention sur le câblag
 | 3 | Interface LVGL câblée sur le core : raid, balade, menu réglages actif, calibration auto, démarrage animé, mode nuit | fait |
 | 4 | Simulateur : rejeu de traces NMEA, trajet simulé, scénarios de bout en bout | 21 scénarios GPS en place ; boussole et matériel à venir |
 | 5-6 | HAL ESP32 et firmware sur la carte | en cours : firmware de démo validé sur la carte (écran, tactile, core et UI du sim, trajet GPS simulé, NVS, heure de la RTC, état USB / batterie), jingle de démarrage par le codec ES8311 (à écouter sur la carte) ; GPS, boutons, charge de la batterie à venir |
-| 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B reçue, datasheets et modèle 3D rassemblés ; PCB placé, non routé ; maquette 3D des cartes dans un boîtier de principe validée ([`docs/mockups/maquette-3d/`](docs/mockups/maquette-3d/)) |
+| 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B reçue, datasheets et modèle 3D rassemblés ; PCB placé, non routé ; maquette 3D des cartes dans un boîtier de principe validée ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/mockup/)) |
 
 Pas encore là : boussole (le cap affiché est la route GPS), réglages de charge de la batterie (l'état
 USB / batterie est lu, pas configuré), température réelle, log GPX.
-Le plan détaillé et le journal des décisions sont dans [`PROMPT.md`](PROMPT.md).
+
+## Maquette 3D
+
+Les trois cartes (Waveshare, carte fille GPS et magnétomètre, carte boutons) dans un boîtier de principe,
+assemblé ou éclaté, à faire tourner dans le navigateur : **<https://docteurzoidberg.github.io/raidmaster-403/mockup/>**. Sources de la page
+dans [`mockup/`](mockup/) ; modèles 3D externes et futurs fichiers STEP du boîtier dans
+[`enclosure/`](enclosure/README.md).
 
 ## Démarrage rapide (simulateur PC)
 
@@ -108,12 +114,15 @@ produit.
 ### Animation de démarrage
 
 La 403 fait un tour sur une grille cyan lumineuse, calé sur le jingle : elle s'élance sur les arpèges
-puis ralentit en roue libre et s'arrête avec la fin de l'accord. Elle est rendue dans Blender
-(`ui/assets/boot_anim/boot_anim.blend`), puis convertie au build en `boot_anim.bin` (palette 256 couleurs)
-par `ui/assets/boot_anim/build_boot_anim.py`. Deux formats, mêmes pixels, à trancher : **2** par défaut
+puis ralentit en roue libre et s'arrête avec la fin de l'accord. L'animation est rendue dans **Blender**
+(36 images en 480 × 320), puis convertie au build en `boot_anim.bin` (palette 256 couleurs) par
+`ui/assets/boot_anim/build_boot_anim.py`. Deux formats, mêmes pixels, à trancher : **2** par défaut
 (chaque image codée par différence avec la précédente, 0,95 Mo) ou **1** (images brutes, 5,5 Mo), choisi
 par l'option CMake `RAIDMASTER_BOOT_ANIM_FORMAT`. Cette conversion demande Python avec Pillow et numpy,
-désigné par la variable CMake `RAIDMASTER_PYTHON`. Sans eux, l'écran de démarrage affiche une silhouette
+désigné par la variable CMake `RAIDMASTER_PYTHON`.
+
+La scène Blender et les images rendues ne sont pas publiées : elles reposent sur un modèle 3D de la 403
+sous licence. Sans elles, ou sans Python, le build passe et l'écran de démarrage affiche une silhouette
 fixe.
 
 ### Son
@@ -121,8 +130,7 @@ fixe.
 Le jingle de démarrage « Grille néon » (arpèges la m · fa · sol puis accord de La majeur, ~2,9 s) est
 synthétisé à la volée par `core/synth.c` à partir d'une table de notes (`core/jingles.c`), en PCM 16 bits
 mono à 22 050 Hz, sans fichier audio. Sortie SDL sur le sim, codec ES8311 et ampli NS4150B sur la carte
-(volume dans `tools/fw.sh menuconfig`). Les propositions écartées s'écoutent sur la page
-[`docs/mockups/jingles-boot.html`](docs/mockups/jingles-boot.html).
+(volume dans `tools/fw.sh menuconfig`).
 
 ### Version
 
@@ -139,7 +147,7 @@ et les glyphes utilisés. Les mêmes fichiers servent au simulateur et à l'ESP3
 ## Participer au projet : partir de zéro
 
 Le développement se fait sur PC, sans la carte : simulateur et tests suffisent jusqu'à l'étape 5.
-Testé sous Ubuntu 24.04 (natif ou WSL2). Le dépôt est privé : demander un accès au propriétaire.
+Testé sous Ubuntu 24.04 (natif ou WSL2).
 
 1. **Outils système**
 
@@ -196,8 +204,7 @@ Testé sous Ubuntu 24.04 (natif ou WSL2). Le dépôt est privé : demander un ac
    référence, ces tests peuvent échouer sur les comptes attendus.
 
 6. **Avant de proposer une modification**
-   - Lire [`CLAUDE.md`](CLAUDE.md), [`PROMPT.md`](PROMPT.md) (état, plan, décisions) et le brief du rôle
-     concerné dans [`prompts/`](prompts/). [`AGENTS.md`](AGENTS.md) dit quel rôle touche quels dossiers.
+   - Pour un changement important, ouvrir d'abord une issue pour en discuter.
    - C11 strict, compilation sans avertissement (`-Wall -Wextra -Wpedantic`), `core/` sans aucun
      accès matériel ni LVGL.
    - Une branche par sujet, `software/tools/check.sh` propre (aucun avertissement, tests verts), GIF de démo commité avec toute modification de
@@ -242,32 +249,22 @@ software/        tout le code ; CMakeLists.txt et CMakePresets.json, build dans 
   cmake/         modules CMake communs au sim et au firmware (animation de démarrage, version)
   tests/         tests unitaires Unity, scénarios (fixtures/scenarios/), tools/ : outils Python NMEA
   tools/         scripts : check.sh (vérification complète), fw.sh (firmware), demo_gif.sh
-  references/    non versionné : Open Rally Computer (inspiration), traces NMEA de test
-hardware/        électronique : datasheets des composants (hors git, fetch_datasheets.sh), index dans
-                 README ; kicad/carte-fille/ : projet KiCad de la carte fille (en cours)
-enclosure/       boîtier : modèle 3D et plan coté de la carte (cad/, hors git), boîtier de référence
-                 OpenSCAD (reference/) ; plus tard exports Fusion, 3MF
-docs/            documentation
-  user/          notice d'utilisation (à venir)
-  demo/          GIF de démo
-  mockups/       copies locales des maquettes (écrans, flèche de cap, animation et jingle de démarrage) ;
-                 maquette-3d/ : maquette 3D des cartes dans leur boîtier (scène Blender, page three.js)
-  roadbooks/     roadbooks de rallye-raid d'exemple (fichiers hors git, sources dans le README)
-prompts/         cahier des charges découpé par rôle (features, hardware, boîtier, firmware, ui, simulation)
-.claude/         skills Claude Code du projet (sim-check, firmware, ship, pcb-carte-fille, maquette-3d)
+  references/    non versionné : traces NMEA de test
+enclosure/       boîtier : modèles 3D externes utilisés (README.md), stepfiles/ : exports STEP du boîtier
+mockup/          maquette 3D des cartes dans leur boîtier (page three.js, publiée sur GitHub Pages)
+docs/demo/       GIF de démo
 ```
-
-Dans les briefs et le journal, les chemins de code (`core/…`, `ui/…`, `sim/…`, `tests/…`) sont
-relatifs à `software/`.
 
 ## Documentation
 
-- [`PROMPT.md`](PROMPT.md) : contexte, étapes, état et journal des décisions.
-- [`prompts/`](prompts/) : un brief par rôle.
-- [`AGENTS.md`](AGENTS.md) et [`CLAUDE.md`](CLAUDE.md) : organisation du travail entre agents.
-- [`docs/mockups/`](docs/mockups/) : maquettes des écrans, styles de flèche de cap, propositions
-  d'animation et de jingle de démarrage ; [`maquette-3d/`](docs/mockups/maquette-3d/) : maquette 3D des
-  cartes dans leur boîtier, essais et décisions (`ESSAIS.md`).
+- [`software/firmware/README.md`](software/firmware/README.md) : installation d'ESP-IDF, liaison de la
+  carte, réglages et dépannage du firmware.
+- [`software/tests/tools/README.md`](software/tests/tools/README.md) : outils NMEA (génération, bruit,
+  validation, enregistrement).
+- [`software/tests/fixtures/scenarios/README.md`](software/tests/fixtures/scenarios/README.md) : catalogue
+  des scénarios de bout en bout.
+- [`enclosure/README.md`](enclosure/README.md) : modèles 3D externes et fichiers STEP du boîtier.
+- [`mockup/README.md`](mockup/README.md) : maquette 3D ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/mockup/)).
 
 ## Licence
 
@@ -285,4 +282,4 @@ Composants tiers :
 | [minmea](https://github.com/kosma/minmea) | MIT (au choix WTFPL / MIT / LGPL-3) | décodage NMEA, dans `core/third_party/minmea/` |
 | [Unity](https://github.com/ThrowTheSwitch/Unity) v2.6.1 | MIT | tests, téléchargé au build |
 | [Share Tech Mono](https://fonts.google.com/specimen/Share+Tech+Mono) | SIL OFL 1.1 | police, dans `ui/assets/` |
-| [Waveshare ESP32-S3 3.5" Case (Parametric)](https://makerworld.com/fr/models/2552125-waveshare-esp32-s3-3-5-case-parametric) | MakerWorld Standard Digital File License (pas de redistribution) | référence de cotes du boîtier, dans `enclosure/reference/` ; à retirer avant toute publication du dépôt |
+| [three.js](https://threejs.org) 0.186.1 | MIT | maquette 3D (`mockup/`), chargé depuis jsDelivr |
