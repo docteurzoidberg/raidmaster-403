@@ -1,6 +1,6 @@
 // Maquette 3D du Raidmaster 403 : modèle raidmaster.glb (voir README.md), assemblé ou éclaté.
 // Les pièces, leur déplacement à l'éclaté, la démonstration et les textes viennent du modèle (maquette.json) :
-// rien à régler ici.
+// rien à régler ici, sauf la traduction anglaise (TEXTES, MODELE_EN) quand un texte du modèle change.
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
@@ -15,12 +15,118 @@ const FOV = 26;
 const MARGE = 0.9;       // part de l'image occupée par l'objet
 const MM = 1000;         // modèle en mètres, scène en millimètres
 
+// --- langues : français (textes du modèle) et anglais
+
+const TEXTES = {
+  fr: {
+    titre: "Raidmaster éclaté",
+    description: "Maquette 3D du Raidmaster 403 : la carte Waveshare, la carte fille et la carte boutons dans leur boîtier, assemblé ou éclaté.",
+    chapeau: "Les trois cartes du tripmaster dans leur boîtier, assemblé ou éclaté, avec la trappe de la carte micro-SD et le câble en démonstration.",
+    langue: "Langue",
+    github: "Code source sur GitHub",
+    scene: "Maquette 3D : glisser pour tourner, molette ou pincement pour zoomer",
+    chargement: "Chargement du modèle…",
+    maquette: "Maquette",
+    aide: "Glisser pour tourner, molette pour zoomer. Survoler une pièce pour la nommer.",
+    aideTactile: "Glisser pour tourner, pincer pour zoomer. Toucher une pièce pour la nommer.",
+    commandes: "Commandes de la maquette",
+    ouverture: "Ouverture",
+    assemble: "Assemblé",
+    eclate: "Éclaté",
+    curseur: "Ouverture de l'éclaté, en pour cent",
+    demonstration: "Démonstration",
+    rejouer: "Rejouer",
+    vue: "Vue",
+    vue_iso: "Trois quarts",
+    vue_face: "Face",
+    vue_cote: "Côté",
+    vue_dos: "Dos",
+    pieces: "Pièces",
+    webgl: "Cette page a besoin de WebGL, qui n'est pas disponible dans ce navigateur.",
+    erreur: "Le modèle n'a pas pu être chargé.",
+    mo: (n) => `${n.toFixed(1).replace(".", ",")} Mo`,
+    date: (d) => `Modèle du ${d.split("-").reverse().join("/")}.`,
+  },
+  en: {
+    titre: "Raidmaster exploded view",
+    description: "3D model of the Raidmaster 403: the Waveshare board, the daughter board and the button board in their enclosure, assembled or exploded.",
+    chapeau: "The tripmaster's three boards in their enclosure, assembled or exploded, with the micro-SD card door and the cable shown in a demonstration.",
+    langue: "Language",
+    github: "Source code on GitHub",
+    scene: "3D model: drag to rotate, scroll or pinch to zoom",
+    chargement: "Loading the model…",
+    maquette: "Model",
+    aide: "Drag to rotate, scroll to zoom. Hover over a part to name it.",
+    aideTactile: "Drag to rotate, pinch to zoom. Tap a part to name it.",
+    commandes: "Model controls",
+    ouverture: "Explode",
+    assemble: "Assembled",
+    eclate: "Exploded",
+    curseur: "Explosion amount, in percent",
+    demonstration: "Demonstration",
+    rejouer: "Replay",
+    vue: "View",
+    vue_iso: "Three-quarter",
+    vue_face: "Front",
+    vue_cote: "Side",
+    vue_dos: "Back",
+    pieces: "Parts",
+    webgl: "This page needs WebGL, which is not available in this browser.",
+    erreur: "The model could not be loaded.",
+    mo: (n) => `${n.toFixed(1)} MB`,
+    date: (d) => `Model dated ${d.replaceAll("-", "\u2011")}.`,   // tirets insécables
+  },
+};
+
+// Textes du modèle en anglais : groupes par identifiant, étapes de la démonstration par nom français.
+// Un texte absent ici s'affiche en français.
+const MODELE_EN = {
+  note: "Boards exported from KiCad, Waveshare board from the manufacturer's 3D model. The enclosure is a 123 × 96 × 32 mm placeholder shell, not designed yet.",
+  visserie: ["Hardware", "4 M2 standoffs (5.1 mm) and 4 M2 screws for the daughter board, 4 recessed M3 × 10 screws that close the enclosure from the back."],
+  groupes: {
+    capuchons: ["Button caps", "5 printed caps, Ø 14.5 mm, on 12 × 12 push buttons, held by a collar behind the front panel."],
+    facade: ["Front panel", "PETG, 123 × 96 mm, chamfered corners, two facets around the edge, sides cut down to screen height, 1.5 mm lip in front of the glass, translucent LED windows. Placeholder part."],
+    carte_boutons: ["Button board", "108 × 20 mm board snapped off the daughter board: 5 push buttons at an 18.5 mm pitch, 2 LEDs, MCP23017 and flat cable on the back. KiCad export."],
+    waveshare: ["Waveshare 3.5B", "ESP32-S3-Touch-LCD-3.5B: 3.5-inch touch screen, 92.4 × 61 mm glass, 4 M2 standoffs on the back. Manufacturer's model."],
+    carte_fille: ["Daughter board", "4-layer 78 × 54 mm board plugged into the back of the Waveshare: NEO-M9N GPS, U.FL antenna socket, GY-271 compass. KiCad export."],
+    batterie: ["Battery", "5000 mAh 605090 Li-ion pouch cell, 90 × 50 × 6 mm, lying at the bottom."],
+    fond: ["Back shell", "PETG, sides cut down to screen height, back tapered around the battery, solid rear face. The right side is slotted down to the joint to take the USB-C sleeve. Placeholder part."],
+    acces: ["Top access", "In the top wall: sliding micro-SD card door (it slides backwards, clips in with a latch tab and comes off), PWR button plunger (Ø 9, held by an inner collar), two pinholes for RESET and BOOT. Placeholder parts."],
+    manchon: ["USB-C sleeve", "Separate part slipped onto the board's USB-C socket before the back shell goes on: it surrounds the socket on all four sides, guides the plug through a sloped channel and closes the side, with no opening in the enclosure. The edges of the slot in the back shell hold it. Placeholder part."],
+    cable: ["USB-C cable", "Test plug the size of a standard plug (12.35 × 6.5 mm overmould, 22 mm long), plugged into the original socket through the sleeve to check access. Untick to remove it."],
+  },
+  etapes: {
+    "Trappe micro-SD": ["Micro-SD door", "It slides backwards, unclips and comes off."],
+    "Carte micro-SD": ["Micro-SD card", "It comes out through the top of the enclosure."],
+    "Câble USB-C": ["USB-C cable", "The plug goes through the sleeve into the board's socket."],
+  },
+};
+
+const DRAPEAUX = {
+  fr: '<svg viewBox="0 0 3 2"><path fill="#002654" d="M0 0h1v2H0z"/><path fill="#fff" d="M1 0h1v2H1z"/><path fill="#ce1126" d="M2 0h1v2H2z"/></svg>',
+  en: '<svg viewBox="0 0 60 30" preserveAspectRatio="none"><clipPath id="uj"><path d="M30 15h30v15zv15H0zH0V0zV0h30z"/></clipPath><path fill="#012169" d="M0 0v30h60V0z"/><path stroke="#fff" stroke-width="6" d="M0 0l60 30m0-30L0 30"/><path stroke="#c8102e" stroke-width="4" clip-path="url(#uj)" d="M0 0l60 30m0-30L0 30"/><path stroke="#fff" stroke-width="10" d="M30 0v30M0 15h60"/><path stroke="#c8102e" stroke-width="6" d="M30 0v30M0 15h60"/></svg>',
+};
+
+// ?lang=fr|en, sinon le dernier choix, sinon la langue du navigateur.
+function langueInitiale() {
+  const demandee = new URLSearchParams(location.search).get("lang");
+  if (demandee in TEXTES) return demandee;
+  try {
+    const gardee = localStorage.getItem("raidmaster-langue");
+    if (gardee in TEXTES) return gardee;
+  } catch { /* stockage indisponible */ }
+  return (navigator.language || "fr").toLowerCase().startsWith("fr") ? "fr" : "en";
+}
+let langue = langueInitiale();
+const t = (cle) => TEXTES[langue][cle];
+
 const $ = (id) => document.getElementById(id);
 const calme = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const params = new URLSearchParams(location.search);
 const zone = $("scene");
 const canvas = $("vue");
 const attente = $("attente");
+let etatAttente = "chargement";   // message affiché tant que le modèle n'est pas là : chargement, erreur
 
 const clamp01 = (v) => Math.min(Math.max(v, 0), 1);
 const adoucit = (t) => t * t * (3 - 2 * t);
@@ -29,7 +135,8 @@ let renderer;
 try {
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
 } catch {
-  attente.textContent = "Cette page a besoin de WebGL, qui n'est pas disponible dans ce navigateur.";
+  etatAttente = "webgl";
+  attente.textContent = t("webgl");
   throw new Error("WebGL indisponible");
 }
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -56,13 +163,14 @@ controls.maxDistance = 3000;
 let sale = true;          // l'image est à refaire
 let pieces = [];
 let cibles = [];          // maillages que le pointeur peut désigner
-let groupes = {};         // identifiant → [nom, détail], dans l'ordre de la liste
+let modele = null;        // textes du modèle (en français) : note, date, groupes, visserie
+let groupes = {};         // identifiant → [nom, détail] dans la langue de la page, dans l'ordre de la liste
 let visserie = ["Visserie", ""];
 let ouverture = 0;
 const visibles = {};
 let visserieVisible = true;
 let demo = null;          // démonstration animée du modèle : { ips, fin, pistes, etapes }
-let etape = null;         // étape de la démonstration en cours : [nom, détail]
+let etape = null;         // étape de la démonstration en cours : [nom, détail] en français
 let attenteDemo = 0;      // minuterie entre deux temps de la démonstration
 
 // --- animations
@@ -242,7 +350,8 @@ let epingle = null;       // groupe choisi au toucher ou au clic
 
 function montreFiche() {
   const g = survole ?? epingle;
-  const [nom, detail] = g === "visserie" ? visserie : (groupes[g] ?? etape ?? ["Maquette", ficheParDefaut]);
+  const [nom, detail] = g === "visserie" ? visserie
+    : (groupes[g] ?? (etape && traduitEtape(etape)) ?? [t("maquette"), ficheParDefaut()]);
   $("fiche-nom").textContent = nom;
   $("fiche-detail").textContent = detail;
   for (const l of $("liste").children) l.classList.toggle("marque", l.dataset.groupe === g);
@@ -255,9 +364,9 @@ function montreFiche() {
   }
   sale = true;
 }
-const ficheParDefaut = matchMedia("(hover: none)").matches
-  ? "Glisser pour tourner, pincer pour zoomer. Toucher une pièce pour la nommer."
-  : $("fiche-detail").textContent;
+const tactile = matchMedia("(hover: none)").matches;
+const ficheParDefaut = () => t(tactile ? "aideTactile" : "aide");
+const traduitEtape = ([nom, detail]) => (langue === "en" && MODELE_EN.etapes[nom]) || [nom, detail];
 
 function designe(groupe) {
   if (groupe === survole) return;
@@ -347,10 +456,8 @@ function prepare(gltf) {
   scene.add(racine);
 
   const infos = JSON.parse(racine.userData.maquette ?? "{}");
-  groupes = Object.fromEntries((infos.groupes ?? []).map((g) => [g.id, [g.nom, g.detail]]));
-  visserie = infos.visserie ?? visserie;
-  $("note").textContent = [infos.note, infos.date && `Modèle du ${infos.date.split("-").reverse().join("/")}.`]
-    .filter(Boolean).join(" ");
+  modele = infos;
+  traduitModele();
 
   racine.traverse((o) => {
     const e = o.userData.eclate;
@@ -428,6 +535,42 @@ function prepare(gltf) {
   }
 }
 
+// --- langue de la page
+
+// Textes du modèle dans la langue de la page (le français du modèle sert de repli).
+function traduitModele() {
+  if (!modele) return;
+  const en = langue === "en";
+  groupes = Object.fromEntries((modele.groupes ?? []).map((g) =>
+    [g.id, (en && MODELE_EN.groupes[g.id]) || [g.nom, g.detail]]));
+  visserie = (en && MODELE_EN.visserie) || modele.visserie || visserie;
+  const note = (en && MODELE_EN.note) || modele.note;
+  $("note").textContent = [note, modele.date && t("date")(modele.date)].filter(Boolean).join(" ");
+  for (const l of $("liste").children) {
+    const g = l.dataset.groupe;
+    l.querySelector("span").textContent = g === "visserie" ? visserie[0] : groupes[g]?.[0] ?? g;
+  }
+}
+
+function changeLangue(l) {
+  langue = l in TEXTES ? l : "fr";
+  document.documentElement.lang = langue;
+  document.title = t("titre");
+  document.querySelector('meta[name="description"]').content = t("description");
+  for (const e of document.querySelectorAll("[data-i18n]")) e.textContent = t(e.dataset.i18n);
+  if (!attente.hidden) attente.textContent = t(etatAttente);
+  for (const e of document.querySelectorAll("[data-i18n-aria]")) e.setAttribute("aria-label", t(e.dataset.i18nAria));
+  $("langue").value = langue;
+  $("drapeau").innerHTML = DRAPEAUX[langue];
+  try { localStorage.setItem("raidmaster-langue", langue); } catch { /* stockage indisponible */ }
+  traduitModele();
+  if (pieces.length) montreFiche();
+  else $("fiche-detail").textContent = ficheParDefaut();
+}
+
+$("langue").addEventListener("change", (e) => changeLangue(e.target.value));
+changeLangue(langue);
+
 // --- boucle : rien n'est dessiné tant que rien ne change
 
 function boucle(now) {
@@ -490,11 +633,12 @@ new GLTFLoader().load(
   prepare,
   (e) => {
     attente.textContent = e.lengthComputable
-      ? `Chargement du modèle… ${Math.round((e.loaded / e.total) * 100)} %`
-      : `Chargement du modèle… ${(e.loaded / 1e6).toFixed(1).replace(".", ",")} Mo`;
+      ? `${t("chargement")} ${Math.round((e.loaded / e.total) * 100)} %`
+      : `${t("chargement")} ${t("mo")(e.loaded / 1e6)}`;
   },
   (erreur) => {
     console.error(erreur);
-    attente.textContent = "Le modèle n'a pas pu être chargé.";
+    etatAttente = "erreur";
+    attente.textContent = t("erreur");
   },
 );

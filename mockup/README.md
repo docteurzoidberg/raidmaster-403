@@ -20,5 +20,10 @@ cd mockup
 python3 -m http.server 8000      # puis http://localhost:8000
 ```
 
-Paramètres d'adresse : `?ouverture=0` (assemblé) à `1` (éclaté), `?vue=face`, `?image=105` (fige la
-démonstration sur une image).
+Paramètres d'adresse : `?ouverture=0` (assemblé) à `100` (éclaté), `?vue=face`, `?image=105` (fige la
+démonstration sur une image), `?lang=fr` ou `?lang=en`.
+
+Page en français et en anglais (menu du haut, avec le lien vers ce dépôt) : la langue vient de `?lang=`,
+sinon du dernier choix (gardé dans le navigateur), sinon de la langue du navigateur. Les textes des pièces
+sont en français dans le modèle ; leur traduction anglaise est dans `main.js` (`MODELE_EN`), le français
+s'affiche pour un texte non traduit.

@@ -21,48 +21,62 @@
 <div class="page">
   <header>
     <h1><span class="marque">RAIDMASTER</span> <span class="num">403</span></h1>
-    <p class="chapeau">Les trois cartes du tripmaster dans leur boîtier, assemblé ou éclaté, avec la trappe de la carte micro-SD et le câble en démonstration.</p>
+    <p class="chapeau" data-i18n="chapeau">Les trois cartes du tripmaster dans leur boîtier, assemblé ou éclaté, avec la trappe de la carte micro-SD et le câble en démonstration.</p>
+    <div class="outils">
+      <label class="langue">
+        <span class="drapeau" id="drapeau" aria-hidden="true"></span>
+        <select id="langue" data-i18n-aria="langue" aria-label="Langue">
+          <option value="fr">🇫🇷 Français</option>
+          <option value="en">🇬🇧 English</option>
+        </select>
+      </label>
+      <a class="github" href="https://github.com/docteurzoidberg/raidmaster-403" target="_blank" rel="noopener"
+         data-i18n-aria="github" aria-label="Code source sur GitHub">
+        <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span>GitHub</span>
+      </a>
+    </div>
   </header>
 
   <main class="banc">
-    <section class="scene" id="scene" aria-label="Maquette 3D : glisser pour tourner, molette ou pincement pour zoomer">
+    <section class="scene" id="scene" data-i18n-aria="scene" aria-label="Maquette 3D : glisser pour tourner, molette ou pincement pour zoomer">
       <canvas id="vue"></canvas>
       <p class="attente" id="attente" role="status">Chargement du modèle…</p>
       <div class="fiche" id="fiche" aria-live="polite">
-        <b id="fiche-nom">Maquette</b>
+        <b id="fiche-nom" data-i18n="maquette">Maquette</b>
         <span id="fiche-detail">Glisser pour tourner, molette pour zoomer. Survoler une pièce pour la nommer.</span>
       </div>
     </section>
 
-    <aside class="rack" aria-label="Commandes de la maquette">
+    <aside class="rack" data-i18n-aria="commandes" aria-label="Commandes de la maquette">
       <fieldset>
-        <legend>Ouverture</legend>
+        <legend data-i18n="ouverture">Ouverture</legend>
         <div class="touches">
-          <button class="touche" type="button" id="assemble" aria-pressed="false">Assemblé</button>
-          <button class="touche" type="button" id="eclate" aria-pressed="false">Éclaté</button>
+          <button class="touche" type="button" id="assemble" aria-pressed="false" data-i18n="assemble">Assemblé</button>
+          <button class="touche" type="button" id="eclate" aria-pressed="false" data-i18n="eclate">Éclaté</button>
         </div>
-        <input type="range" id="ouverture" min="0" max="100" value="0" aria-label="Ouverture de l'éclaté, en pour cent">
+        <input type="range" id="ouverture" min="0" max="100" value="0" data-i18n-aria="curseur" aria-label="Ouverture de l'éclaté, en pour cent">
       </fieldset>
 
       <fieldset id="bloc-demo" hidden>
-        <legend>Démonstration</legend>
+        <legend data-i18n="demonstration">Démonstration</legend>
         <div class="touches">
-          <button class="touche" type="button" id="demo" aria-pressed="false">Rejouer</button>
+          <button class="touche" type="button" id="demo" aria-pressed="false" data-i18n="rejouer">Rejouer</button>
         </div>
       </fieldset>
 
       <fieldset>
-        <legend>Vue</legend>
+        <legend data-i18n="vue">Vue</legend>
         <div class="touches deux" id="vues">
-          <button class="touche" type="button" data-vue="iso" aria-pressed="true">Trois quarts</button>
-          <button class="touche" type="button" data-vue="face" aria-pressed="false">Face</button>
-          <button class="touche" type="button" data-vue="cote" aria-pressed="false">Côté</button>
-          <button class="touche" type="button" data-vue="dos" aria-pressed="false">Dos</button>
+          <button class="touche" type="button" data-vue="iso" aria-pressed="true" data-i18n="vue_iso">Trois quarts</button>
+          <button class="touche" type="button" data-vue="face" aria-pressed="false" data-i18n="vue_face">Face</button>
+          <button class="touche" type="button" data-vue="cote" aria-pressed="false" data-i18n="vue_cote">Côté</button>
+          <button class="touche" type="button" data-vue="dos" aria-pressed="false" data-i18n="vue_dos">Dos</button>
         </div>
       </fieldset>
 
       <fieldset>
-        <legend>Pièces</legend>
+        <legend data-i18n="pieces">Pièces</legend>
         <div class="liste" id="liste"></div>
       </fieldset>
 

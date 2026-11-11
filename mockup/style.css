@@ -29,6 +29,21 @@ header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 22px; }
 h1 { font: 600 clamp(18px, 2.2vw, 22px)/1.1 var(--mono); letter-spacing: .16em; margin: 0; }
 h1 .num { color: var(--ambre); }
 .chapeau { margin: 0; color: var(--gris); max-width: 70ch; }
+.outils { margin-left: auto; display: flex; align-items: center; gap: 10px; align-self: center; }
+.langue { display: flex; align-items: center; gap: 6px; }
+.drapeau { display: block; width: 24px; height: 16px; border-radius: 2px; overflow: hidden; box-shadow: 0 0 0 1px var(--trait); }
+.drapeau svg { display: block; width: 100%; height: 100%; }
+#langue {
+  min-height: 32px; padding: 4px 8px; background: var(--panneau); color: var(--texte); cursor: pointer;
+  border: 1px solid var(--trait); border-radius: 4px; font: 500 14px/1.2 var(--sans);
+}
+.github {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 10px; border-radius: 4px;
+  border: 1px solid var(--trait); background: var(--panneau); color: var(--gris); text-decoration: none;
+  font: 500 14px/1.2 var(--sans);
+}
+.github:hover { color: var(--texte); border-color: var(--gris); }
+:is(#langue, .github):focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
 
 .banc { display: grid; grid-template-columns: minmax(0, 1fr) 272px; gap: 14px; min-height: 0; }
 
@@ -87,4 +102,6 @@ legend { padding: 0 0 6px; font: 600 12px/1 var(--mono); letter-spacing: .1em; t
   .piece { min-height: 40px; }
   .piece.visserie { grid-column: 1 / -1; }
   .touche { min-height: 44px; }
+  .outils { margin-left: 0; }
+  #langue, .github { min-height: 40px; }
 }
