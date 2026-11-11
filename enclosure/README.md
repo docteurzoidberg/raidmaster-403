@@ -2,7 +2,7 @@
 
 Le boîtier du Raidmaster 403 sera dessiné dans Fusion et imprimé en PETG ou ASA (pas de PLA : l'habitacle
 monte à 60 °C en été). Il n'est pas encore dessiné ; une [maquette 3D de principe](../mockup/) vérifie déjà
-l'encombrement des trois cartes ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/mockup/)).
+l'encombrement des trois cartes ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/)).
 
 ## Fichiers STEP du projet (`stepfiles/`)
 

@@ -5,7 +5,8 @@ magnétomètre, carte boutons) dans un boîtier de principe, assemblé ou éclat
 micro-SD et le câble en démonstration. Boîtier **de principe** : il sert à vérifier l'encombrement, ce
 n'est pas le boîtier définitif.
 
-**En ligne : <https://docteurzoidberg.github.io/raidmaster-403/mockup/>** (GitHub Pages).
+**En ligne : <https://docteurzoidberg.github.io/raidmaster-403/>** (GitHub Pages : le workflow
+[`../.github/workflows/pages.yml`](../.github/workflows/pages.yml) publie ce dossier à la racine du site).
 
 | Fichier | Rôle |
 |---|---|

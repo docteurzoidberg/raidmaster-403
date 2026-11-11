@@ -33,7 +33,7 @@ Distance **GPS uniquement**, sans capteur de roue ni intervention sur le câblag
 | 3 | Interface LVGL câblée sur le core : raid, balade, menu réglages actif, calibration auto, démarrage animé, mode nuit | fait |
 | 4 | Simulateur : rejeu de traces NMEA, trajet simulé, scénarios de bout en bout | 21 scénarios GPS en place ; boussole et matériel à venir |
 | 5-6 | HAL ESP32 et firmware sur la carte | en cours : firmware de démo validé sur la carte (écran, tactile, core et UI du sim, trajet GPS simulé, NVS, heure de la RTC, état USB / batterie), jingle de démarrage par le codec ES8311 (à écouter sur la carte) ; GPS, boutons, charge de la batterie à venir |
-| 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B reçue, datasheets et modèle 3D rassemblés ; PCB placé, non routé ; maquette 3D des cartes dans un boîtier de principe validée ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/mockup/)) |
+| 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B reçue, datasheets et modèle 3D rassemblés ; PCB placé, non routé ; maquette 3D des cartes dans un boîtier de principe validée ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/)) |
 
 Pas encore là : boussole (le cap affiché est la route GPS), réglages de charge de la batterie (l'état
 USB / batterie est lu, pas configuré), température réelle, log GPX.
@@ -41,7 +41,7 @@ USB / batterie est lu, pas configuré), température réelle, log GPX.
 ## Maquette 3D
 
 Les trois cartes (Waveshare, carte fille GPS et magnétomètre, carte boutons) dans un boîtier de principe,
-assemblé ou éclaté, à faire tourner dans le navigateur : **<https://docteurzoidberg.github.io/raidmaster-403/mockup/>**. Sources de la page
+assemblé ou éclaté, à faire tourner dans le navigateur : **<https://docteurzoidberg.github.io/raidmaster-403/>**. Sources de la page
 dans [`mockup/`](mockup/) ; modèles 3D externes et futurs fichiers STEP du boîtier dans
 [`enclosure/`](enclosure/README.md).
 
@@ -252,6 +252,7 @@ software/        tout le code ; CMakeLists.txt et CMakePresets.json, build dans 
   references/    non versionné : traces NMEA de test
 enclosure/       boîtier : modèles 3D externes utilisés (README.md), stepfiles/ : exports STEP du boîtier
 mockup/          maquette 3D des cartes dans leur boîtier (page three.js, publiée sur GitHub Pages)
+.github/         workflow de publication de mockup/ sur GitHub Pages
 docs/demo/       GIF de démo
 ```
 
@@ -264,7 +265,7 @@ docs/demo/       GIF de démo
 - [`software/tests/fixtures/scenarios/README.md`](software/tests/fixtures/scenarios/README.md) : catalogue
   des scénarios de bout en bout.
 - [`enclosure/README.md`](enclosure/README.md) : modèles 3D externes et fichiers STEP du boîtier.
-- [`mockup/README.md`](mockup/README.md) : maquette 3D ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/mockup/)).
+- [`mockup/README.md`](mockup/README.md) : maquette 3D ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/)).
 
 ## Licence
 
