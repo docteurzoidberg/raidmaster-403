@@ -81,14 +81,14 @@ const TEXTES = {
 // Textes du modèle en anglais : groupes par identifiant, étapes de la démonstration par nom français.
 // Un texte absent ici s'affiche en français.
 const MODELE_EN = {
-  note: "Boards exported from KiCad, Waveshare board from the manufacturer's 3D model. The enclosure is a 123 × 96 × 32 mm placeholder shell, not designed yet.",
+  note: "Boards exported from KiCad, Waveshare board from the manufacturer's 3D model. The enclosure is a 123 × 94 × 32 mm placeholder shell, not designed yet.",
   visserie: ["Hardware", "4 M2 standoffs (5.1 mm) and 4 M2 screws for the daughter board, 4 recessed M3 × 10 screws that close the enclosure from the back."],
   groupes: {
     capuchons: ["Button caps", "5 printed caps, Ø 14.5 mm, on 12 × 12 push buttons, held by a collar behind the front panel."],
-    facade: ["Front panel", "PETG, 123 × 96 mm, chamfered corners, two facets around the edge, sides cut down to screen height, 1.5 mm lip in front of the glass, translucent LED windows. Placeholder part."],
-    carte_boutons: ["Button board", "108 × 20 mm board snapped off the daughter board: 5 push buttons at an 18.5 mm pitch, 2 LEDs, MCP23017 and flat cable on the back. KiCad export."],
+    facade: ["Front panel", "PETG, 123 × 94 mm, chamfered corners, two facets around the edge, sides cut down to screen height, 1.5 mm lip in front of the glass, translucent LED windows. Placeholder part."],
+    carte_boutons: ["Button board", "108 × 20 mm board snapped off the daughter board, bottom corners cut off: 5 push buttons at an 18.5 mm pitch and 2 LEDs on the front, 2 PCF8574 expanders on the back, linked to the daughter board by a 6-way flat flexible cable. KiCad export."],
     waveshare: ["Waveshare 3.5B", "ESP32-S3-Touch-LCD-3.5B: 3.5-inch touch screen, 92.4 × 61 mm glass, 4 M2 standoffs on the back. Manufacturer's model."],
-    carte_fille: ["Daughter board", "4-layer 78 × 54 mm board plugged into the back of the Waveshare: NEO-M9N GPS, U.FL antenna socket, GY-271 compass. KiCad export."],
+    carte_fille: ["Daughter board", "4-layer 78 × 54 mm board plugged into the back of the Waveshare: NEO-M9N GPS, U.FL antenna socket, GY-271 compass soldered flat. KiCad export."],
     batterie: ["Battery", "5000 mAh 605090 Li-ion pouch cell, 90 × 50 × 6 mm, lying at the bottom."],
     fond: ["Back shell", "PETG, sides cut down to screen height, back tapered around the battery, solid rear face. The right side is slotted down to the joint to take the USB-C sleeve. Placeholder part."],
     acces: ["Top access", "In the top wall: sliding micro-SD card door (it slides backwards, clips in with a latch tab and comes off), PWR button plunger (Ø 9, held by an inner collar), two pinholes for RESET and BOOT. Placeholder parts."],
@@ -556,7 +556,8 @@ function changeLangue(l) {
   langue = l in TEXTES ? l : "fr";
   document.documentElement.lang = langue;
   document.title = t("titre");
-  document.querySelector('meta[name="description"]').content = t("description");
+  const description = document.querySelector('meta[name="description"]');   // absente de la page en un seul fichier
+  if (description) description.content = t("description");
   for (const e of document.querySelectorAll("[data-i18n]")) e.textContent = t(e.dataset.i18n);
   if (!attente.hidden) attente.textContent = t(etatAttente);
   for (const e of document.querySelectorAll("[data-i18n-aria]")) e.setAttribute("aria-label", t(e.dataset.i18nAria));
