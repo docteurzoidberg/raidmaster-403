@@ -1,4 +1,4 @@
-// Maquette 3D du Raidmaster 403 : modèle raidmaster.glb (scène Blender, voir README.md), assemblé ou éclaté.
+// Maquette 3D du Raidmaster 403 : modèle raidmaster.glb (voir README.md), assemblé ou éclaté.
 // Les pièces, leur déplacement à l'éclaté, la démonstration et les textes viennent du modèle (maquette.json) :
 // rien à régler ici.
 import * as THREE from "three";
