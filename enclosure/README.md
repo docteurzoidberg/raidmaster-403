@@ -23,7 +23,7 @@ s'assemblent sans déplacement. Les pièces multi-filament contiennent un corps 
 | `trappe_sd.step` | trappe coulissante de la carte micro-SD, à cran | PETG gris |
 | `trappe_batterie.step` | trappe de la batterie, tenue par 4 vis M3 × 5 | PETG gris |
 | `manchon_usb.step` | manchon de la prise USB-C, rapporté dans le flanc droit | PETG gris |
-| `manchon_puck.step` | manchon de la connectique GPS, version puck externe (module GPS et boussole posé sur le tableau de bord) : canal de 11,4 × 21,3 mm devant les deux prises du puck soudées au bord de la carte fille ; rapporté dans le flanc gauche. Forme provisoire | PETG gris |
+| `manchon_puck.step` | manchon de la connectique GPS, version puck externe (module GPS et boussole posé sur le tableau de bord) : canal de 11,4 × 21,3 mm évasé vers l'extérieur, fermé côté carte par un fond percé à la forme de la prise JST-PH 6 broches de la carte fille (jeu 0,25) et prolongé par un col qui entoure la prise ; rapporté dans le flanc gauche | PETG gris |
 | `manchon_antenne.step` | manchon de la connectique GPS, version GPS interne : plaque qui tient une prise SMA de cloison (antenne active) ; rapporté dans le flanc gauche, à la place du précédent. Forme provisoire | PETG gris |
 | `pare_chocs.step` | les 4 coins en TPU, coincés entre la façade et la coque arrière et accrochés chacun à 3 nervures de la coque (ils s'enfilent dessus par l'avant) | TPU orange |
 
