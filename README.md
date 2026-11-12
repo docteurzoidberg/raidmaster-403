@@ -33,26 +33,26 @@ Distance **GPS uniquement**, sans capteur de roue ni intervention sur le câblag
 | 3 | Interface LVGL câblée sur le core : raid, balade, menu réglages actif, calibration auto, démarrage animé, mode nuit | fait |
 | 4 | Simulateur : rejeu de traces NMEA, trajet simulé, scénarios de bout en bout | 21 scénarios GPS en place ; boussole et matériel à venir |
 | 5-6 | HAL ESP32 et firmware sur la carte | en cours : firmware de démo validé sur la carte (écran, tactile, core et UI du sim, trajet GPS simulé, NVS, heure de la RTC, état USB / batterie), jingle de démarrage par le codec ES8311 (à écouter sur la carte) ; GPS, boutons, charge de la batterie à venir |
-| 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B reçue, datasheets et modèle 3D rassemblés ; PCB placé, non routé ; maquette 3D des cartes dans un boîtier de principe validée ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/)) |
+| 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B reçue, datasheets et modèle 3D rassemblés ; PCB placé, non routé ; maquette 3D des cartes dans un boîtier de principe validée ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/)) ; boîtier dessiné dans Fusion, STEP des pièces dans `enclosure/stepfiles/`, à éprouver |
 
 Pas encore là : boussole (le cap affiché est la route GPS), réglages de charge de la batterie (l'état
 USB / batterie est lu, pas configuré), température réelle, log GPX.
 
 ## Maquette 3D
 
-Les trois cartes (Waveshare, carte fille GPS et magnétomètre, carte boutons) dans un boîtier de principe,
-assemblé ou éclaté, à faire tourner dans le navigateur : **<https://docteurzoidberg.github.io/raidmaster-403/>**. Sources de la page
-dans [`mockup/`](mockup/) ; modèles 3D externes et futurs fichiers STEP du boîtier dans
-[`enclosure/`](enclosure/README.md).
+Les trois cartes (Waveshare, carte fille GPS et magnétomètre, carte boutons) dans leur boîtier (aspect
+retenu : cannelures, pare-chocs en TPU, liseré et lettrage), assemblé ou éclaté, à faire tourner dans le navigateur : **<https://docteurzoidberg.github.io/raidmaster-403/>**. Sources de la page
+dans [`mockup/`](mockup/) ; modèles 3D externes et fichiers STEP du boîtier dessiné dans Fusion (pièces
+à éprouver) dans [`enclosure/`](enclosure/README.md).
 
 <p align="center">
-  <img src="docs/demo/boitier-assemble.png" alt="Boîtier de principe assemblé : écran 3,5 pouces, cinq boutons, deux voyants" width="520">
+  <img src="docs/demo/boitier-assemble.png" alt="Boîtier assemblé : écran 3,5 pouces, cinq boutons, deux voyants, pare-chocs en TPU orange aux coins" width="520">
 </p>
 <p align="center">
-  <img src="docs/demo/boitier-eclate.png" alt="Vue éclatée : capuchons, façade, carte boutons et sa nappe, carte Waveshare, carte fille, fond du boîtier" width="820">
+  <img src="docs/demo/boitier-eclate.png" alt="Vue éclatée : capuchons, façade, pare-chocs en TPU, carte boutons et sa nappe, carte Waveshare, carte fille, fond du boîtier" width="820">
 </p>
 
-<p align="center"><sub>Rendus Blender de la maquette : boîtier de principe de 123 × 94 × 33 mm, pas encore dessiné pour l'impression.</sub></p>
+<p align="center"><sub>Rendus Blender de la maquette : boîtier de 123 × 94 × 33 mm avec l'aspect retenu, esquisse du modèle dessiné pour l'impression.</sub></p>
 
 ## Cartes électroniques
 
@@ -273,7 +273,7 @@ software/        tout le code ; CMakeLists.txt et CMakePresets.json, build dans 
   tests/         tests unitaires Unity, scénarios (fixtures/scenarios/), tools/ : outils Python NMEA
   tools/         scripts : check.sh (vérification complète), fw.sh (firmware), demo_gif.sh
   references/    non versionné : traces NMEA de test
-enclosure/       boîtier : modèles 3D externes utilisés (README.md), stepfiles/ : exports STEP du boîtier
+enclosure/       boîtier : modèles 3D externes utilisés (README.md), stepfiles/ : exports STEP des pièces du boîtier
 mockup/          maquette 3D des cartes dans leur boîtier (page three.js, publiée sur GitHub Pages)
 .github/         workflow de publication de mockup/ sur GitHub Pages
 docs/demo/       GIF de démo, rendus des cartes (KiCad) et du boîtier (Blender)

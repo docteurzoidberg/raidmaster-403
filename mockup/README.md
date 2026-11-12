@@ -1,9 +1,10 @@
 # Maquette 3D
 
 Les trois cartes du Raidmaster 403 (carte Waveshare ESP32-S3-Touch-LCD-3.5B, carte fille GPS et
-magnétomètre, carte boutons) dans un boîtier de principe, assemblé ou éclaté, avec la trappe de la carte
-micro-SD et le câble en démonstration. Boîtier **de principe** : il sert à vérifier l'encombrement, ce
-n'est pas le boîtier définitif.
+magnétomètre, carte boutons) dans leur boîtier, assemblé ou éclaté, avec la trappe de la carte micro-SD et
+le câble en démonstration. Le boîtier montré (cannelures, pare-chocs en TPU, liseré et lettrage de façade)
+est une esquisse du modèle dessiné pour l'impression, encore à éprouver ; ses pièces en STEP sont dans
+[`../enclosure/stepfiles/`](../enclosure/stepfiles/).
 
 **En ligne : <https://docteurzoidberg.github.io/raidmaster-403/>** (GitHub Pages : le workflow
 [`../.github/workflows/pages.yml`](../.github/workflows/pages.yml) publie ce dossier à la racine du site).

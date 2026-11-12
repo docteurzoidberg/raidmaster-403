@@ -1,5 +1,5 @@
 // Maquette 3D du Raidmaster 403 : modèle raidmaster.glb (voir README.md), assemblé ou éclaté.
-// Les pièces, leur déplacement à l'éclaté, la démonstration et les textes viennent du modèle (maquette.json) :
+// Les pièces, leur déplacement à l'éclaté, la démonstration et les textes viennent du modèle (réglages de la maquette) :
 // rien à régler ici, sauf la traduction anglaise (TEXTES, MODELE_EN) quand un texte du modèle change.
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
@@ -81,18 +81,19 @@ const TEXTES = {
 // Textes du modèle en anglais : groupes par identifiant, étapes de la démonstration par nom français.
 // Un texte absent ici s'affiche en français.
 const MODELE_EN = {
-  note: "Boards exported from KiCad, Waveshare board from the manufacturer's 3D model. The enclosure is a 123 × 94 × 33 mm placeholder shell, not designed yet.",
+  note: "Boards exported from KiCad, Waveshare board from the manufacturer's 3D model. 123 × 94 × 33 mm enclosure (127 × 97 × 35 with the bumpers): sketch of the model designed for printing, still to be tested.",
   visserie: ["Hardware", "4 M2 standoffs (5.1 mm), 4 M2 × 12 screws fitted from the back that hold the daughter board and the Waveshare to the back shell, 4 M2 × 6 screws for the button board, 4 recessed M3 × 10 screws that close the enclosure, 4 M3 × 5 screws for the battery cover, all stainless socket head cap screws; 8 brass M3 heat-set inserts, 4 in the front panel and 4 under the battery cover."],
   groupes: {
     capuchons: ["Button caps", "5 printed caps, Ø 14.5 mm, on 12 × 12 push buttons, held by a collar behind the front panel. Inlaid colour legends: A, B, menu, up, down."],
-    facade: ["Front panel", "PETG, 123 × 94 mm, chamfered corners, two facets around the edge, sides cut down to screen height, 1.5 mm lip in front of the glass, translucent LED windows. Placeholder part."],
+    facade: ["Front panel", "PETG, 123 × 94 mm, chamfered corners, two facets around the edge, sides cut down to screen height, grooves on top and bottom, translucent LED windows. Inlaid amber line around the screen and \"RAIDMASTER 403\" lettering (two-filament print). A locating lip fits into the back shell."],
     carte_boutons: ["Button board", "108 × 20 mm board snapped off the daughter board, bottom corners cut off: 5 push buttons at an 18.5 mm pitch and 2 LEDs on the front, 2 PCF8574 expanders on the back, linked to the daughter board by a 6-way flat flexible cable. KiCad export."],
     waveshare: ["Waveshare 3.5B", "ESP32-S3-Touch-LCD-3.5B: 3.5-inch touch screen, 92.4 × 61 mm glass, 4 M2 standoffs on the back. Manufacturer's model."],
     carte_fille: ["Daughter board", "4-layer 78 × 54 mm board plugged into the back of the Waveshare: NEO-M9N GPS, U.FL antenna socket, GY-271 compass soldered flat. KiCad export."],
     batterie: ["Battery", "5000 mAh Li-ion pouch cell, shown as 90 × 50 × 6 mm (model not chosen yet), in a pocket of the back shell, behind a partition that separates it from the electronics."],
-    fond: ["Back shell", "PETG, sides cut down to screen height, tapered back. A partition carries the boards and isolates the battery, which sits in a pocket closed by a screwed cover. The right side is slotted down to the joint to take the USB-C sleeve. Placeholder part."],
-    acces: ["Top access", "In the top wall: sliding micro-SD card door (it slides backwards, clips in with a latch tab and comes off), PWR button plunger (Ø 9, inlaid red lightning bolt, held by an inner collar), two pinholes for RESET and BOOT. Placeholder parts."],
-    manchon: ["USB-C sleeve", "Separate part slipped onto the board's USB-C socket before the back shell goes on: it surrounds the socket on all four sides, guides the plug through a sloped channel and closes the side, with no opening in the enclosure. The edges of the slot in the back shell hold it. Placeholder part."],
+    fond: ["Back shell", "PETG, sides cut down to screen height, tapered back, grooves on top and bottom. A partition carries the boards and isolates the battery, which sits in a pocket closed by a screwed cover. The right side is slotted down to the joint to take the USB-C sleeve."],
+    pare_chocs: ["Bumpers", "4 orange TPU corners, clamped between the front panel and the back shell (tab caught in the joint, tightened by the closing screws): 1.8 mm proud of the enclosure and 1.2 mm in front of the front panel, grip ribs on the lower sides."],
+    acces: ["Top access", "In the top wall: sliding micro-SD card door, recessed 3 mm into the top (it slides backwards, clips in with a latch tab and comes off), PWR button plunger (Ø 9, inlaid red lightning bolt, held by an inner collar), two pinholes for RESET and BOOT."],
+    manchon: ["USB-C sleeve", "Separate part slipped onto the board's USB-C socket before the back shell goes on: it surrounds the socket on all four sides, guides the plug through a sloped channel and closes the side, with no opening in the enclosure. The edges of the slot in the back shell hold it."],
     cable: ["USB-C cable", "Test plug the size of a standard plug (12.35 × 6.5 mm overmould, 22 mm long), plugged into the original socket through the sleeve to check access. Untick to remove it."],
   },
   etapes: {
@@ -270,7 +271,7 @@ function ouvreVers(k, duree = 1400) {
   anime("ouverture", duree * Math.max(Math.abs(k - depart), 0.25), (u) => ouvre(THREE.MathUtils.lerp(depart, k, u)));
 }
 
-// --- démonstration : l'animation préparée dans la scène Blender (maquette.json, « animation »)
+// --- démonstration : l'animation préparée dans la scène Blender (réglages de la maquette, « animation »)
 
 // Décalage d'une pièce à l'image f, entre ses clés [image, vecteur], rangé dans v.
 function decalage(p, f, v) {
