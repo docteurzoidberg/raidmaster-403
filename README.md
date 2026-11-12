@@ -1,6 +1,6 @@
 # Raidmaster 403
 
-Tripmaster GPS de rallye-raid fait maison pour une **Peugeot 403 Familiale de 1956**, pensé pour le raid
+Tripmaster GPS de rallye-raid fait maison pour une **Peugeot 403 break Familiale de 1961**, pensé pour le raid
 **Crazy Dust 2027** et utilisable au quotidien en mode balade. Boîtier autonome aimanté sur la tôle du
 tableau de bord : distances partielles A et B, odomètre, vitesse, cap, moyenne, chrono.
 
