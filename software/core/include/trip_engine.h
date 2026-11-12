@@ -44,12 +44,18 @@ typedef struct {
     uint32_t fix_timeout_ms;  /* sans fix accepté depuis : fix perdu (défaut 2000) */
 } trip_config_t;
 
-/* Valeurs à persister (NVS / sim-storage.json). */
+/* Valeurs à persister (NVS / sim-storage.json). Moyenne et max du segment depuis la RAZ Trip A en font
+ * partie : sans eux, la moyenne repartait au démarrage du trip A sauvegardé divisé par un temps en
+ * mouvement remis à zéro. */
 typedef struct {
     double trip_a_m;
     double trip_b_m;
     double odo_m;
     float  calib_pct;
+    float  max_kmh;           /* max depuis la RAZ Trip A */
+    double moving_ms;         /* temps en mouvement depuis la RAZ Trip A */
+    double avg_base_m;        /* trip A au début de ce temps (0 après une RAZ A ; trip A relu d'une
+                               * sauvegarde qui n'avait pas le temps en mouvement) */
 } trip_persist_t;
 
 /* État publié vers l'UI. */
@@ -84,9 +90,7 @@ typedef struct {
     float   sw_v[TRIP_SPEED_WINDOW];
     int     sw_n, sw_head;
 
-    /* segment depuis la RAZ Trip A */
-    double  seg_moving_ms;
-    float   seg_max_kmh;
+    /* segment depuis la RAZ Trip A : p.moving_ms, p.max_kmh, p.avg_base_m (sauvegardés) */
 
     /* chrono (horloge monotone de l'appelant) */
     bool     chrono_running;

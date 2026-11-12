@@ -8,6 +8,7 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "app.h"
 #include "fake_clock.h"
@@ -226,6 +227,55 @@ static void test_sauvegarde_et_relecture(void)
     TEST_ASSERT_EQUAL_INT(1, S.set.gpx_log);
 }
 
+/* Moyenne et max relus au redémarrage (format 2 de la sauvegarde). */
+static void test_sauvegarde_moyenne(void)
+{
+    drive(0, 0.0, 72.0f, 50);                   /* 1 km à 72 km/h */
+    state(50000);
+    const float avg = S.trip.avg_kmh;
+    TEST_ASSERT_FLOAT_WITHIN(0.5f, 72.0f, avg);
+    app_save(&A);
+    app_init(&A, 500000);                       /* redémarrage */
+    state(500000);
+    TEST_ASSERT_FLOAT_WITHIN(0.01f, avg, S.trip.avg_kmh);
+    TEST_ASSERT_FLOAT_WITHIN(0.01f, 72.0f, S.trip.max_kmh);
+}
+
+/* Sauvegarde au format 1 (trips, calibration, réglages, sans temps en mouvement) : trips et réglages
+ * gardés, moyenne comptée sur ce qui est roulé après le redémarrage (et non 60 km sur quelques minutes). */
+static void test_sauvegarde_format_1(void)
+{
+    struct {
+        uint32_t magic;
+        struct { double trip_a_m, trip_b_m, odo_m; float calib_pct; } trip;
+        app_settings_t set;
+        uint8_t active;
+    } v1;
+    memset(&v1, 0, sizeof(v1));
+    v1.magic = 0x524D0001u;
+    v1.trip.trip_a_m = 60000.0;
+    v1.trip.trip_b_m = 12000.0;
+    v1.trip.odo_m = 48000000.0;
+    v1.trip.calib_pct = 1.0f;
+    app_settings_default(&v1.set);
+    v1.set.night = 1;
+    v1.active = APP_TRIP_B;
+    hal_storage_set("state", &v1, sizeof(v1));
+
+    app_init(&A, 0);
+    state(0);
+    TEST_ASSERT_DOUBLE_WITHIN(0.01, 60000.0, S.trip.trip_a_m);
+    TEST_ASSERT_DOUBLE_WITHIN(0.01, 12000.0, S.trip.trip_b_m);
+    TEST_ASSERT_DOUBLE_WITHIN(0.01, 48000000.0, S.trip.odo_m);
+    TEST_ASSERT_FLOAT_WITHIN(1e-6f, 1.0f, S.trip.calib_pct);
+    TEST_ASSERT_EQUAL_INT(1, S.set.night);
+    TEST_ASSERT_EQUAL_INT(APP_TRIP_B, S.active);
+    TEST_ASSERT_EQUAL_FLOAT(0.0f, S.trip.avg_kmh);
+    drive(0, 0.0, 36.0f, 240);                  /* 4 min à 36 km/h */
+    state(240000);
+    TEST_ASSERT_FLOAT_WITHIN(0.5f, 36.0f, S.trip.avg_kmh);
+}
+
 static void test_sauvegarde_differee(void)
 {
     drive(0, 0.0, 36.0f, 5);
@@ -405,6 +455,8 @@ int main(void)
     RUN_TEST(test_horloge_reglee_au_premier_fix);
     RUN_TEST(test_alarme_vitesse);
     RUN_TEST(test_sauvegarde_et_relecture);
+    RUN_TEST(test_sauvegarde_moyenne);
+    RUN_TEST(test_sauvegarde_format_1);
     RUN_TEST(test_sauvegarde_differee);
     RUN_TEST(test_sauvegarde_illisible);
     RUN_TEST(test_autocalibration);

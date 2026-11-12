@@ -342,6 +342,44 @@ static void test_persistance(void)
     TEST_ASSERT_DOUBLE_WITHIN(0.01, 1000.0, S.trip_a_m);
 }
 
+/* Moyenne, max et temps en mouvement survivent au redémarrage : la moyenne ne repart pas de la distance
+ * sauvegardée sur un temps remis à zéro (MOY 885 km/h vue dans le simulateur web). */
+static void test_persistance_moyenne_et_max(void)
+{
+    double n = drive(0, 0.0, 72.0f, 50.0);      /* 1000 m à 72 km/h */
+    drive(50100, n, 36.0f, 100.0);              /* 1000 m à 36 km/h : moyenne 48 km/h */
+    state_at(150100);
+    const float avg = S.avg_kmh;
+    TEST_ASSERT_FLOAT_WITHIN(0.5f, 48.0f, avg);
+    trip_persist_t p;
+    trip_engine_get_persist(&E, &p);
+    trip_engine_init(&E, NULL, &p);             /* redémarrage */
+    state_at(0);
+    TEST_ASSERT_FLOAT_WITHIN(0.01f, avg, S.avg_kmh);
+    TEST_ASSERT_FLOAT_WITHIN(0.01f, 72.0f, S.max_kmh);
+    TEST_ASSERT_UINT32_WITHIN(1, 150, S.moving_s);
+    /* 100 s de plus à 36 km/h après le redémarrage : 3000 m en 250 s */
+    drive(1000000, 0.0, 36.0f, 100.0);
+    state_at(1100000);
+    TEST_ASSERT_FLOAT_WITHIN(0.5f, 43.2f, S.avg_kmh);
+}
+
+/* Sauvegarde d'avant le temps en mouvement (format 1, migré par core/app) : la moyenne ne compte que ce
+ * qui a été roulé depuis, au lieu de diviser tout le trip A par ce seul temps. */
+static void test_persistance_sans_temps_en_mouvement(void)
+{
+    trip_persist_t p = {.trip_a_m = 60000.0, .trip_b_m = 60000.0, .odo_m = 60000.0, .avg_base_m = 60000.0};
+    trip_engine_init(&E, NULL, &p);
+    drive(0, 0.0, 60.0f, 240.0);                /* 4 min à 60 km/h */
+    state_at(240000);
+    TEST_ASSERT_DOUBLE_WITHIN(1.0, 64000.0, S.trip_a_m);
+    TEST_ASSERT_FLOAT_WITHIN(0.5f, 60.0f, S.avg_kmh);
+    trip_engine_reset_a(&E);                    /* RAZ A : la moyenne repart de zéro */
+    drive(300000, 0.0, 30.0f, 120.0);
+    state_at(420000);
+    TEST_ASSERT_FLOAT_WITHIN(0.5f, 30.0f, S.avg_kmh);
+}
+
 /* ---------------------------------------------------------------- traces de référence */
 
 #ifndef RAIDMASTER_TRACES_DIR
@@ -414,6 +452,8 @@ int main(void)
     RUN_TEST(test_autocalibration_refusee);
     RUN_TEST(test_chrono);
     RUN_TEST(test_persistance);
+    RUN_TEST(test_persistance_moyenne_et_max);
+    RUN_TEST(test_persistance_sans_temps_en_mouvement);
     RUN_TEST(test_trace_autoroute_1h);
     RUN_TEST(test_trace_autoroute_bruitee);
     RUN_TEST(test_trace_circuit_10min);

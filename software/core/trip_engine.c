@@ -46,6 +46,13 @@ void trip_engine_init(trip_engine_t *e, const trip_config_t *cfg, const trip_per
     if (persist) {
         e->p = *persist;
         e->p.calib_pct = clampf(e->p.calib_pct, TRIP_CALIB_MIN_PCT, TRIP_CALIB_MAX_PCT);
+        /* Segment illisible : moyenne et max repartent de ce point, sans fausser la moyenne. */
+        if (!(e->p.moving_ms >= 0.0) || !isfinite(e->p.moving_ms) || !(e->p.max_kmh >= 0.0f) ||
+            !isfinite(e->p.max_kmh) || !isfinite(e->p.avg_base_m)) {
+            e->p.moving_ms = 0.0;
+            e->p.max_kmh = 0.0f;
+            e->p.avg_base_m = e->p.trip_a_m;
+        }
     }
     e->prev_speed_kmh = NAN;
     e->course_deg = NAN;
@@ -125,20 +132,20 @@ void trip_engine_feed(trip_engine_t *e, const gps_fix_t *f, uint64_t mono_ms)
             if (d / dt_s * 3.6 <= e->cfg.max_bridge_kmh) {
                 add_distance(e, d);
                 if (d / dt_s * 3.6 >= e->cfg.min_speed_kmh)
-                    e->seg_moving_ms += dt_s * 1000.0;
+                    e->p.moving_ms += dt_s * 1000.0;
             }
         } else if (!isnan(v) && !isnan(e->prev_speed_kmh)) {
             /* Cas normal : trapèze sur la vitesse Doppler. */
             const double d = ((double)v + (double)e->prev_speed_kmh) / 2.0 / 3.6 * dt_s;
             add_distance(e, d);
             if (v > 0.0f || e->prev_speed_kmh > 0.0f)
-                e->seg_moving_ms += dt_s * 1000.0;
+                e->p.moving_ms += dt_s * 1000.0;
         } else {
             /* Vitesse inconnue d'un côté : écart de position, sauf à l'arrêt. */
             const double d = trip_haversine_m(e->prev_lat, e->prev_lon, f->lat_deg, f->lon_deg);
             if (d / dt_s * 3.6 >= e->cfg.min_speed_kmh && d / dt_s * 3.6 <= e->cfg.max_bridge_kmh) {
                 add_distance(e, d);
-                e->seg_moving_ms += dt_s * 1000.0;
+                e->p.moving_ms += dt_s * 1000.0;
             }
         }
     }
@@ -151,8 +158,8 @@ void trip_engine_feed(trip_engine_t *e, const gps_fix_t *f, uint64_t mono_ms)
 
     if (!isnan(v)) {
         speed_window_push(e, f->t_utc_ms, v);
-        if (v > e->seg_max_kmh)
-            e->seg_max_kmh = v;
+        if (v > e->p.max_kmh)
+            e->p.max_kmh = v;
     }
     e->course_deg = (!isnan(v) && v > 0.0f) ? f->course_deg : NAN;
     e->sats = f->sats;
@@ -172,10 +179,12 @@ void trip_engine_get_state(const trip_engine_t *e, uint64_t mono_ms, trip_state_
     out->fix_ok = e->ever_ok && mono_ms - e->last_ok_mono_ms <= e->cfg.fix_timeout_ms;
     out->speed_kmh = out->fix_ok ? speed_window_avg(e) : 0.0f;
     out->course_deg = out->fix_ok ? e->course_deg : NAN;
-    out->max_kmh = e->seg_max_kmh;
-    out->moving_s = (uint32_t)(e->seg_moving_ms / 1000.0);
-    out->avg_kmh = e->seg_moving_ms >= 1000.0
-                       ? (float)(e->p.trip_a_m / (e->seg_moving_ms / 1000.0) * 3.6)
+    out->max_kmh = e->p.max_kmh;
+    out->moving_s = (uint32_t)(e->p.moving_ms / 1000.0);
+    /* Moyenne en mouvement : distance du trip A comptée pendant ce temps (depuis avg_base_m). */
+    const double seg_m = e->p.trip_a_m - e->p.avg_base_m;
+    out->avg_kmh = e->p.moving_ms >= 1000.0 && seg_m > 0.0
+                       ? (float)(seg_m / (e->p.moving_ms / 1000.0) * 3.6)
                        : 0.0f;
     out->chrono_running = e->chrono_running;
     out->chrono_ms = (uint32_t)(e->chrono_acc_ms +
@@ -193,8 +202,9 @@ void trip_engine_get_persist(const trip_engine_t *e, trip_persist_t *out)
 void trip_engine_reset_a(trip_engine_t *e)
 {
     e->p.trip_a_m = 0.0;
-    e->seg_moving_ms = 0.0;
-    e->seg_max_kmh = 0.0f;
+    e->p.moving_ms = 0.0;
+    e->p.max_kmh = 0.0f;
+    e->p.avg_base_m = 0.0;
 }
 
 void trip_engine_reset_b(trip_engine_t *e)

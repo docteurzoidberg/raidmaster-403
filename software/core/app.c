@@ -15,7 +15,8 @@
 #include "hal/hal_time.h"
 
 #define STORE_KEY   "state"
-#define STORE_MAGIC 0x524D0001u     /* « RM », version 1 : changer à chaque évolution du format */
+#define STORE_MAGIC 0x524D0002u     /* « RM », version 2 : changer à chaque évolution du format */
+#define STORE_MAGIC_V1 0x524D0001u  /* version 1, sans moyenne ni max : relue (trips, réglages) */
 #define MAGCAL_KEY   "magcal"
 #define MAGCAL_MAGIC 0x4D430001u    /* « MC », version 1 */
 #define MAG_SMOOTH   0.25f          /* lissage exponentiel du champ horizontal (20 Hz : ~0,2 s) */
@@ -33,6 +34,46 @@ typedef struct {
     app_settings_t set;
     uint8_t        active;
 } store_t;
+
+/* Version 1 (jusqu'au 2026-11-12) : trip_persist_t sans max, temps en mouvement ni base de la moyenne. */
+typedef struct {
+    uint32_t magic;
+    struct {
+        double trip_a_m, trip_b_m, odo_m;
+        float  calib_pct;
+    } trip;
+    app_settings_t set;
+    uint8_t        active;
+} store_v1_t;
+
+/* Lit la sauvegarde (version 2, ou 1 convertie) ; false si absente ou illisible. */
+static bool store_read(store_t *st)
+{
+    union {
+        store_t    v2;
+        store_v1_t v1;
+    } u;
+    size_t len = sizeof(u);
+    if (hal_storage_get(STORE_KEY, &u, &len) != 0) return false;
+    if (len == sizeof(store_t) && u.v2.magic == STORE_MAGIC) {
+        *st = u.v2;
+        return true;
+    }
+    if (len == sizeof(store_v1_t) && u.v1.magic == STORE_MAGIC_V1) {
+        memset(st, 0, sizeof(*st));
+        st->magic = STORE_MAGIC;
+        st->trip.trip_a_m = u.v1.trip.trip_a_m;
+        st->trip.trip_b_m = u.v1.trip.trip_b_m;
+        st->trip.odo_m = u.v1.trip.odo_m;
+        st->trip.calib_pct = u.v1.trip.calib_pct;
+        st->trip.avg_base_m = u.v1.trip.trip_a_m;   /* moyenne : sur ce qui sera roulé désormais */
+        st->set = u.v1.set;
+        st->active = u.v1.active;
+        return true;
+    }
+    fprintf(stderr, "app : sauvegarde illisible (format changé ?), valeurs par défaut\n");
+    return false;
+}
 
 
 void app_settings_default(app_settings_t *s)
@@ -66,11 +107,10 @@ void app_init(app_t *a, uint64_t now_ms)
     app_settings_default(&a->set);
 
     store_t st;
-    size_t len = sizeof(st);
     const trip_persist_t *persist = NULL;
-    if (hal_storage_get(STORE_KEY, &st, &len) == 0) {
-        if (len == sizeof(st) && st.magic == STORE_MAGIC && isfinite(st.trip.trip_a_m) &&
-            isfinite(st.trip.trip_b_m) && isfinite(st.trip.odo_m) && isfinite(st.trip.calib_pct)) {
+    if (store_read(&st)) {
+        if (isfinite(st.trip.trip_a_m) && isfinite(st.trip.trip_b_m) && isfinite(st.trip.odo_m) &&
+            isfinite(st.trip.calib_pct)) {
             persist = &st.trip;
             a->set = st.set;
             settings_sanitize(&a->set);
@@ -79,6 +119,7 @@ void app_init(app_t *a, uint64_t now_ms)
             fprintf(stderr, "app : sauvegarde illisible (format changé ?), valeurs par défaut\n");
         }
     }
+    size_t len;
     trip_engine_init(&a->engine, NULL, persist);
 
     mag_cal_identity(&a->mag.cal);
