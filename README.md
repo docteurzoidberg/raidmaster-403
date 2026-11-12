@@ -16,7 +16,7 @@ tableau de bord : distances partielles A et B, odomètre, vitesse, cap, moyenne,
 |---|---|
 | Carte | [Waveshare ESP32-S3-Touch-LCD-3.5B](https://www.waveshare.com/wiki/ESP32-S3-Touch-LCD-3.5B) : ESP32-S3, 8 Mo PSRAM, 16 Mo flash |
 | Écran | 3,5" IPS 480 × 320, AXS15231B en QSPI, tactile capacitif intégré |
-| GPS | u-blox NEO-M9N externe (UART, 10 Hz) + antenne active déportée |
+| GPS | au choix au montage : u-blox NEO-M9N sur la carte fille (UART, 10 Hz) + antenne active déportée sous le pare-brise, ou module externe NEO-M8N + boussole (« puck » de drone) posé sur le tableau de bord |
 | Cap | magnétomètre QMC5883L (I²C) |
 | Alimentation | batterie Li-ion interne gérée par l'AXP2101, recharge USB-C, aucun fil 12 V |
 | Commandes | 5 boutons (A, B, menu, +, −) + tactile |
@@ -33,7 +33,7 @@ Distance **GPS uniquement**, sans capteur de roue ni intervention sur le câblag
 | 3 | Interface LVGL câblée sur le core : raid, balade, menu réglages actif, calibration auto, démarrage animé, mode nuit | fait |
 | 4 | Simulateur : rejeu de traces NMEA, trajet simulé, scénarios de bout en bout | 21 scénarios GPS en place ; boussole et matériel à venir |
 | 5-6 | HAL ESP32 et firmware sur la carte | en cours : firmware de démo validé sur la carte (écran, tactile, core et UI du sim, trajet GPS simulé, NVS, heure de la RTC, état USB / batterie), jingle de démarrage par le codec ES8311 (à écouter sur la carte) ; GPS, boutons, charge de la batterie à venir |
-| 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B reçue, datasheets et modèle 3D rassemblés ; PCB placé, non routé ; maquette 3D des cartes dans un boîtier de principe validée ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/)) ; boîtier dessiné dans Fusion, STEP des pièces dans `enclosure/stepfiles/`, à éprouver |
+| 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B reçue, datasheets et modèle 3D rassemblés ; PCB placé, non routé (version 1.1 : GPS interne ou puck externe) ; maquette 3D des cartes dans un boîtier de principe validée ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/)) ; boîtier dessiné dans Fusion, STEP des pièces dans `enclosure/stepfiles/`, à éprouver |
 
 Pas encore là : boussole (le cap affiché est la route GPS), réglages de charge de la batterie (l'état
 USB / batterie est lu, pas configuré), température réelle, log GPX.
@@ -57,7 +57,9 @@ dans [`mockup/`](mockup/) ; modèles 3D externes et fichiers STEP du boîtier de
 ## Cartes électroniques
 
 Deux circuits fabriqués d'un seul tenant puis séparés : la **carte fille** (78 × 54 mm, 4 couches), enfichée
-au dos de la Waveshare, porte le GPS NEO-M9N, la prise d'antenne et la boussole ; la **carte boutons**
+au dos de la Waveshare, existe en deux variantes choisies au soudage : **GPS interne** (NEO-M9N, prise
+d'antenne U.FL et boussole) ou **puck externe** (prise JST-PH 6 broches au bord gauche, protection et tampon
+I²C pour le branchement à chaud) ; la **carte boutons**
 (108 × 20 mm), vissée derrière la façade, porte les 5 poussoirs, les 2 voyants et deux expandeurs I²C, et
 rejoint la carte fille par une nappe souple de 6 voies. Tout se soude au fer.
 

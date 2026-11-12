@@ -30,11 +30,14 @@ h1 { font: 600 clamp(18px, 2.2vw, 22px)/1.1 var(--mono); letter-spacing: .16em; 
 h1 .num { color: var(--ambre); }
 .chapeau { margin: 0; color: var(--gris); max-width: 70ch; }
 .outils { margin-left: auto; display: flex; align-items: center; gap: 10px; align-self: center; }
-.langue { display: flex; align-items: center; gap: 6px; }
-.drapeau { display: block; width: 24px; height: 16px; border-radius: 2px; overflow: hidden; box-shadow: 0 0 0 1px var(--trait); }
+.langue { position: relative; display: flex; align-items: center; }
+.drapeau {
+  position: absolute; left: 9px; top: 50%; transform: translateY(-50%); pointer-events: none;
+  display: block; width: 21px; height: 14px; border-radius: 2px; overflow: hidden; box-shadow: 0 0 0 1px var(--trait);
+}
 .drapeau svg { display: block; width: 100%; height: 100%; }
 #langue {
-  min-height: 32px; padding: 4px 8px; background: var(--panneau); color: var(--texte); cursor: pointer;
+  min-height: 32px; padding: 4px 8px 4px 37px; background: var(--panneau); color: var(--texte); cursor: pointer;
   border: 1px solid var(--trait); border-radius: 4px; font: 500 14px/1.2 var(--sans);
 }
 .github {

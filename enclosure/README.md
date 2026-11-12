@@ -16,13 +16,15 @@ s'assemblent sans déplacement. Les pièces multi-filament contiennent un corps 
 
 | Fichier | Contenu | Matière |
 |---|---|---|
-| `coque_arriere.step` | coque arrière : parois, cloison entre l'électronique et la batterie, poche de la batterie, colonnes des vis de fermeture, cannelures, logements du TPU et ses 12 nervures d'accroche | PETG gris foncé |
+| `coque_arriere.step` | coque arrière : parois, cloison entre l'électronique et la batterie, poche de la batterie, colonnes des vis de fermeture, cannelures, logements du TPU et ses 12 nervures d'accroche, ouverture du flanc gauche pour la connectique GPS | PETG gris foncé |
 | `facade.step` | façade : fenêtre de l'écran, bossages des inserts et de la carte boutons, lèvre de centrage qui entre dans la coque arrière, cannelures ; corps séparés pour le liseré et le lettrage « RAIDMASTER 403 » (ambre) et les deux fenêtres de LED (translucide) | PETG gris foncé, ambre, translucide |
 | `capuchon_A.step`, `capuchon_B.step`, `capuchon_menu.step`, `capuchon_haut.step`, `capuchon_bas.step` | capuchons des 5 boutons, Ø 14,5 à collerette ; légende incrustée de 0,6 mm en corps séparé (A ambre, B cyan, menu rouge, flèches blanches) | PETG gris + couleur de la légende |
 | `poussoir_pwr.step` | poussoir du bouton marche, avec son éclair rouge incrusté | PETG gris + rouge |
 | `trappe_sd.step` | trappe coulissante de la carte micro-SD, à cran | PETG gris |
 | `trappe_batterie.step` | trappe de la batterie, tenue par 4 vis M3 × 5 | PETG gris |
 | `manchon_usb.step` | manchon de la prise USB-C, rapporté dans le flanc droit | PETG gris |
+| `manchon_puck.step` | manchon de la connectique GPS, version puck externe (module GPS et boussole posé sur le tableau de bord) : canal de 11,4 × 21,3 mm devant les deux prises du puck soudées au bord de la carte fille ; rapporté dans le flanc gauche. Forme provisoire | PETG gris |
+| `manchon_antenne.step` | manchon de la connectique GPS, version GPS interne : plaque qui tient une prise SMA de cloison (antenne active) ; rapporté dans le flanc gauche, à la place du précédent. Forme provisoire | PETG gris |
 | `pare_chocs.step` | les 4 coins en TPU, coincés entre la façade et la coque arrière et accrochés chacun à 3 nervures de la coque (ils s'enfilent dessus par l'avant) | TPU orange |
 
 Visserie (non fournie en STEP) : 4 vis CHC M3 × 10 et 4 inserts à chaud M3 (fermeture), 4 vis CHC M3 × 5 et

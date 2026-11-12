@@ -41,6 +41,9 @@ const TEXTES = {
     vue_face: "Face",
     vue_cote: "Côté",
     vue_dos: "Dos",
+    gps: "GPS",
+    gps_puck: "Puck externe",
+    gps_interne: "GPS interne",
     pieces: "Pièces",
     webgl: "Cette page a besoin de WebGL, qui n'est pas disponible dans ce navigateur.",
     erreur: "Le modèle n'a pas pu être chargé.",
@@ -70,6 +73,9 @@ const TEXTES = {
     vue_face: "Front",
     vue_cote: "Side",
     vue_dos: "Back",
+    gps: "GPS",
+    gps_puck: "External puck",
+    gps_interne: "Built-in GPS",
     pieces: "Parts",
     webgl: "This page needs WebGL, which is not available in this browser.",
     erreur: "The model could not be loaded.",
@@ -88,11 +94,13 @@ const MODELE_EN = {
     facade: ["Front panel", "PETG, 123 × 94 mm, chamfered corners, two facets around the edge, sides cut down to screen height, grooves on top and bottom, translucent LED windows. Inlaid amber line around the screen and \"RAIDMASTER 403\" lettering (two-filament print). A locating lip fits into the back shell."],
     carte_boutons: ["Button board", "108 × 20 mm board snapped off the daughter board, bottom corners cut off: 5 push buttons at an 18.5 mm pitch and 2 LEDs on the front, 2 PCF8574 expanders on the back, linked to the daughter board by a 6-way flat flexible cable. KiCad export."],
     waveshare: ["Waveshare 3.5B", "ESP32-S3-Touch-LCD-3.5B: 3.5-inch touch screen, 92.4 × 61 mm glass, 4 M2 standoffs on the back. Manufacturer's model."],
-    carte_fille: ["Daughter board", "4-layer 78 × 54 mm board plugged into the back of the Waveshare: NEO-M9N GPS, U.FL antenna socket, GY-271 compass soldered flat. KiCad export."],
+    carte_fille: ["Daughter board", "4-layer 78 × 54 mm board plugged into the back of the Waveshare: GY-271 compass soldered flat, moved away from the left edge (trial); in the built-in GPS version, NEO-M9N GPS and U.FL antenna socket, moved to the Waveshare side near the left edge (trial). KiCad export."],
     batterie: ["Battery", "5000 mAh Li-ion pouch cell, shown as 90 × 50 × 6 mm (model not chosen yet), in a pocket of the back shell, behind a partition that separates it from the electronics."],
-    fond: ["Back shell", "PETG, sides cut down to screen height, tapered back, grooves on top and bottom. A partition carries the boards and isolates the battery, which sits in a pocket closed by a screwed cover. The right side is slotted down to the joint to take the USB-C sleeve."],
+    fond: ["Back shell", "PETG, sides cut down to screen height, tapered back, grooves on top and bottom. A partition carries the boards and isolates the battery, which sits in a pocket closed by a screwed cover. The right side is slotted down to the joint to take the USB-C sleeve, the left side, on the flat of the waist, to take the GPS connector sleeve (puck or antenna)."],
     pare_chocs: ["Bumpers", "4 orange TPU corners, clamped between the front panel and the back shell (tab caught in the joint, tightened by the closing screws) and each hooked onto 3 ribs of the back shell, at both ends and in the corner: 1.8 mm proud of the enclosure and 1.2 mm in front of the front panel, grip ribs on the lower sides."],
     acces: ["Top access", "In the top wall: sliding micro-SD card door, recessed 3 mm into the top (it slides backwards, clips in with a latch tab and comes off), PWR button plunger (Ø 9, inlaid red lightning bolt, held by an inner collar), two pinholes for RESET and BOOT."],
+    puck: ["Puck connectors", "External puck version: drone NEO-M8N GPS and compass module sitting on the dashboard, plugged through a remade cable into a through-hole 6-pin JST-PH socket soldered on the left edge of the daughter board, on the Waveshare side (project pinout: VCC, TX, RX, SDA, SCL, GND). Separate sleeve in the left-side opening: almost straight 11.4 × 21.3 mm channel, as wide as possible for the fingers, chamfered only through the shell thickness."],
+    antenne: ["Built-in GPS antenna", "Built-in GPS version: SMA bulkhead socket held by a separate sleeve in the left-side opening, U.FL pigtail from the SMA to the daughter board's U.FL socket, between the two boards. Active antenna under the windscreen."],
     manchon: ["USB-C sleeve", "Separate part slipped onto the board's USB-C socket before the back shell goes on: it surrounds the socket on all four sides, guides the plug through a sloped channel and closes the side, with no opening in the enclosure. The edges of the slot in the back shell hold it."],
     cable: ["USB-C cable", "Test plug the size of a standard plug (12.35 × 6.5 mm overmould, 22 mm long), plugged into the original socket through the sleeve to check access. Untick to remove it."],
   },
@@ -170,6 +178,7 @@ let visserie = ["Visserie", ""];
 let ouverture = 0;
 const visibles = {};
 let visserieVisible = true;
+let versionGps = null;    // version de la connectique GPS montrée (puck, interne) ; pièces sans version : toujours
 let demo = null;          // démonstration animée du modèle : { ips, fin, pistes, etapes }
 let etape = null;         // étape de la démonstration en cours : [nom, détail] en français
 let attenteDemo = 0;      // minuterie entre deux temps de la démonstration
@@ -341,7 +350,15 @@ function joueDemo() {
 // --- pièces
 
 function appliqueVisibilite() {
-  for (const p of pieces) p.objet.visible = visibles[p.groupe] !== false && (!p.vis || visserieVisible);
+  for (const p of pieces) {
+    p.objet.visible = visibles[p.groupe] !== false && (!p.vis || visserieVisible)
+      && (!p.version || p.version === versionGps);
+  }
+  // Une ligne de la liste par groupe qui a des pièces dans la version montrée.
+  for (const l of $("liste").children) {
+    const g = l.dataset.groupe;
+    if (g !== "visserie") l.hidden = !pieces.some((p) => p.groupe === g && (!p.version || p.version === versionGps));
+  }
   cibles = pieces.filter((p) => p.objet.visible).flatMap((p) => p.maillages);
   sale = true;
 }
@@ -410,6 +427,18 @@ function construitListe() {
   liste.append(l);
 }
 
+function marqueVersion() {
+  for (const b of $("versions").children) b.setAttribute("aria-pressed", String(b.dataset.version === versionGps));
+}
+
+function choisitVersion(v) {
+  versionGps = v;
+  marqueVersion();
+  if (epingle && !pieces.some((p) => p.groupe === epingle && p.objet.visible)) epingle = null;
+  appliqueVisibilite();
+  montreFiche();
+}
+
 // --- pointeur
 
 const rayon = new THREE.Raycaster();
@@ -465,7 +494,7 @@ function prepare(gltf) {
     if (!e) return;
     // Blender : Y vers l'arrière, Z en haut ; scène : Y en haut, façade vers +Z
     const p = {
-      objet: o, nom: o.name, groupe: o.userData.groupe, vis: Boolean(o.userData.vis),
+      objet: o, nom: o.name, groupe: o.userData.groupe, vis: Boolean(o.userData.vis), version: o.userData.version ?? null,
       offset: new THREE.Vector3(e[0], e[2], -e[1]), demo: new THREE.Vector3(), maillages: [], materiaux: [],
     };
     o.traverse((m) => {
@@ -512,6 +541,15 @@ function prepare(gltf) {
       const c = m.material.color;
       m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry, 28), c.r + c.g + c.b < 0.2 ? clair : fonce));
     }
+  }
+
+  // Connectique GPS en deux versions (puck externe ou GPS interne) : ?gps=puck|interne, sinon celle du modèle.
+  const versions = [...new Set(pieces.map((p) => p.version).filter(Boolean))];
+  if (versions.length) {
+    const demandee = params.get("gps");
+    versionGps = versions.includes(demandee) ? demandee : versions.includes(infos.gps) ? infos.gps : versions[0];
+    $("bloc-gps").hidden = false;
+    marqueVersion();
   }
 
   construitListe();
@@ -627,6 +665,7 @@ $("ouverture").addEventListener("input", (e) => {
 });
 $("demo").addEventListener("click", joueDemo);
 for (const b of $("vues").children) b.addEventListener("click", () => placeVue(b.dataset.vue));
+for (const b of $("versions").children) b.addEventListener("click", () => choisitVersion(b.dataset.version));
 
 requestAnimationFrame(boucle);
 

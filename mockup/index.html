@@ -26,8 +26,8 @@
       <label class="langue">
         <span class="drapeau" id="drapeau" aria-hidden="true"></span>
         <select id="langue" data-i18n-aria="langue" aria-label="Langue">
-          <option value="fr">🇫🇷 Français</option>
-          <option value="en">🇬🇧 English</option>
+          <option value="fr">Français</option>
+          <option value="en">English</option>
         </select>
       </label>
       <a class="github" href="https://github.com/docteurzoidberg/raidmaster-403" target="_blank" rel="noopener"
@@ -72,6 +72,14 @@
           <button class="touche" type="button" data-vue="face" aria-pressed="false" data-i18n="vue_face">Face</button>
           <button class="touche" type="button" data-vue="cote" aria-pressed="false" data-i18n="vue_cote">Côté</button>
           <button class="touche" type="button" data-vue="dos" aria-pressed="false" data-i18n="vue_dos">Dos</button>
+        </div>
+      </fieldset>
+
+      <fieldset id="bloc-gps" hidden>
+        <legend data-i18n="gps">GPS</legend>
+        <div class="touches" id="versions">
+          <button class="touche" type="button" data-version="puck" aria-pressed="true" data-i18n="gps_puck">Puck externe</button>
+          <button class="touche" type="button" data-version="interne" aria-pressed="false" data-i18n="gps_interne">GPS interne</button>
         </div>
       </fieldset>
 

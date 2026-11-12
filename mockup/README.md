@@ -22,7 +22,11 @@ python3 -m http.server 8000      # puis http://localhost:8000
 ```
 
 Paramètres d'adresse : `?ouverture=0` (assemblé) à `100` (éclaté), `?vue=face`, `?image=105` (fige la
-démonstration sur une image), `?lang=fr` ou `?lang=en`.
+démonstration sur une image), `?gps=puck` ou `?gps=interne`, `?lang=fr` ou `?lang=en`.
+
+Connectique GPS en deux versions, choisies au soudage de la carte fille : **puck externe** (module GPS et
+boussole posé sur le tableau de bord, branché au flanc gauche) ou **GPS interne** (antenne en SMA au flanc
+gauche). Les deux sont dans le modèle ; le bloc « GPS » de la page montre l'une ou l'autre.
 
 Page en français et en anglais (menu du haut, avec le lien vers ce dépôt) : la langue vient de `?lang=`,
 sinon du dernier choix (gardé dans le navigateur), sinon de la langue du navigateur. Les textes des pièces
