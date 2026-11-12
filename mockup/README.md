@@ -40,6 +40,9 @@ textes des pièces sont en français dans le modèle ; leur traduction anglaise 
 Le firmware compilé en WebAssembly tourne dans ce même modèle (`../raidmaster.glb`) : écran vivant, capuchons
 cliquables (appui long : 0,6 s), carte [Leaflet](https://leafletjs.com) / OpenStreetMap du trajet rejoué,
 panneau de développement (scénarios, vitesse, actions et vérifications, import NMEA, essais, mémoire, journal).
+Le boîtier s'affiche de face (« Recentrer » après une rotation) ; « Écran seul » montre l'écran sur toute la
+largeur du cadre avec une barre des cinq boutons ; sur la carte, « Centrer » garde le véhicule au centre (un
+glisser le coupe).
 
 | Fichier | Rôle |
 |---|---|
