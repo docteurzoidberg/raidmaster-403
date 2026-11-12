@@ -19,7 +19,7 @@ tableau de bord : distances partielles A et B, odomètre, vitesse, cap, moyenne,
 | GPS | au choix au montage : u-blox NEO-M9N sur la carte fille (UART, 10 Hz) + antenne active déportée sous le pare-brise, ou module externe NEO-M8N + boussole (« puck » de drone) posé sur le tableau de bord |
 | Cap | magnétomètre QMC5883L (I²C) |
 | Alimentation | batterie Li-ion interne gérée par l'AXP2101, recharge USB-C, aucun fil 12 V |
-| Commandes | 5 boutons (A, B, menu, +, −) + tactile |
+| Commandes | 5 boutons (A, B, menu, ▲ haut / +, ▼ bas / −) + tactile |
 | Boîtier | PETG / ASA imprimé (pas de PLA : habitacle à 60 °C en été) ; fixation sur la tôle à définir (plus d'aimants noyés dans le boîtier ; des aimants rapportés au dos restent possibles) |
 
 Distance **GPS uniquement**, sans capteur de roue ni intervention sur le câblage de la voiture.
