@@ -31,7 +31,7 @@ Distance **GPS uniquement**, sans capteur de roue ni intervention sur le câblag
 | 1 | Squelette CMake + simulateur SDL 480 × 320 | fait |
 | 2 | Core portable + tests : `gps_parser` (NMEA, sur minmea), `trip_engine` (distance, moyenne, chrono, calibration), `app` (boutons, menu, sauvegarde) | fait |
 | 3 | Interface LVGL câblée sur le core : raid, balade, menu réglages actif, calibration auto, démarrage animé, mode nuit | fait |
-| 4 | Simulateur : rejeu de traces NMEA, trajet simulé, scénarios de bout en bout | 23 scénarios en place (GPS, puck débranché, calibration de la boussole) ; inclinomètre et matériel à venir |
+| 4 | Simulateur : rejeu de traces NMEA, trajet simulé, scénarios de bout en bout | 23 scénarios en place (GPS, puck débranché, calibration de la boussole) ; simulateur web dans le navigateur (WebAssembly, maquette 3D et carte) ; inclinomètre et matériel à venir |
 | 5-6 | HAL ESP32 et firmware sur la carte | en cours : firmware de démo validé sur la carte (écran, tactile, core et UI du sim, trajet GPS simulé, NVS, heure de la RTC, état USB / batterie), jingle de démarrage par le codec ES8311 (à écouter sur la carte) ; pilote du récepteur GPS réel écrit (NEO-M9N ou puck NEO-M8N sur UART : débit trouvé, modèle reconnu, réglé à 10 Hz) et de sa boussole (QMC5883L, IST8310, HMC5883L ou LIS3MDL sur I²C, cap dans le journal), à essayer sur la carte ; cap à l'écran, boutons, charge de la batterie à venir |
 | 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B reçue, datasheets et modèle 3D rassemblés ; PCB placé, non routé (version 1.1 : GPS interne ou puck externe) ; maquette 3D des cartes dans un boîtier de principe validée ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/)) ; boîtier dessiné dans Fusion, STEP des pièces dans `enclosure/stepfiles/`, à éprouver |
 
@@ -53,6 +53,31 @@ dans [`mockup/`](mockup/) ; modèles 3D externes et fichiers STEP du boîtier de
 </p>
 
 <p align="center"><sub>Rendus Blender de la maquette : boîtier de 123 × 94 × 33 mm avec l'aspect retenu, esquisse du modèle dessiné pour l'impression.</sub></p>
+
+## Simulateur dans le navigateur
+
+Le firmware (mêmes `core/` et `ui/`, compilés en WebAssembly) tourne dans la maquette 3D : l'écran est
+vivant, les cinq capuchons se cliquent (appui long en gardant le doigt 0,6 s), et une carte OpenStreetMap
+suit le trajet GPS rejoué : **<https://docteurzoidberg.github.io/raidmaster-403/sim/>** (lien « Essayer le
+simulateur » de la maquette). Trajets : les scénarios des tests, ou un fichier NMEA à glisser sur la page
+(il reste dans le navigateur) ; vitesse ×1 à ×1000 ; la case « Jouer les actions et les vérifications »
+rejoue les appuis du scénario et affiche ses vérifications en vert ou rouge. Trips et réglages restent dans
+le navigateur (bouton « Remise à zéro »). Son coupé par défaut (bouton « Son »). Mêmes touches que le
+simulateur PC ; `?vue=2d` affiche l'écran seul.
+
+Construit en local et commité dans `mockup/sim/` (publié avec la maquette). Prérequis :
+[emsdk](https://emscripten.org/docs/getting_started/downloads.html) installé dans `~/sdk/emsdk` (ou
+`EMSDK_DIR`), Node (celui d'emsdk suffit).
+
+```bash
+cd software
+tools/web.sh             # build (build-web/), test sous Node, copie dans mockup/sim/
+tools/web.sh serve       # sert mockup/ : http://localhost:8000/sim/
+```
+
+`tools/web.sh build`, `test` et `copy` font chaque étape seule. Le test joue les 23 scénarios dans le
+module WebAssembly avec leurs vérifications, et compare une capture de l'écran à celle du simulateur PC
+(identique au pixel près).
 
 ## Cartes électroniques
 
@@ -116,8 +141,8 @@ avec l'animation par la sortie audio SDL (WSLg sous WSL) ; `SDL_AUDIODRIVER=dumm
 ```bash
 cd software
 ctest --preset sim
-tools/check.sh        # build + avertissements + tests + GIF + build firmware, résumé en 4 lignes
-                      # (-c : tout recompiler, -s : sim seul)
+tools/check.sh        # build + avertissements + tests + GIF + build firmware + simulateur web, résumé court
+                      # (-c : tout recompiler, -s : sim seul, -w : sans le web)
 ```
 
 - Tests unitaires du core avec [Unity](https://github.com/ThrowTheSwitch/Unity) : parseur NMEA, moteur
@@ -271,17 +296,20 @@ software/        tout le code ; CMakeLists.txt et CMakePresets.json, build dans 
                  synth et jingles (son) ; core/include/hal/ : interfaces matériel ;
                  core/third_party/minmea
   ui/            interface LVGL v9 : écrans, thème jour / nuit, polices, images, animation de démarrage
-  sim/           simulateur PC SDL2 : fenêtre, clavier, options, mode script, captures, GIF
+  sim/           simulateur PC SDL2 : fenêtre, clavier, options, mode script (script.c), captures, GIF
   hal_sim/       HAL du simulateur : GPS (rejeu, trajet simulé), stockage JSON, horloge, assets, son SDL
+  simweb/        simulateur web (WebAssembly) : front-end, index des scénarios, test Node (tests/)
+  hal_simweb/    HAL du simulateur web : stockage du navigateur, son Web Audio (le reste vient de hal_sim/)
   hal_esp32/     HAL et pilotes de la carte (écran QSPI, tactile, RTC, PMIC, son ES8311, NVS, GPS de démo ou réel…),
                  composant ESP-IDF
   firmware/      projet ESP-IDF (main/, sdkconfig.defaults, partitions.csv), build dans software/build-firmware/
   cmake/         modules CMake communs au sim et au firmware (animation de démarrage, version)
   tests/         tests unitaires Unity, scénarios (fixtures/scenarios/), tools/ : outils Python NMEA
-  tools/         scripts : check.sh (vérification complète), fw.sh (firmware), demo_gif.sh
+  tools/         scripts : check.sh (vérification complète), fw.sh (firmware), web.sh (simulateur web), demo_gif.sh
   references/    non versionné : traces NMEA de test
 enclosure/       boîtier : modèles 3D externes utilisés (README.md), stepfiles/ : exports STEP des pièces du boîtier
-mockup/          maquette 3D des cartes dans leur boîtier (page three.js, publiée sur GitHub Pages)
+mockup/          maquette 3D des cartes dans leur boîtier (page three.js, publiée sur GitHub Pages) ;
+                 sim/ : simulateur web (page, module construit par tools/web.sh, scénarios)
 .github/         workflow de publication de mockup/ sur GitHub Pages
 docs/demo/       GIF de démo, rendus des cartes (KiCad) et du boîtier (Blender)
 ```
@@ -295,7 +323,8 @@ docs/demo/       GIF de démo, rendus des cartes (KiCad) et du boîtier (Blender
 - [`software/tests/fixtures/scenarios/README.md`](software/tests/fixtures/scenarios/README.md) : catalogue
   des scénarios de bout en bout.
 - [`enclosure/README.md`](enclosure/README.md) : modèles 3D externes et fichiers STEP du boîtier.
-- [`mockup/README.md`](mockup/README.md) : maquette 3D ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/)).
+- [`mockup/README.md`](mockup/README.md) : maquette 3D ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/))
+  et simulateur web ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/sim/)).
 
 ## Licence
 
@@ -313,4 +342,7 @@ Composants tiers :
 | [minmea](https://github.com/kosma/minmea) | MIT (au choix WTFPL / MIT / LGPL-3) | décodage NMEA, dans `core/third_party/minmea/` |
 | [Unity](https://github.com/ThrowTheSwitch/Unity) v2.6.1 | MIT | tests, téléchargé au build |
 | [Share Tech Mono](https://fonts.google.com/specimen/Share+Tech+Mono) | SIL OFL 1.1 | police, dans `ui/assets/` |
-| [three.js](https://threejs.org) 0.186.1 | MIT | maquette 3D (`mockup/`), chargé depuis jsDelivr |
+| [three.js](https://threejs.org) 0.186.1 | MIT | maquette 3D et simulateur web (`mockup/`), chargé depuis jsDelivr |
+| [Leaflet](https://leafletjs.com) 1.9.4 | BSD-2-Clause | carte du simulateur web (`mockup/sim/`), chargé depuis jsDelivr |
+| Tuiles [OpenStreetMap](https://www.openstreetmap.org/copyright) | données ODbL, attribution affichée | fond de carte du simulateur web, usage léger ([politique des tuiles](https://operations.osmfoundation.org/policies/tiles/)) |
+| [Emscripten](https://emscripten.org) | MIT / University of Illinois NCSA | compilateur du simulateur web, installé à part ; son code d'exécution est dans le module construit |

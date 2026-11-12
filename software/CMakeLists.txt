@@ -63,6 +63,12 @@ elseif(RAIDMASTER_TARGET STREQUAL "web")
         message(FATAL_ERROR "La cible web se construit avec emcc : tools/web.sh (preset web).")
     endif()
     add_compile_options(-Wall -Wextra -Wpedantic)
+    # Le module est publié : chemins des sources (__FILE__ des assertions LVGL) relatifs au dépôt, sans le
+    # chemin du poste qui l'a construit.
+    add_compile_options("-ffile-prefix-map=${RAIDMASTER_REPO_DIR}/=")
+    if(FETCHCONTENT_SOURCE_DIR_LVGL)
+        add_compile_options("-ffile-prefix-map=${FETCHCONTENT_SOURCE_DIR_LVGL}=lvgl")
+    endif()
     # Python (gen_route.py pour les traces des scénarios, animation de démarrage), comme le sim.
     if(NOT RAIDMASTER_PYTHON)
         find_program(RAIDMASTER_PYTHON NAMES python3 python

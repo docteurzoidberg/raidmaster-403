@@ -29,7 +29,27 @@ boussole posé sur le tableau de bord, branché au flanc gauche) ou **GPS intern
 gauche), plus un **bouchon** qui ferme le flanc gauche quand rien n'y est branché. Les trois sont dans le modèle ;
 le bloc « GPS » de la page en montre une.
 
-Page en français et en anglais (menu du haut, avec le lien vers ce dépôt) : la langue vient de `?lang=`,
-sinon du dernier choix (gardé dans le navigateur), sinon de la langue du navigateur. Les textes des pièces
-sont en français dans le modèle ; leur traduction anglaise est dans `main.js` (`MODELE_EN`), le français
-s'affiche pour un texte non traduit.
+Page en français et en anglais (menu du haut, avec le lien vers ce dépôt et vers le simulateur) : la langue
+vient de `?lang=`, sinon du dernier choix (gardé dans le navigateur), sinon de la langue du navigateur. Les
+textes des pièces sont en français dans le modèle ; leur traduction anglaise est dans `main.js`
+(`MODELE_EN`), le français s'affiche pour un texte non traduit.
+
+## Simulateur (`sim/`)
+
+**En ligne : <https://docteurzoidberg.github.io/raidmaster-403/sim/>** (en local : `http://localhost:8000/sim/`).
+Le firmware compilé en WebAssembly tourne dans ce même modèle (`../raidmaster.glb`) : écran vivant, capuchons
+cliquables (appui long : 0,6 s), carte [Leaflet](https://leafletjs.com) / OpenStreetMap du trajet rejoué,
+panneau de développement (scénarios, vitesse, actions et vérifications, import NMEA, essais, mémoire, journal).
+
+| Fichier | Rôle |
+|---|---|
+| `sim/index.html`, `sim/sim.js`, `sim/style.css` | page (écrite à la main) |
+| `sim/raidmaster-sim-<version>.js` / `.wasm` / `.data` | module construit par `software/tools/web.sh` (numéro de version dans le nom : le cache de Pages ne sert pas un ancien module) ; `.data` : animation de démarrage |
+| `sim/build.json` | nom du module, version, empreinte git du build |
+| `sim/scenarios/` | traces et actions des scénarios des tests, `index.json` ; récupérés à la demande |
+
+Paramètres d'adresse : `?scenario=s24_ligne_droite_boutons`, `?vitesse=100`, `?actions=1` (actions et
+vérifications), `?vue=2d` (écran seul, sans WebGL), `?son=1`, `?allumer=1` (sans clic, donc sans son),
+`?lang=fr` ou `?lang=en`. Pour les essais automatiques, `window.raidmasterSim` donne l'état, les vérifications,
+la position des capuchons à l'écran et appuie sur les boutons. Langue choisie comme pour la maquette (même
+réglage gardé) ; l'interface du boîtier reste en français.
