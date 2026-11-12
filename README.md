@@ -19,7 +19,7 @@ tableau de bord : distances partielles A et B, odomètre, vitesse, cap, moyenne,
 | GPS | u-blox NEO-M9N externe (UART, 10 Hz) + antenne active déportée |
 | Cap | magnétomètre QMC5883L (I²C) |
 | Alimentation | batterie Li-ion interne gérée par l'AXP2101, recharge USB-C, aucun fil 12 V |
-| Commandes | 5 boutons (A, B, +, −, menu) + tactile |
+| Commandes | 5 boutons (A, B, menu, +, −) + tactile |
 | Boîtier | PETG / ASA imprimé (pas de PLA : habitacle à 60 °C en été) ; fixation sur la tôle à définir (plus d'aimants noyés dans le boîtier ; des aimants rapportés au dos restent possibles) |
 
 Distance **GPS uniquement**, sans capteur de roue ni intervention sur le câblage de la voiture.
@@ -52,7 +52,7 @@ dans [`mockup/`](mockup/) ; modèles 3D externes et futurs fichiers STEP du boî
   <img src="docs/demo/boitier-eclate.png" alt="Vue éclatée : capuchons, façade, carte boutons et sa nappe, carte Waveshare, carte fille, fond du boîtier" width="820">
 </p>
 
-<p align="center"><sub>Rendus Blender de la maquette : boîtier de principe de 123 × 94 × 32 mm, pas encore dessiné pour l'impression.</sub></p>
+<p align="center"><sub>Rendus Blender de la maquette : boîtier de principe de 123 × 94 × 33 mm, pas encore dessiné pour l'impression.</sub></p>
 
 ## Cartes électroniques
 

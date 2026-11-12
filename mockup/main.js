@@ -81,17 +81,17 @@ const TEXTES = {
 // Textes du modèle en anglais : groupes par identifiant, étapes de la démonstration par nom français.
 // Un texte absent ici s'affiche en français.
 const MODELE_EN = {
-  note: "Boards exported from KiCad, Waveshare board from the manufacturer's 3D model. The enclosure is a 123 × 94 × 32 mm placeholder shell, not designed yet.",
-  visserie: ["Hardware", "4 M2 standoffs (5.1 mm) and 4 M2 screws for the daughter board, 4 recessed M3 × 10 screws that close the enclosure from the back."],
+  note: "Boards exported from KiCad, Waveshare board from the manufacturer's 3D model. The enclosure is a 123 × 94 × 33 mm placeholder shell, not designed yet.",
+  visserie: ["Hardware", "4 M2 standoffs (5.1 mm), 4 M2 × 12 screws fitted from the back that hold the daughter board and the Waveshare to the back shell, 4 M2 × 6 screws for the button board, 4 recessed M3 × 10 screws that close the enclosure, 4 M3 × 5 screws for the battery cover, all stainless socket head cap screws; 8 brass M3 heat-set inserts, 4 in the front panel and 4 under the battery cover."],
   groupes: {
-    capuchons: ["Button caps", "5 printed caps, Ø 14.5 mm, on 12 × 12 push buttons, held by a collar behind the front panel."],
+    capuchons: ["Button caps", "5 printed caps, Ø 14.5 mm, on 12 × 12 push buttons, held by a collar behind the front panel. Inlaid colour legends: A, B, menu, up, down."],
     facade: ["Front panel", "PETG, 123 × 94 mm, chamfered corners, two facets around the edge, sides cut down to screen height, 1.5 mm lip in front of the glass, translucent LED windows. Placeholder part."],
     carte_boutons: ["Button board", "108 × 20 mm board snapped off the daughter board, bottom corners cut off: 5 push buttons at an 18.5 mm pitch and 2 LEDs on the front, 2 PCF8574 expanders on the back, linked to the daughter board by a 6-way flat flexible cable. KiCad export."],
     waveshare: ["Waveshare 3.5B", "ESP32-S3-Touch-LCD-3.5B: 3.5-inch touch screen, 92.4 × 61 mm glass, 4 M2 standoffs on the back. Manufacturer's model."],
     carte_fille: ["Daughter board", "4-layer 78 × 54 mm board plugged into the back of the Waveshare: NEO-M9N GPS, U.FL antenna socket, GY-271 compass soldered flat. KiCad export."],
-    batterie: ["Battery", "5000 mAh 605090 Li-ion pouch cell, 90 × 50 × 6 mm, lying at the bottom."],
-    fond: ["Back shell", "PETG, sides cut down to screen height, back tapered around the battery, solid rear face. The right side is slotted down to the joint to take the USB-C sleeve. Placeholder part."],
-    acces: ["Top access", "In the top wall: sliding micro-SD card door (it slides backwards, clips in with a latch tab and comes off), PWR button plunger (Ø 9, held by an inner collar), two pinholes for RESET and BOOT. Placeholder parts."],
+    batterie: ["Battery", "5000 mAh Li-ion pouch cell, shown as 90 × 50 × 6 mm (model not chosen yet), in a pocket of the back shell, behind a partition that separates it from the electronics."],
+    fond: ["Back shell", "PETG, sides cut down to screen height, tapered back. A partition carries the boards and isolates the battery, which sits in a pocket closed by a screwed cover. The right side is slotted down to the joint to take the USB-C sleeve. Placeholder part."],
+    acces: ["Top access", "In the top wall: sliding micro-SD card door (it slides backwards, clips in with a latch tab and comes off), PWR button plunger (Ø 9, inlaid red lightning bolt, held by an inner collar), two pinholes for RESET and BOOT. Placeholder parts."],
     manchon: ["USB-C sleeve", "Separate part slipped onto the board's USB-C socket before the back shell goes on: it surrounds the socket on all four sides, guides the plug through a sloped channel and closes the side, with no opening in the enclosure. The edges of the slot in the back shell hold it. Placeholder part."],
     cable: ["USB-C cable", "Test plug the size of a standard plug (12.35 × 6.5 mm overmould, 22 mm long), plugged into the original socket through the sleeve to check access. Untick to remove it."],
   },
