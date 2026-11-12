@@ -84,7 +84,7 @@ if [ "$CMD" = copy ] || [ "$CMD" = all ]; then
     dst="$MOCKUP/sim"
     mkdir -p "$dst/scenarios"
     n=0
-    for f in "$site/$mod".js "$site/$mod".wasm "$site/$mod".data "$site/build.json" "$site"/scenarios/*; do
+    for f in "$site/$mod".js "$site/$mod".wasm "$site/$mod".data "$site"/scenarios/*; do
         [ -f "$f" ] || continue
         rel="${f#"$site"/}"
         if ! cmp -s "$f" "$dst/$rel"; then cp "$f" "$dst/$rel"; n=$((n + 1)); fi
@@ -95,6 +95,9 @@ if [ "$CMD" = copy ] || [ "$CMD" = all ]; then
         rel="${f#"$dst"/}"
         [ -f "$site/$rel" ] || { rm -f "$f"; n=$((n + 1)); }
     done
+    # build.json (empreinte git du build) suit le module : seulement si quelque chose a changé, sinon il
+    # changerait à chaque commit.
+    if [ "$n" != 0 ] || [ ! -f "$dst/build.json" ]; then cp "$site/build.json" "$dst/build.json"; n=$((n + 1)); fi
     echo "WEB COPIE : mockup/sim/ $([ "$n" = 0 ] && echo "déjà à jour" || echo "$n fichier(s) mis à jour")"
 fi
 exit "$status"

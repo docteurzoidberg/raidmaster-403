@@ -97,7 +97,7 @@ if [ "$WEB" = 1 ]; then
     else
         # mockup/sim/ (commité, publié) doit contenir le module et les scénarios qui viennent d'être construits.
         stale=0
-        for f in build-web/site/raidmaster-sim-*.{js,wasm,data} build-web/site/build.json build-web/site/scenarios/*; do
+        for f in build-web/site/raidmaster-sim-*.{js,wasm,data} build-web/site/scenarios/*; do   # build.json : suit le module
             [ -f "$f" ] || continue
             cmp -s "$f" "../mockup/sim/${f#build-web/site/}" || stale=$((stale + 1))
         done
