@@ -24,7 +24,8 @@ s'assemblent sans déplacement. Les pièces multi-filament contiennent un corps 
 | `trappe_batterie.step` | trappe de la batterie, tenue par 4 vis M3 × 5 | PETG gris |
 | `manchon_usb.step` | manchon de la prise USB-C, rapporté dans le flanc droit | PETG gris |
 | `manchon_puck.step` | manchon de la connectique GPS, version puck externe (module GPS et boussole posé sur le tableau de bord) : canal de 11,4 × 21,3 mm évasé vers l'extérieur, fermé côté carte par un fond percé à la forme de la prise JST-PH 6 broches de la carte fille (jeu 0,25) et prolongé par un col qui entoure la prise ; rapporté dans le flanc gauche | PETG gris |
-| `manchon_antenne.step` | manchon de la connectique GPS, version GPS interne : plaque qui tient une prise SMA de cloison (antenne active) ; rapporté dans le flanc gauche, à la place du précédent. Forme provisoire | PETG gris |
+| `manchon_antenne.step` | manchon de la connectique GPS, version GPS interne : plaque qui tient une prise SMA de cloison (antenne active), bloquée en rotation par un trou en D et un logement hexagonal pour son embase ; rapporté dans le flanc gauche, à la place du précédent | PETG gris |
+| `manchon_bouchon.step` | manchon plein qui ferme l'ouverture du flanc gauche quand aucune connectique GPS n'est montée | PETG gris |
 | `pare_chocs.step` | les 4 coins en TPU, coincés entre la façade et la coque arrière et accrochés chacun à 3 nervures de la coque (ils s'enfilent dessus par l'avant) | TPU orange |
 
 Visserie (non fournie en STEP) : 4 vis CHC M3 × 10 et 4 inserts à chaud M3 (fermeture), 4 vis CHC M3 × 5 et
