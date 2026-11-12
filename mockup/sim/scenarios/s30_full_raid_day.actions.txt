@@ -1,0 +1,7 @@
+# s30 — ×1000 (12 h en 47 s de temps simulé). Étape complète : 8 × (1 h de route, 5 min
+# d'arrêt, 20 min de piste, 5 min d'arrêt), bruit et pics de HDOP. Vérité 717,3722 km.
+@46900 expect odo    717.3722 1.43   # ±0,2 %
+@46900 expect trip_a 717.3722 1.43
+@46900 expect trip_b 717.3722 1.43
+@46900 expect gps_err 0
+@47000 quit

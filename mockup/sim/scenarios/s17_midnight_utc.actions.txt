@@ -1,0 +1,8 @@
+# s17 — ×10. Départ 23:57 UTC, minuit UTC passé en roulant : heure locale (UTC+1) et
+# distance continuent. Vérité 4,2500 km à 300 s, 4,1667 km à 295 s.
+@60 expect hhmm   58                 # 23:58 UTC → 00:58
+@200 expect hhmm  100                # 00:00:20 UTC → 01:00
+@295 expect trip_a 4.1667 0.013        # ±0,3 %
+@295 expect chrono 1
+@295 expect gps_err 0
+@298 quit

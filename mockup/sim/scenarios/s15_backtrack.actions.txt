@@ -1,0 +1,5 @@
+# s15 — ×10. Demi-tour à 180° : la distance continue de monter. Vérité 4,7056 km.
+@250 expect trip_a 2.1 0.2           # en plein demi-tour
+@495 expect trip_a 4.7056 0.014      # ±0,3 %
+@495 expect odo    4.7056 0.014
+@498 quit

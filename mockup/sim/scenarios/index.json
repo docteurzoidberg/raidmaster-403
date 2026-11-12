@@ -1,0 +1,211 @@
+{
+ "scenarios": [
+  {
+   "id": "s10_stationary_noise",
+   "phase": 1,
+   "speed": 100,
+   "desc": "10 min à l'arrêt, ±5 m et ±0,5 km/h : 0 m, chrono arrêté",
+   "nmea": "s10_stationary_noise.nmea",
+   "actions": "s10_stationary_noise.actions.txt",
+   "bytes": 112988
+  },
+  {
+   "id": "s02_highway_cruise",
+   "phase": 1,
+   "speed": 200,
+   "desc": "1 h à 120 km/h, calibration −1,5 % au menu : distance, moyenne, max",
+   "nmea": "s02_highway_cruise.nmea",
+   "actions": "s02_highway_cruise.actions.txt",
+   "bytes": 845377
+  },
+  {
+   "id": "s03_country_road",
+   "phase": 2,
+   "speed": 200,
+   "desc": "1 h de route sinueuse 70-90 km/h, bruit léger",
+   "nmea": "s03_country_road.nmea",
+   "actions": "s03_country_road.actions.txt",
+   "bytes": 846979
+  },
+  {
+   "id": "s01_city_commute",
+   "phase": 2,
+   "speed": 100,
+   "desc": "30 min en ville, 12 feux, bruit urbain",
+   "nmea": "s01_city_commute.nmea",
+   "actions": "s01_city_commute.actions.txt",
+   "bytes": 326476
+  },
+  {
+   "id": "s20_raz_burst",
+   "phase": 3,
+   "speed": 10,
+   "desc": "5 RAZ A en 10 s : seule la dernière compte, B et ODO intacts",
+   "nmea": "s20_raz_burst.nmea",
+   "actions": "s20_raz_burst.actions.txt",
+   "bytes": 23152
+  },
+  {
+   "id": "s22_increment_sequence",
+   "phase": 3,
+   "speed": 10,
+   "desc": "+/− en série, appuis longs, plancher à 0, Trip B, aucune dérive",
+   "nmea": "s22_increment_sequence.nmea",
+   "actions": "s22_increment_sequence.actions.txt",
+   "bytes": 57188
+  },
+  {
+   "id": "s21_calib_mid_stage",
+   "phase": 3,
+   "speed": 100,
+   "desc": "calibration 0 → +2 % à mi-parcours : passé inchangé",
+   "nmea": "s21_calib_mid_stage.nmea",
+   "actions": "s21_calib_mid_stage.actions.txt",
+   "bytes": 456610
+  },
+  {
+   "id": "s23_menu_during_drive",
+   "phase": 3,
+   "speed": 20,
+   "desc": "menu ouvert en roulant : les trips continuent",
+   "nmea": "s23_menu_during_drive.nmea",
+   "actions": "s23_menu_during_drive.actions.txt",
+   "bytes": 134788
+  },
+  {
+   "id": "s24_ligne_droite_boutons",
+   "phase": 3,
+   "speed": 100,
+   "desc": "distance puis RAZ, bascule A/B, corrections",
+   "nmea": "s24_ligne_droite_boutons.nmea",
+   "actions": "s24_ligne_droite_boutons.actions.txt",
+   "bytes": 23353
+  },
+  {
+   "id": "s25_calibration_auto",
+   "phase": 3,
+   "speed": 10,
+   "desc": "calibration auto complète par l'interface",
+   "nmea": "s25_calibration_auto.nmea",
+   "actions": "s25_calibration_auto.actions.txt",
+   "bytes": 22988
+  },
+  {
+   "id": "s13_cold_start",
+   "phase": 4,
+   "speed": 10,
+   "desc": "module muet puis 30 s sans fix : rien compté, heure inconnue",
+   "nmea": "s13_cold_start.nmea",
+   "actions": "s13_cold_start.actions.txt",
+   "bytes": 111817
+  },
+  {
+   "id": "s15_backtrack",
+   "phase": 4,
+   "speed": 10,
+   "desc": "demi-tour à 180° : la distance continue de monter",
+   "nmea": "s15_backtrack.nmea",
+   "actions": "s15_backtrack.actions.txt",
+   "bytes": 96792
+  },
+  {
+   "id": "s11_tunnel_loss",
+   "phase": 4,
+   "speed": 10,
+   "desc": "2 min sans fix : trips figés ; rattrapage (règle provisoire)",
+   "nmea": "s11_tunnel_loss.nmea",
+   "actions": "s11_tunnel_loss.actions.txt",
+   "bytes": 57576
+  },
+  {
+   "id": "s14_fix_degraded_3d_to_2d",
+   "phase": 4,
+   "speed": 50,
+   "desc": "fix 2D pendant 10 min : distance inchangée",
+   "nmea": "s14_fix_degraded_3d_to_2d.nmea",
+   "actions": "s14_fix_degraded_3d_to_2d.actions.txt",
+   "bytes": 235138
+  },
+  {
+   "id": "s18_gps_debranche",
+   "phase": 4,
+   "speed": 10,
+   "desc": "puck débranché en roulant puis rebranché à 9 600 bauds : « GPS × », recherche, réglage, rattrapage",
+   "nmea": "s18_gps_debranche.nmea",
+   "actions": "s18_gps_debranche.actions.txt",
+   "bytes": 33390
+  },
+  {
+   "id": "s30_full_raid_day",
+   "phase": 5,
+   "speed": 1000,
+   "desc": "étape de 12 h, bruit, pics de HDOP : 717 km à ±0,2 %",
+   "nmea": "s30_full_raid_day.nmea",
+   "actions": "s30_full_raid_day.actions.txt",
+   "bytes": 9074182
+  },
+  {
+   "id": "s31_power_loss_mid",
+   "phase": 5,
+   "speed": 1,
+   "desc": "coupure d'alimentation à 90 km/h : réglages relus, ≤ 250 m perdus",
+   "nmea": "s31_power_loss_mid.nmea",
+   "actions": "s31_power_loss_mid.actions.txt",
+   "bytes": 40566
+  },
+  {
+   "id": "s40_calibration_rotation",
+   "phase": 6,
+   "speed": 1,
+   "desc": "calibration de la boussole par l'interface (tour sur place), cap boussole à l'arrêt, route GPS en roulant, boussole débranchée",
+   "nmea": "s40_calibration_rotation.nmea",
+   "actions": "s40_calibration_rotation.actions.txt",
+   "bytes": 16865
+  },
+  {
+   "id": "s04_mountain_pass",
+   "phase": 6,
+   "speed": 100,
+   "desc": "col, virages à 25 °/s",
+   "nmea": "s04_mountain_pass.nmea",
+   "actions": "s04_mountain_pass.actions.txt",
+   "bytes": 788653
+  },
+  {
+   "id": "s05_offroad_slow",
+   "phase": 6,
+   "speed": 100,
+   "desc": "piste 20-40 km/h, cahots",
+   "nmea": "s05_offroad_slow.nmea",
+   "actions": "s05_offroad_slow.actions.txt",
+   "bytes": 787553
+  },
+  {
+   "id": "s12_canyon_hdop",
+   "phase": 7,
+   "speed": 50,
+   "desc": "HDOP 8 pendant 2 min : fixs refusés, fix perdu, ±2 %",
+   "nmea": "s12_canyon_hdop.nmea",
+   "actions": "s12_canyon_hdop.actions.txt",
+   "bytes": 270617
+  },
+  {
+   "id": "s16_antimeridian",
+   "phase": 7,
+   "speed": 10,
+   "desc": "traversée du méridien 180°",
+   "nmea": "s16_antimeridian.nmea",
+   "actions": "s16_antimeridian.actions.txt",
+   "bytes": 57886
+  },
+  {
+   "id": "s17_midnight_utc",
+   "phase": 7,
+   "speed": 10,
+   "desc": "minuit UTC en roulant : heure locale et distance continuent",
+   "nmea": "s17_midnight_utc.nmea",
+   "actions": "s17_midnight_utc.actions.txt",
+   "bytes": 57885
+  }
+ ]
+}

@@ -1,0 +1,14 @@
+# s23 — ×20. Menu ouvert 200 s en roulant à 80 km/h (22,2 m/s depuis 80 s) : les trips
+# continuent de compter, les réglages ne changent pas.
+@200 M
+@220 minus
+@240 minus
+@260 minus
+@280 plus
+@390 expect trip_a 6.8889 0.03       # (390 − 80) s × 22,22 m/s
+@400 M                               # retour à l'écran raid
+@410 expect view 0
+@410 expect calib 0
+@690 expect trip_a 13.3333 0.03
+@690 expect odo    13.3333 0.03
+@695 quit

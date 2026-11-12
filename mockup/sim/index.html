@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Simulateur Raidmaster</title>
+<meta name="description" content="Simulateur du Raidmaster 403 dans le navigateur : le firmware tourne dans la maquette 3D et rejoue des trajets GPS sur une carte.">
+<meta name="theme-color" content="#0f1011">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="style.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+} }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1><span class="marque">RAIDMASTER</span> <span class="num">403</span> <span class="sous" data-i18n="sous">simulateur</span></h1>
+    <p class="chapeau" data-i18n="chapeau">Le firmware du tripmaster tourne dans la maquette 3D et rejoue un trajet GPS, suivi sur la carte. Cliquer les capuchons : appui court, ou long en gardant le doigt.</p>
+    <div class="outils">
+      <a class="lien" href="../" data-i18n="maquette">Maquette 3D</a>
+      <label class="langue">
+        <span class="drapeau" id="drapeau" aria-hidden="true"></span>
+        <select id="langue" data-i18n-aria="langue" aria-label="Langue">
+          <option value="fr">Français</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+      <a class="lien github" href="https://github.com/docteurzoidberg/raidmaster-403" target="_blank" rel="noopener"
+         data-i18n-aria="github" aria-label="Code source sur GitHub">
+        <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span>GitHub</span>
+      </a>
+    </div>
+  </header>
+
+  <nav class="onglets" id="onglets" data-i18n-aria="vues" aria-label="Vues">
+    <button type="button" class="onglet" data-onglet="tripmaster" aria-pressed="true" data-i18n="tripmaster">Tripmaster</button>
+    <button type="button" class="onglet" data-onglet="carte" aria-pressed="false" data-i18n="carte">Carte</button>
+  </nav>
+
+  <main class="banc" id="banc" data-onglet="tripmaster">
+    <section class="scene vue-tripmaster" id="scene" data-i18n-aria="scene" aria-label="Tripmaster en 3D : cliquer les capuchons, glisser pour tourner">
+      <canvas id="vue"></canvas>
+      <canvas id="ecran2d" width="480" height="320" hidden></canvas>
+      <div class="boutons2d" id="boutons2d" hidden>
+        <button type="button" data-bouton="0">A</button>
+        <button type="button" data-bouton="1">B</button>
+        <button type="button" data-bouton="4">M</button>
+        <button type="button" data-bouton="2">▲</button>
+        <button type="button" data-bouton="3">▼</button>
+      </div>
+      <p class="attente" id="attente" role="status">Chargement…</p>
+      <button type="button" class="allumer" id="allumer" hidden>
+        <span class="pastille" aria-hidden="true"></span><span data-i18n="allumer">Allumer</span>
+      </button>
+      <div class="etat" id="etat" aria-live="off"></div>
+    </section>
+
+    <section class="carte vue-carte" id="zone-carte" data-i18n-aria="carte" aria-label="Carte">
+      <div id="carte"></div>
+      <button type="button" class="suivre" id="suivre" aria-pressed="true" data-i18n="suivre">Suivre</button>
+      <p class="attente" id="attente-carte" hidden></p>
+    </section>
+
+    <aside class="rack" data-i18n-aria="panneau" aria-label="Panneau de développement">
+      <fieldset>
+        <legend data-i18n="trajet">Trajet GPS</legend>
+        <select id="scenario" data-i18n-aria="scenario" aria-label="Scénario"></select>
+        <p class="detail" id="scenario-detail"></p>
+        <label class="case"><input type="checkbox" id="actions"> <span data-i18n="actions">Jouer les actions et les vérifications</span></label>
+        <div class="ligne">
+          <label class="champ"><span data-i18n="vitesse">Vitesse</span>
+            <select id="vitesse"></select>
+          </label>
+          <button type="button" class="touche" id="relancer" data-i18n="relancer">Relancer</button>
+        </div>
+        <label class="depot" id="depot">
+          <input type="file" id="fichier" accept=".nmea,.txt,.log">
+          <span data-i18n="importer">Importer un fichier NMEA (ou le glisser sur la page)</span>
+        </label>
+      </fieldset>
+
+      <fieldset id="bloc-expect" hidden>
+        <legend><span data-i18n="verifications">Vérifications</span> <span class="bilan" id="bilan"></span></legend>
+        <ol class="expects" id="expects"></ol>
+      </fieldset>
+
+      <fieldset>
+        <legend data-i18n="essais">Essais</legend>
+        <div class="touches deux" id="essais">
+          <button class="touche" type="button" data-touche="n" data-etat="night" data-i18n="nuit">Nuit</button>
+          <button class="touche" type="button" data-touche="d" data-etat="signal" data-i18n="signal">Signal GPS</button>
+          <button class="touche" type="button" data-touche="g" data-etat="gps" data-i18n="puck">Puck GPS</button>
+          <button class="touche" type="button" data-touche="c" data-etat="mag" data-i18n="boussole">Boussole</button>
+          <button class="touche" type="button" data-touche="r" data-etat="spin" data-i18n="rotation">Tour sur place</button>
+          <button class="touche" type="button" data-touche="p" data-i18n="alim">Alimentation</button>
+          <button class="touche" type="button" data-touche="v" data-i18n="ecran">Écran suivant</button>
+          <button class="touche" type="button" id="son" aria-pressed="false" data-i18n="son">Son</button>
+        </div>
+        <p class="detail" data-i18n="clavier">Clavier : a b + − m (Maj : appui long), n nuit, d signal, g puck, c boussole, r tour, p alimentation, v écran suivant.</p>
+      </fieldset>
+
+      <fieldset>
+        <legend data-i18n="memoire">Mémoire</legend>
+        <p class="detail" data-i18n="memoire_detail">Trips et réglages restent dans ce navigateur, comme dans la mémoire du boîtier (sauf avec les actions : mémoire de la session).</p>
+        <button class="touche" type="button" id="raz" data-i18n="raz">Remise à zéro</button>
+      </fieldset>
+
+      <fieldset class="journal">
+        <legend data-i18n="journal">Journal</legend>
+        <pre id="journal" tabindex="0"></pre>
+      </fieldset>
+
+      <p class="note" id="version"></p>
+    </aside>
+  </main>
+</div>
+<script type="module" src="sim.js"></script>
+</body>
+</html>

@@ -3,14 +3,17 @@
 #
 # Build du preset sim (configure si besoin), avertissements et erreurs de compilation,
 # tests ctest (avec le décompte Unity : réussis / échoués / ignorés), état du GIF de démo, puis
-# build du firmware ESP32 (mêmes core/ et ui/, tools/fw.sh build) si ESP-IDF est installé.
-# Les journaux complets restent dans build-sim/check-build.log, build-sim/Testing/ et
-# build-firmware/fw-build.log.
+# build du firmware ESP32 (mêmes core/ et ui/, tools/fw.sh build) si ESP-IDF est installé, et
+# simulateur web (tools/web.sh test : build emcc, scénarios et image de l'écran sous Node, puis
+# état de mockup/sim/) si emsdk est installé.
+# Les journaux complets restent dans build-sim/check-build.log, build-sim/Testing/,
+# build-firmware/fw-build.log et build-web/web-build.log.
 #
-# Usage : tools/check.sh [-c] [-s]
+# Usage : tools/check.sh [-c] [-s] [-w]
 #   -c  reconstruit tout le sim (--clean-first) : un build incrémental ne réaffiche pas les
 #       avertissements des fichiers déjà compilés.
-#   -s  sim seul (pas de build firmware).
+#   -s  sim seul (ni firmware ni web).
+#   -w  sans le sim web.
 # Code de sortie : 0 si builds propres (aucun avertissement) et tests verts, 1 sinon.
 #
 # Licence : GPL-3.0.
@@ -20,11 +23,13 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 CLEAN=()
 FIRMWARE=1
-while getopts "csh" opt; do
+WEB=1
+while getopts "cswh" opt; do
     case "$opt" in
         c) CLEAN=(--clean-first) ;;
-        s) FIRMWARE=0 ;;
-        *) sed -n '2,15p' "$0"; exit 2 ;;
+        s) FIRMWARE=0; WEB=0 ;;
+        w) WEB=0 ;;
+        *) sed -n '2,19p' "$0"; exit 2 ;;
     esac
 done
 
@@ -79,6 +84,28 @@ if [ "$FIRMWARE" = 1 ]; then
         tools/fw.sh build || status=1
     else
         echo "FIRMWARE : non vérifié (ESP-IDF absent, voir firmware/README.md)"
+    fi
+fi
+
+if [ "$WEB" = 1 ]; then
+    tools/web.sh test
+    rc=$?
+    if [ "$rc" = 3 ]; then
+        :    # emsdk absent : web.sh l'a dit, pas un échec
+    elif [ "$rc" != 0 ]; then
+        status=1
+    else
+        # mockup/sim/ (commité, publié) doit contenir le module et les scénarios qui viennent d'être construits.
+        stale=0
+        for f in build-web/site/raidmaster-sim-*.{js,wasm,data} build-web/site/build.json build-web/site/scenarios/*; do
+            [ -f "$f" ] || continue
+            cmp -s "$f" "../mockup/sim/${f#build-web/site/}" || stale=$((stale + 1))
+        done
+        if [ "$stale" = 0 ]; then
+            echo "WEB MOCKUP : mockup/sim/ à jour"
+        else
+            echo "WEB MOCKUP : $stale fichier(s) de mockup/sim/ en retard — tools/web.sh copy, puis commiter"
+        fi
     fi
 fi
 

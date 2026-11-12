@@ -1,0 +1,17 @@
+# s18 — ×10. Puck débranché à 60 km/h (@40), rebranché 50 s plus tard (@90) : il repart à
+# 9 600 bauds, la liaison le cherche (115 200, 38 400, 9 600), le reconnaît (MON-VER), le règle et
+# le repasse à 115 200. Absence signalée après 3 s du boîtier (30 s de trace), trips figés, puis
+# reprise ; distance rattrapée au retour du fix (règle provisoire, comme s11).
+@35 expect gps     1
+@35 expect fix     1
+@40 gps                              # débranché
+@75 expect gps     0                 # « GPS × » : 3 s de silence (30 s de trace à ×10)
+@75 expect fix     0
+@75 expect trip_a  0.300 0.02        # figé depuis le débranchement
+@90 gps                              # rebranché, débit d'usine
+@100 expect gps    0                 # recherche en cours : pas encore de données
+@150 expect gps    1
+@150 expect fix    1
+@170 expect trip_a 2.000 0.03        # provisoire : rattrapage
+@170 expect gps_err 0
+@172 quit

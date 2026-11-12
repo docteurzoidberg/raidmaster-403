@@ -1,0 +1,9 @@
+# s10 — ×100. 10 min à l'arrêt, position ±5 m et vitesse ±0,5 km/h : rien ne doit être compté
+# (la somme des écarts de position ferait plusieurs centaines de mètres).
+@590 expect odo     0
+@590 expect trip_a  0
+@590 expect speed   0
+@590 expect fix     1
+@590 expect chrono  0      # pas de mouvement : le chrono n'a pas démarré
+@590 expect gps_err 0
+@595 quit

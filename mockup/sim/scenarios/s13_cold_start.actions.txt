@@ -1,0 +1,14 @@
+# s13 — ×10. Module muet 30 s puis sans fix 30 s : pas de fix, rien compté, pas de plantage ;
+# puis 8 min à 60 km/h : vérité 8,1667 km.
+# Le silence du début passe par « signal » : le rejeu cale la trace sur sa première phrase
+# horodatée, un silence en tête de fichier serait sauté.
+0 signal                             # module muet
+@30 signal                           # le module parle, toujours sans fix
+@25 expect fix    0
+@25 expect hhmm   -1
+@55 expect fix    0
+@55 expect trip_a 0
+@80 expect fix    1
+@595 expect trip_a 8.1667 0.025      # ±0,3 %
+@595 expect gps_err 0
+@598 quit

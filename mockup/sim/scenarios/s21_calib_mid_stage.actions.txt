@@ -1,0 +1,33 @@
+# s21 — ×100. 15 min à 90 km/h, arrêt, calibration passée de 0 à +2 % au menu, 15 min à
+# 90 km/h : la première moitié ne change pas, la seconde compte +2 %.
+# Vérité : 22,2500 km par moitié → 22,2500 + 22,6950 = 44,9450 km.
+@1350 expect trip_a 22.25 0.02
+@1360 M
+@1362 m
+@1364 plus
+@1366 plus
+@1368 plus
+@1370 plus
+@1372 plus
+@1374 plus
+@1376 plus
+@1378 plus
+@1380 plus
+@1382 plus
+@1384 plus
+@1386 plus
+@1388 plus
+@1390 plus
+@1392 plus
+@1394 plus
+@1396 plus
+@1398 plus
+@1400 plus
+@1402 plus
+@1404 m
+@1406 M
+@1410 expect calib 2.0 0.01
+@1410 expect trip_a 22.25 0.02     # passé inchangé
+@2370 expect trip_a 44.945 0.05
+@2370 expect odo    44.945 0.05
+@2375 quit

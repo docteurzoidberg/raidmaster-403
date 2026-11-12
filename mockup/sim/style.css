@@ -1,0 +1,187 @@
+/* Simulateur : tripmaster en 3D, carte, panneau ; même thème sombre que la maquette (../style.css). */
+:root {
+  color-scheme: dark;
+  --fond: #0f1011;
+  --panneau: #17191b;
+  --enfonce: #24272a;
+  --trait: #2a2d31;
+  --texte: #e7e8e9;
+  --gris: #949aa0;
+  --ambre: #ffb547;
+  --cyan: #4fd6e8;
+  --vert: #58d68d;
+  --rouge: #ff6b5e;
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { background: var(--fond); color: var(--texte); font: 15px/1.45 var(--sans); }
+
+.page {
+  height: 100vh; height: 100dvh; max-width: 1920px; margin: 0 auto;
+  display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 12px;
+  padding-block: 12px 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 22px; }
+h1 { font: 600 clamp(18px, 2.2vw, 22px)/1.1 var(--mono); letter-spacing: .16em; margin: 0; }
+h1 .num { color: var(--ambre); }
+h1 .sous { color: var(--gris); font-weight: 500; letter-spacing: .1em; text-transform: uppercase; font-size: .7em; }
+.chapeau { margin: 0; color: var(--gris); max-width: 78ch; }
+.outils { margin-left: auto; display: flex; align-items: center; gap: 10px; align-self: center; }
+.langue { position: relative; display: flex; align-items: center; }
+.drapeau {
+  position: absolute; left: 9px; top: 50%; transform: translateY(-50%); pointer-events: none;
+  display: block; width: 21px; height: 14px; border-radius: 2px; overflow: hidden; box-shadow: 0 0 0 1px var(--trait);
+}
+.drapeau svg { display: block; width: 100%; height: 100%; }
+#langue {
+  min-height: 32px; padding: 4px 8px 4px 37px; background: var(--panneau); color: var(--texte); cursor: pointer;
+  border: 1px solid var(--trait); border-radius: 4px; font: 500 14px/1.2 var(--sans);
+}
+.lien {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 10px; border-radius: 4px;
+  border: 1px solid var(--trait); background: var(--panneau); color: var(--gris); text-decoration: none;
+  font: 500 14px/1.2 var(--sans);
+}
+.lien:hover { color: var(--texte); border-color: var(--gris); }
+:is(#langue, .lien, .touche, .onglet, select, input, button, pre):focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+
+/* Onglets : seulement sur téléphone */
+.onglets { display: none; gap: 2px; }
+.onglet {
+  flex: 1; min-height: 40px; cursor: pointer; background: var(--panneau); color: var(--gris); border: 0;
+  border-top: 3px solid var(--trait); font: 500 15px/1.2 var(--sans);
+}
+.onglet[aria-pressed="true"] { background: var(--enfonce); color: var(--texte); border-top-color: var(--ambre); }
+
+.banc {
+  display: grid; gap: 14px; min-height: 0;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) 300px;
+  grid-template-areas: "tripmaster carte rack";
+}
+.vue-tripmaster { grid-area: tripmaster; }
+.vue-carte { grid-area: carte; }
+.rack { grid-area: rack; }
+
+.scene, .carte {
+  position: relative; min-height: 0; overflow: hidden; border: 1px solid var(--trait); border-radius: 6px;
+}
+.scene { background: radial-gradient(110% 90% at 50% 38%, #4a4f55 0, #33373c 55%, #1f2225 100%); }
+#vue { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+#vue.sur-bouton { cursor: pointer; }
+#ecran2d {
+  position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%);
+  width: min(92%, 960px); height: auto; aspect-ratio: 3 / 2; image-rendering: pixelated;
+  border: 10px solid #08090a; border-radius: 6px; background: #000;
+}
+.boutons2d {
+  position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 12px;
+}
+.boutons2d button {
+  width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--trait); cursor: pointer;
+  background: #101113; color: var(--texte); font: 600 17px/1 var(--mono); touch-action: none;
+}
+.boutons2d button.appui { border-color: var(--ambre); }
+.boutons2d button.long { background: var(--ambre); color: #000; }
+.attente {
+  position: absolute; inset: 0; margin: 0; display: grid; place-items: center; padding: 16px; text-align: center;
+  font: 500 14px/1.4 var(--mono); letter-spacing: .06em; color: var(--texte); pointer-events: none;
+}
+.allumer {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  display: inline-flex; align-items: center; gap: 10px; padding: 12px 22px; cursor: pointer;
+  background: rgb(15 16 17 / .9); color: var(--texte); border: 1px solid var(--ambre); border-radius: 6px;
+  font: 600 15px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase;
+}
+.allumer:hover { background: var(--enfonce); }
+.pastille { width: 12px; height: 12px; border-radius: 50%; background: var(--rouge); box-shadow: 0 0 10px var(--rouge); }
+.etat {
+  position: absolute; left: 10px; bottom: 10px; right: 10px; pointer-events: none;
+  font: 500 13px/1.4 var(--mono); color: var(--texte); text-shadow: 0 1px 2px #000;
+  display: flex; flex-wrap: wrap; gap: 4px 16px;
+}
+.etat:empty { display: none; }
+
+#carte { position: absolute; inset: 0; background: #1b1d20; }
+.suivre {
+  position: absolute; right: 10px; top: 10px; z-index: 500; min-height: 32px; padding: 4px 12px; cursor: pointer;
+  background: var(--panneau); color: var(--gris); border: 1px solid var(--trait); border-radius: 4px;
+  font: 500 14px/1.2 var(--sans);
+}
+.suivre[aria-pressed="true"] { color: var(--texte); border-color: var(--ambre); }
+.carte .attente { z-index: 500; background: rgb(15 16 17 / .6); }
+.leaflet-container { font: 12px/1.4 var(--sans); }
+.fleche { width: 26px; height: 26px; }
+.fleche svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 1px 2px rgb(0 0 0 / .6)); }
+
+.rack { display: grid; align-content: start; gap: 16px; min-height: 0; overflow-y: auto; scrollbar-width: thin; padding-right: 2px; }
+fieldset { min-width: 0; margin: 0; padding: 0; border: 0; display: grid; gap: 8px; }
+legend { padding: 0 0 6px; font: 600 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--gris); }
+select {
+  width: 100%; min-height: 34px; padding: 4px 8px; background: var(--panneau); color: var(--texte); cursor: pointer;
+  border: 1px solid var(--trait); border-radius: 4px; font: 500 14px/1.2 var(--sans);
+}
+.detail { margin: 0; color: var(--gris); font-size: 13px; line-height: 1.4; }
+.case { display: flex; gap: 8px; align-items: center; cursor: pointer; font-size: 14px; }
+.case input { width: 16px; height: 16px; margin: 0; accent-color: var(--ambre); }
+.ligne { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+.champ { display: grid; gap: 4px; font-size: 13px; color: var(--gris); }
+.depot {
+  display: block; padding: 10px; border: 1px dashed var(--trait); border-radius: 4px; cursor: pointer;
+  color: var(--gris); font-size: 13px; text-align: center;
+}
+.depot:hover, body.glisse .depot { border-color: var(--ambre); color: var(--texte); }
+.depot input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+body.glisse .page { outline: 2px dashed var(--ambre); outline-offset: -6px; }
+
+.touches { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; }
+.touches.deux { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.touche {
+  min-width: 0; min-height: 36px; padding: 6px 10px; cursor: pointer; background: var(--panneau); color: var(--gris); border: 0;
+  border-top: 3px solid var(--trait); font: 500 14px/1.2 var(--sans);
+}
+.touche:hover { color: var(--texte); }
+.touche[aria-pressed="true"] { background: var(--enfonce); color: var(--texte); border-top-color: var(--ambre); }
+.touche.hors { border-top-color: var(--rouge); color: var(--texte); }
+
+.bilan { margin-left: 6px; letter-spacing: .04em; }
+.bilan.ok { color: var(--vert); }
+.bilan.ko { color: var(--rouge); }
+.expects { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; max-height: 220px; overflow-y: auto; scrollbar-width: thin; }
+.expects li {
+  display: grid; grid-template-columns: 4.5em minmax(0, 1fr); gap: 6px; padding: 3px 6px; border-left: 3px solid;
+  font: 12px/1.35 var(--mono); background: var(--panneau);
+}
+.expects li.ok { border-color: var(--vert); }
+.expects li.ko { border-color: var(--rouge); color: var(--rouge); }
+.expects li span:first-child { color: var(--gris); }
+
+.journal pre {
+  margin: 0; height: 180px; overflow: auto; padding: 6px 8px; background: #0a0b0c; border: 1px solid var(--trait);
+  border-radius: 4px; font: 12px/1.4 var(--mono); color: var(--gris); white-space: pre-wrap; scrollbar-width: thin;
+}
+.note { margin: 0; color: var(--gris); font: 12px/1.45 var(--mono); }
+
+@media (max-width: 1280px) {
+  .banc { grid-template-columns: minmax(0, 1fr) 300px; grid-template-rows: minmax(0, 1.2fr) minmax(0, 1fr);
+          grid-template-areas: "tripmaster rack" "carte rack"; }
+}
+@media (max-width: 860px) {
+  .page { height: auto; }
+  .onglets { display: flex; }
+  .banc { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; grid-template-areas: "vue" "rack"; }
+  .vue-tripmaster, .vue-carte { grid-area: vue; height: 62vh; height: 62dvh; min-height: 320px; }
+  .banc[data-onglet="tripmaster"] .vue-carte { visibility: hidden; }
+  .banc[data-onglet="carte"] .vue-tripmaster { visibility: hidden; }
+  .rack { overflow: visible; padding-right: 0; }
+  .touche, select { min-height: 44px; }
+  .outils { margin-left: 0; flex-wrap: wrap; }
+  #langue, .lien { min-height: 40px; }
+  .boutons2d button { width: 48px; height: 48px; }
+}
+#ecran2d:not([hidden]) ~ .etat { top: 10px; bottom: auto; }

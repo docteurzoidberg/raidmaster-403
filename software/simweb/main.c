@@ -56,7 +56,7 @@ enum {
     SCREEN_H = 320,
     BUF_LINES = 40,
     STEP_MS = 10,                 /* pas de l'horloge virtuelle, comme le mode script du sim PC */
-    MAX_STEPS_PER_FRAME = 4000,   /* 40 s de temps simulé au plus par image */
+    MAX_STEPS_PER_FRAME = 20000,  /* 200 s de temps simulé au plus par image */
 };
 
 /* Tableau d'état lu par la page (sim_info). */
@@ -286,7 +286,7 @@ EMSCRIPTEN_KEEPALIVE
 void sim_frame(double real_ms)
 {
     if (!s_on) return;
-    if (real_ms > 100.0) real_ms = 100.0;      /* onglet en arrière-plan : on ne rattrape pas */
+    if (real_ms > 1000.0) real_ms = 1000.0;    /* onglet en arrière-plan : on ne rattrape pas */
     double rate = s_rate;
     if (ui_current_screen() == UI_SCREEN_BOOT && rate > 1.0) rate = 1.0;
     s_budget_ms += real_ms * rate;
