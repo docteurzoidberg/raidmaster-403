@@ -311,7 +311,7 @@ software/        tout le code ; CMakeLists.txt et CMakePresets.json, build dans 
   references/    non versionné : traces NMEA de test
 hardware/kicad/carte-fille/
                  projet KiCad 10 de la carte fille et de la carte boutons (schémas, PCB, bibliothèques,
-                 export/ : STEP des deux cartes)
+                 3d/ : modèles 3D propres et leur provenance, export/ : STEP des deux cartes)
 enclosure/       boîtier : modèles 3D externes utilisés (README.md), stepfiles/ : exports STEP des pièces du boîtier
 mockup/          maquette 3D des cartes dans leur boîtier (page three.js, publiée sur GitHub Pages) ;
                  sim/ : simulateur web (page, module construit par tools/web.sh, scénarios)
