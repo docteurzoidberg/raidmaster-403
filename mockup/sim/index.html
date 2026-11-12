@@ -51,11 +51,15 @@
       <canvas id="vue"></canvas>
       <canvas id="ecran2d" width="480" height="320" hidden></canvas>
       <div class="boutons2d" id="boutons2d" hidden>
-        <button type="button" data-bouton="0">A</button>
-        <button type="button" data-bouton="1">B</button>
-        <button type="button" data-bouton="4">M</button>
-        <button type="button" data-bouton="2">▲</button>
-        <button type="button" data-bouton="3">▼</button>
+        <button type="button" data-bouton="0" class="b-a">A</button>
+        <button type="button" data-bouton="1" class="b-b">B</button>
+        <button type="button" data-bouton="4" class="b-menu" aria-label="Menu">☰</button>
+        <button type="button" data-bouton="2" aria-label="+">▲</button>
+        <button type="button" data-bouton="3" aria-label="−">▼</button>
+      </div>
+      <div class="outils-vue">
+        <button type="button" class="bascule" id="recentrer" data-i18n="recentrer" hidden>Recentrer</button>
+        <button type="button" class="bascule" id="bascule-vue" aria-pressed="false" hidden>Écran seul</button>
       </div>
       <p class="attente" id="attente" role="status">Chargement…</p>
       <button type="button" class="allumer" id="allumer" hidden>
@@ -66,7 +70,7 @@
 
     <section class="carte vue-carte" id="zone-carte" data-i18n-aria="carte" aria-label="Carte">
       <div id="carte"></div>
-      <button type="button" class="suivre" id="suivre" aria-pressed="true" data-i18n="suivre">Suivre</button>
+      <button type="button" class="suivre" id="suivre" aria-pressed="true" data-i18n="suivre">Centrer</button>
       <p class="attente" id="attente-carte" hidden></p>
     </section>
 

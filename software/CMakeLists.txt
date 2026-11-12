@@ -65,7 +65,10 @@ elseif(RAIDMASTER_TARGET STREQUAL "web")
     add_compile_options(-Wall -Wextra -Wpedantic)
     # Le module est publié : chemins des sources (__FILE__ des assertions LVGL) relatifs au dépôt, sans le
     # chemin du poste qui l'a construit.
+    # LVGL noté « lvgl/ » qu'il soit téléchargé par ce build ou repris d'ailleurs (la plus longue
+    # correspondance l'emporte) : même module d'un poste ou d'un dossier à l'autre.
     add_compile_options("-ffile-prefix-map=${RAIDMASTER_REPO_DIR}/=")
+    add_compile_options("-ffile-prefix-map=${CMAKE_BINARY_DIR}/_deps/lvgl-src=lvgl")
     if(FETCHCONTENT_SOURCE_DIR_LVGL)
         add_compile_options("-ffile-prefix-map=${FETCHCONTENT_SOURCE_DIR_LVGL}=lvgl")
     endif()

@@ -32,11 +32,11 @@ const TEXTES = {
     sous: "simulateur",
     chapeau: "Le firmware du tripmaster tourne dans la maquette 3D et rejoue un trajet GPS, suivi sur la carte. Cliquer les capuchons : appui court, ou long en gardant le doigt.",
     maquette: "Maquette 3D", langue: "Langue", github: "Code source sur GitHub", vues: "Vues",
-    tripmaster: "Tripmaster", carte: "Carte",
+    tripmaster: "Tripmaster", carte: "Carte", ecranSeul: "Écran seul", vue3d: "Vue 3D", recentrer: "Recentrer",
     scene: "Tripmaster en 3D : cliquer les capuchons, glisser pour tourner",
     panneau: "Panneau de développement",
     chargement: "Chargement…", chargementModele: (p) => `Chargement du modèle… ${p}`,
-    allumer: "Allumer", suivre: "Suivre",
+    allumer: "Allumer", suivre: "Centrer",
     trajet: "Trajet GPS", scenario: "Scénario", actions: "Jouer les actions et les vérifications",
     vitesse: "Vitesse", relancer: "Relancer", importer: "Importer un fichier NMEA (ou le glisser sur la page)",
     importe: (n) => `Fichier importé : ${n}`, phase: (n) => `Phase ${n}`,
@@ -64,11 +64,11 @@ const TEXTES = {
     sous: "simulator",
     chapeau: "The tripmaster firmware runs inside the 3D model and replays a GPS trip, followed on the map. Click the button caps: short press, or long press by holding.",
     maquette: "3D model", langue: "Language", github: "Source code on GitHub", vues: "Views",
-    tripmaster: "Tripmaster", carte: "Map",
+    tripmaster: "Tripmaster", carte: "Map", ecranSeul: "Screen only", vue3d: "3D view", recentrer: "Reset view",
     scene: "Tripmaster in 3D: click the button caps, drag to rotate",
     panneau: "Developer panel",
     chargement: "Loading…", chargementModele: (p) => `Loading the model… ${p}`,
-    allumer: "Power on", suivre: "Follow",
+    allumer: "Power on", suivre: "Center",
     trajet: "GPS trip", scenario: "Scenario", actions: "Play the actions and checks",
     vitesse: "Speed", relancer: "Restart", importer: "Import an NMEA file (or drop it on the page)",
     importe: (n) => `Imported file: ${n}`, phase: (n) => `Phase ${n}`,
@@ -477,21 +477,39 @@ for (const b of $("boutons2d").children) {
 const zone = $("scene");
 const canvas = $("vue");
 let renderer = null;
-const mode2d = params.get("vue") === "2d";
-if (!mode2d) {
-  try {
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
-  } catch {
-    note(`[page] ${TEXTES[langue].webgl}`);
-  }
+try {
+  renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+} catch {
+  note(`[page] ${TEXTES[langue].webgl}`);
 }
 const ecran2d = $("ecran2d").getContext("2d");
 const image2d = ecran2d.createImageData(W, H);
-if (!renderer) {
-  canvas.hidden = true;
-  $("ecran2d").hidden = false;
-  $("boutons2d").hidden = false;
+
+// Vue « écran seul » : la sortie vidéo sur toute la largeur du cadre, barre des boutons dessous. Bouton de
+// bascule dans le cadre, choix gardé dans le navigateur ; ?vue=2d|3d l'impose ; forcée sans WebGL.
+let ecranSeul = !renderer || (params.has("vue") ? params.get("vue") === "2d" : lit("raidmaster-sim.vue", "3d") === "2d");
+function appliqueVue() {
+  canvas.hidden = ecranSeul;
+  $("ecran2d").hidden = !ecranSeul;
+  $("boutons2d").hidden = !ecranSeul;
+  zone.classList.toggle("ecran-seul", ecranSeul);
+  const b = $("bascule-vue");
+  b.hidden = !renderer;
+  b.textContent = t(ecranSeul ? "vue3d" : "ecranSeul");
+  b.setAttribute("aria-pressed", String(ecranSeul));
+  $("recentrer").hidden = !renderer || ecranSeul;
+  derniereImage = -1;     // recopie l'image courante dans la vue affichée
+  sale = true;
 }
+// Recentrer : la vue 3D de départ (de face, boîtier entier), après une rotation ou un zoom.
+$("recentrer").addEventListener("click", () => cadreFacade());
+$("bascule-vue").addEventListener("click", () => {
+  ecranSeul = !ecranSeul;
+  ecrit("raidmaster-sim.vue", ecranSeul ? "2d" : "3d");
+  appliqueVue();
+  if (!ecranSeul) cadreFacade();
+  pret();
+});
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(24, 1, 5, 8000);
@@ -625,17 +643,18 @@ function prepareModele(gltf) {
 
 // « Allumer » quand le module et le modèle sont là.
 function pret() {
-  if (allume || !wasm || (renderer && !capuchons)) return;
+  if (allume || !wasm || (renderer && !ecranSeul && !capuchons)) return;
   $("attente").textContent = "";
   $("allumer").hidden = false;
   if (params.get("allumer") === "1") allumer();
 }
 
-// Caméra sur la façade, légèrement de trois quarts, le boîtier entier dans l'image.
+// Caméra de face, le boîtier entier dans l'image : sa face avant (la plus proche, donc la plus grande à
+// l'écran) occupe au plus 88 % de la hauteur ou de la largeur de la vue.
 function cadreFacade() {
   if (!cadre || !controls) return;
-  const axe = new THREE.Vector3(0.22, 0.16, 1).normalize();
-  const tv = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * 0.94;
+  const axe = new THREE.Vector3(0, 0, 1);
+  const tv = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * 0.88;
   const d = Math.max(cadre.taille.y / 2 / tv, cadre.taille.x / 2 / (tv * camera.aspect)) + cadre.taille.z / 2;
   controls.target.copy(cadre.centre);
   camera.position.copy(cadre.centre).addScaledVector(axe, d);
@@ -654,7 +673,9 @@ new ResizeObserver(() => {
 
 // --- carte
 
-let carte = null, traceGrise = null, traceFaite = null, marqueur = null, suivre = true;
+// « Centrer » (interrupteur, actif au départ) : le véhicule au centre de la carte en permanence, zoom autour de
+// lui ; un glisser de la carte le coupe, un clic le remet.
+let carte = null, traceGrise = null, traceFaite = null, marqueur = null, suivre = true, zoomEnCours = false;
 const fleche = (couleur) => L.divIcon({
   className: "fleche", iconSize: [26, 26], iconAnchor: [13, 13],
   html: `<svg viewBox="-13 -13 26 26"><g><circle r="11" fill="#0f1011" fill-opacity=".75" stroke="${couleur}" stroke-width="2"/><path d="M0 -8 L5.5 6 L0 3 L-5.5 6 Z" fill="${couleur}"/></g></svg>`,
@@ -669,6 +690,8 @@ if (window.L) {
   traceFaite = L.polyline([], { color: "#ffb547", weight: 4, opacity: 0.95 }).addTo(carte);
   marqueur = L.marker([48.85, 2.36], { icon: fleche("#ffb547"), interactive: false, keyboard: false });
   carte.on("dragstart", () => marqueSuivi(false));
+  carte.on("zoomstart", () => { zoomEnCours = true; });
+  carte.on("zoomend", () => { zoomEnCours = false; });
 } else {
   $("attente-carte").hidden = false;
   $("attente-carte").textContent = "Leaflet ?";
@@ -676,7 +699,12 @@ if (window.L) {
 function marqueSuivi(v) {
   suivre = v;
   $("suivre").setAttribute("aria-pressed", String(v));
+  if (carte) {
+    // Leaflet relit ces options à chaque geste : zoom centré sur le véhicule tant qu'on le suit.
+    carte.options.scrollWheelZoom = carte.options.touchZoom = carte.options.doubleClickZoom = v ? "center" : true;
+  }
 }
+marqueSuivi(suivre);
 $("suivre").addEventListener("click", () => {
   marqueSuivi(!suivre);
   if (suivre && marqueur && carte?.hasLayer(marqueur)) carte.panTo(marqueur.getLatLng());
@@ -767,7 +795,10 @@ function majCarte() {
     }
     const g = marqueur.getElement()?.querySelector("g");
     if (g && info[I.route] >= 0) g.setAttribute("transform", `rotate(${info[I.route]})`);
-    if (suivre && !carte.getBounds().pad(-0.25).contains(ll)) carte.panTo(ll, { animate: false });
+    if (suivre && !zoomEnCours) {
+      const p = carte.latLngToContainerPoint(ll), c = carte.getSize().divideBy(2);
+      if (p.distanceTo(c) > 0.5) carte.panTo(ll, { animate: false });
+    }
   }
 }
 
@@ -795,6 +826,7 @@ function changeLangue(l) {
   $("drapeau").innerHTML = DRAPEAUX[langue];
   try { localStorage.setItem("raidmaster-langue", langue); } catch { /* stockage indisponible */ }
   if (scenarios.length) remplitScenarios();
+  appliqueVue();
   if (build) $("version").textContent = t("version")(build);
   afficheExpects();
 }
@@ -855,7 +887,7 @@ function boucle(now) {
     if (info[I.image] !== derniereImage) {
       derniereImage = info[I.image];
       const fb = new Uint8Array(M.HEAPU8.buffer, M._sim_fb(), W * H * 4);
-      if (renderer) {
+      if (!ecranSeul) {
         texture.image.data = fb;
         texture.needsUpdate = true;
         sale = true;
@@ -876,7 +908,7 @@ function boucle(now) {
   }
   afficheJournal();
   if (controls?.update()) sale = true;
-  if (renderer && sale) {
+  if (renderer && !ecranSeul && sale) {
     sale = false;
     renderer.render(scene, camera);
   }

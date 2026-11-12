@@ -63,7 +63,9 @@ simulateur » de la maquette). Trajets : les scénarios des tests, ou un fichier
 (il reste dans le navigateur) ; vitesse ×1 à ×1000 ; la case « Jouer les actions et les vérifications »
 rejoue les appuis du scénario et affiche ses vérifications en vert ou rouge. Trips et réglages restent dans
 le navigateur (bouton « Remise à zéro »). Son coupé par défaut (bouton « Son »). Mêmes touches que le
-simulateur PC ; `?vue=2d` affiche l'écran seul.
+simulateur PC. Le tripmaster s'affiche de face (bouton « Recentrer » après une rotation) ; le bouton « Écran
+seul » montre l'écran sur toute la largeur, avec une barre des cinq boutons dessous (`?vue=2d` l'ouvre
+directement). Sur la carte, « Centrer » garde le véhicule au centre (un glisser le coupe).
 
 Construit en local et commité dans `mockup/sim/` (publié avec la maquette). Prérequis :
 [emsdk](https://emscripten.org/docs/getting_started/downloads.html) installé dans `~/sdk/emsdk` (ou

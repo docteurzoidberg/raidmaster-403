@@ -49,7 +49,8 @@ panneau de développement (scénarios, vitesse, actions et vérifications, impor
 | `sim/scenarios/` | traces et actions des scénarios des tests, `index.json` ; récupérés à la demande |
 
 Paramètres d'adresse : `?scenario=s24_ligne_droite_boutons`, `?vitesse=100`, `?actions=1` (actions et
-vérifications), `?vue=2d` (écran seul, sans WebGL), `?son=1`, `?allumer=1` (sans clic, donc sans son),
+vérifications), `?vue=2d` ou `?vue=3d` (vue de départ ; sinon le dernier choix du bouton « Écran seul / Vue 3D », gardé dans le
+navigateur ; écran seul forcé sans WebGL), `?son=1`, `?allumer=1` (sans clic, donc sans son),
 `?lang=fr` ou `?lang=en`. Pour les essais automatiques, `window.raidmasterSim` donne l'état, les vérifications,
 la position des capuchons à l'écran et appuie sur les boutons. Langue choisie comme pour la maquette (même
 réglage gardé) ; l'interface du boîtier reste en français.
