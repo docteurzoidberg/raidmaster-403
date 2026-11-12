@@ -76,7 +76,6 @@ docs/mockups/boot-synchro/
 fp-info-cache
 *.kicad_prl
 _autosave-*
-hardware/kicad/*/export/
 
 # Publication du dépôt (copie filtrée) : note, listes et script locaux (chemins et noms personnels)
 docs/publication/
