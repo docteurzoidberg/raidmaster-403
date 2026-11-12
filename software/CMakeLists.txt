@@ -9,12 +9,13 @@ set(CMAKE_C_EXTENSIONS OFF)
 # Racine du dépôt : le code est dans software/, la doc (GIF de démo, maquettes) dans ../docs/.
 get_filename_component(RAIDMASTER_REPO_DIR "${CMAKE_SOURCE_DIR}/.." ABSOLUTE)
 
-# Cible de build : "sim" (PC SDL, défaut). Le firmware ESP32 est un projet ESP-IDF à part
-# (firmware/, construit par idf.py via tools/fw.sh) qui reprend les mêmes core/ et ui/.
+# Cible de build : "sim" (PC SDL, défaut) ou "web" (simulateur WebAssembly, emcc : tools/web.sh,
+# preset web). Le firmware ESP32 est un projet ESP-IDF à part (firmware/, construit par idf.py via
+# tools/fw.sh) qui reprend les mêmes core/ et ui/.
 if(NOT DEFINED RAIDMASTER_TARGET)
-    set(RAIDMASTER_TARGET "sim" CACHE STRING "Build target: sim (firmware : tools/fw.sh)" FORCE)
+    set(RAIDMASTER_TARGET "sim" CACHE STRING "Build target: sim, web (firmware : tools/fw.sh)" FORCE)
 endif()
-set_property(CACHE RAIDMASTER_TARGET PROPERTY STRINGS "sim" "firmware")
+set_property(CACHE RAIDMASTER_TARGET PROPERTY STRINGS "sim" "web" "firmware")
 message(STATUS "Raidmaster target: ${RAIDMASTER_TARGET}")
 
 # Warnings stricts côté sim (GCC/Clang). Le firmware ESP-IDF a ses propres flags via idf.py.
@@ -55,9 +56,25 @@ if(RAIDMASTER_TARGET STREQUAL "sim")
         enable_testing()
         add_subdirectory(tests)
     endif()
+elseif(RAIDMASTER_TARGET STREQUAL "web")
+    # Simulateur web : mêmes core/ et ui/, hal_simweb/ (qui reprend hal_sim/ sauf stockage et son),
+    # front-end simweb/ ; sortie dans build-web/site/, recopiée dans mockup/sim/ par tools/web.sh.
+    if(NOT EMSCRIPTEN)
+        message(FATAL_ERROR "La cible web se construit avec emcc : tools/web.sh (preset web).")
+    endif()
+    add_compile_options(-Wall -Wextra -Wpedantic)
+    # Python (gen_route.py pour les traces des scénarios, animation de démarrage), comme le sim.
+    if(NOT RAIDMASTER_PYTHON)
+        find_program(RAIDMASTER_PYTHON NAMES python3 python
+                     PATHS "${RAIDMASTER_REPO_DIR}/.venv/bin" "${RAIDMASTER_REPO_DIR}/../../.venv/bin")
+    endif()
+    add_subdirectory(core)
+    add_subdirectory(hal_simweb)
+    add_subdirectory(ui)
+    add_subdirectory(simweb)
 elseif(RAIDMASTER_TARGET STREQUAL "firmware")
     message(FATAL_ERROR
         "Le firmware se construit avec ESP-IDF : tools/fw.sh build (voir firmware/README.md).")
 else()
-    message(FATAL_ERROR "RAIDMASTER_TARGET inconnu : ${RAIDMASTER_TARGET} (attendu : sim ou firmware)")
+    message(FATAL_ERROR "RAIDMASTER_TARGET inconnu : ${RAIDMASTER_TARGET} (attendu : sim, web ou firmware)")
 endif()

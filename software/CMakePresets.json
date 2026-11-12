@@ -17,12 +17,28 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             }
+        },
+        {
+            "name": "web",
+            "displayName": "Simulateur web (WebAssembly)",
+            "description": "Build du sim web (emcc). Activer emsdk avant : tools/web.sh le fait.",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-web",
+            "toolchainFile": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+            "cacheVariables": {
+                "RAIDMASTER_TARGET": "web",
+                "CMAKE_BUILD_TYPE": "Release"
+            }
         }
     ],
     "buildPresets": [
         {
             "name": "sim",
             "configurePreset": "sim"
+        },
+        {
+            "name": "web",
+            "configurePreset": "web"
         }
     ],
     "testPresets": [

@@ -83,6 +83,7 @@
 #include "screen_boot.h"
 #include "screen_menu.h"
 #include "demo_record.h"
+#include "script.h"
 #include "app.h"
 #include "jingles.h"
 #include "hal/hal_gps.h"
@@ -318,141 +319,18 @@ static void handle_key(const SDL_KeyboardEvent *k, int *running)
 }
 
 /* ------------------------------------------------------------------------- */
-/* Mode script : actions horodatées (voir l'en-tête). */
+/* Mode script : actions horodatées (voir l'en-tête), lues par sim/script.c. */
 
 #define SCRIPT_STEP_MS 10U
 
-static FILE       *s_script;
+static bool        s_script;
 static const char *s_script_out = ".";
-static uint32_t    s_script_at;
-static char        s_script_cmd[160];
-static bool        s_script_pending;
-static int         s_script_failures;
-static double      s_script_speed = 1.0;    /* --speed, pour les instants « @<s> » */
 
-/* expect <champ> <valeur> [tolérance] sur l'état du core. */
-static void script_expect(const char *args)
+static void script_shot(const char *name, void *user)
 {
-    char field[32];
-    double want, tol = 0.0;
-    int n = sscanf(args, "%31s %lf %lf", field, &want, &tol);
-    if (n < 2) {
-        fprintf(stderr, "script : expect mal formé « %s »\n", args);
-        s_script_failures++;
-        return;
-    }
-    app_state_t st;
-    app_get_state(&s_app, hal_time_ms(), &st);
-    double got;
-    if      (strcmp(field, "trip_a") == 0) got = st.trip.trip_a_m / 1000.0;
-    else if (strcmp(field, "trip_b") == 0) got = st.trip.trip_b_m / 1000.0;
-    else if (strcmp(field, "odo") == 0)    got = st.trip.odo_m / 1000.0;
-    else if (strcmp(field, "speed") == 0)  got = st.trip.speed_kmh;
-    else if (strcmp(field, "calib") == 0)  got = st.trip.calib_pct;
-    else if (strcmp(field, "active") == 0) got = st.active;
-    else if (strcmp(field, "fix") == 0)    got = st.trip.fix_ok;
-    else if (strcmp(field, "night") == 0)  got = st.set.night;
-    else if (strcmp(field, "view") == 0)   got = st.set.view;
-    else if (strcmp(field, "avg") == 0)    got = st.trip.avg_kmh;
-    else if (strcmp(field, "max") == 0)    got = st.trip.max_kmh;
-    else if (strcmp(field, "hhmm") == 0)   got = st.local_hh < 0 ? -1 : st.local_hh * 100 + st.local_mm;
-    else if (strcmp(field, "alarm") == 0)  got = st.speed_alarm;
-    else if (strcmp(field, "chrono") == 0) got = st.trip.chrono_running;
-    else if (strcmp(field, "gps_err") == 0)
-        got = s_app.parser.stats.bad_checksum + s_app.parser.stats.parse_errors;
-    else if (strcmp(field, "gps") == 0)      got = st.gps_present;
-    else if (strcmp(field, "mag") == 0)      got = st.mag_present;
-    else if (strcmp(field, "mag_cal") == 0)  got = st.mag_calibrated;
-    else if (strcmp(field, "head_src") == 0) got = st.heading_src;
-    else if (strcmp(field, "heading") == 0)  got = isnan(st.heading_deg) ? -1.0 : st.heading_deg;
-    else if (strcmp(field, "magcal") == 0)   got = st.magcal_sectors;
-    else {
-        fprintf(stderr, "script : champ inconnu « %s »\n", field);
-        s_script_failures++;
-        return;
-    }
-    const bool ok = fabs(got - want) <= tol + 1e-9;
-    printf("expect %-7s %10.4f (attendu %.4f ± %g) %s\n", field, got, want, tol, ok ? "ok" : "ÉCHEC");
-    if (!ok) s_script_failures++;
-}
-
-static bool script_next(void)
-{
-    char line[200];
-    while (fgets(line, sizeof(line), s_script) != NULL) {
-        char *h = strchr(line, '#');
-        if (h != NULL) *h = '\0';
-        unsigned at;
-        double at_s;
-        int n = 0;
-        if (sscanf(line, " @%lf %n", &at_s, &n) == 1 && line[n] != '\0' && line[n] != '\n') {
-            s_script_at = (uint32_t)llround(at_s * 1000.0 / s_script_speed);
-            snprintf(s_script_cmd, sizeof(s_script_cmd), "%s", line + n);
-            s_script_cmd[strcspn(s_script_cmd, "\r\n")] = '\0';
-            return true;
-        }
-        n = 0;
-        if (sscanf(line, "%u %n", &at, &n) == 1 && line[n] != '\0' && line[n] != '\n') {
-            s_script_at = at;
-            snprintf(s_script_cmd, sizeof(s_script_cmd), "%s", line + n);
-            s_script_cmd[strcspn(s_script_cmd, "\r\n")] = '\0';
-            return true;
-        }
-    }
-    return false;
-}
-
-static void dispatch_named(const char *name, bool *ok)
-{
-    static const struct { const char *n; ui_button_t b; } map[] = {
-        {"a", UI_BTN_A}, {"b", UI_BTN_B}, {"plus", UI_BTN_PLUS}, {"minus", UI_BTN_MINUS}, {"m", UI_BTN_MENU},
-    };
-    for (size_t i = 0; i < sizeof(map) / sizeof(map[0]); i++) {
-        if (strcmp(name, map[i].n) == 0) {
-            ui_input_dispatch(map[i].b, UI_BTN_EV_PRESS);
-            return;
-        }
-        if (SDL_strcasecmp(name, map[i].n) == 0) {
-            ui_input_dispatch(map[i].b, UI_BTN_EV_LONGPRESS);
-            return;
-        }
-    }
-    *ok = false;
-}
-
-/* Joue les actions échues ; renvoie 0 pour quitter. */
-static int script_step(uint32_t t_ms)
-{
-    while (s_script_pending && t_ms >= s_script_at) {
-        char verb[32] = "", arg[128] = "";
-        sscanf(s_script_cmd, "%31s %127s", verb, arg);
-        bool ok = true;
-        if (strcmp(verb, "quit") == 0) {
-            return 0;
-        } else if (strcmp(verb, "shot") == 0 && arg[0] != '\0') {
-            lv_refr_now(NULL);
-            save_ppm(s_script_out, arg);
-        } else if (strcmp(verb, "expect") == 0) {
-            script_expect(s_script_cmd + strlen("expect"));
-        } else if (strcmp(verb, "night") == 0) {
-            ui_app_toggle_night();
-        } else if (strcmp(verb, "signal") == 0) {
-            hal_gps_sim_set_signal(!hal_gps_sim_signal());
-        } else if (strcmp(verb, "gps") == 0) {
-            hal_gps_sim_set_plugged(!hal_gps_sim_plugged());
-        } else if (strcmp(verb, "mag") == 0) {
-            hal_mag_sim_set_plugged(!hal_mag_sim_plugged());
-        } else if (strcmp(verb, "spin") == 0) {
-            hal_mag_sim_set_spin(!hal_mag_sim_spin());
-        } else if (strcmp(verb, "power_cut") == 0) {
-            app_init(&s_app, hal_time_ms());
-        } else {
-            dispatch_named(verb, &ok);
-        }
-        if (!ok) fprintf(stderr, "script : action inconnue « %s »\n", s_script_cmd);
-        s_script_pending = script_next();
-    }
-    return s_script_pending ? 1 : 0;
+    (void)user;
+    lv_refr_now(NULL);
+    save_ppm(s_script_out, name);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -487,13 +365,12 @@ int main(int argc, char *argv[])
     }
 
     if (script != NULL) {
-        s_script = fopen(script, "r");
-        if (s_script == NULL) {
+        const script_io_t io = {.shot = script_shot};
+        if (!script_open(script, speed, &s_app, &io)) {
             fprintf(stderr, "--script : impossible de lire %s\n", script);
             return 2;
         }
-        s_script_speed = speed;
-        s_script_pending = script_next();
+        s_script = true;
         hal_time_sim_virtual(true);
     }
 
@@ -573,7 +450,7 @@ int main(int argc, char *argv[])
         hal_gps_init(on_gps_line, &s_app);
         hal_mag_init();
         ui_app_attach(&s_app);
-        if (s_script == NULL) jingle_play(&JINGLE_BOOT);   /* avec l'animation de démarrage */
+        if (!s_script) jingle_play(&JINGLE_BOOT);   /* avec l'animation de démarrage */
         printf("[sim] GPS : %s (×%g%s), sauvegarde : %s\n", replay ? replay : "trajet simulé", speed,
                loop ? ", en boucle" : "", storage ? storage : "mémoire");
     }
@@ -626,12 +503,12 @@ int main(int argc, char *argv[])
         if (shots_dir != NULL && !shots_step(shots_dir, now - start_ms)) {
             running = 0;
         }
-        if (s_script != NULL && !script_step(now - start_ms)) {
+        if (s_script && !script_step(now - start_ms)) {
             running = 0;
         }
 
         uint32_t next = lv_timer_handler();
-        if (s_script != NULL) {
+        if (s_script) {
             hal_time_sim_advance_ms(SCRIPT_STEP_MS);    /* horloge virtuelle : pas d'attente */
             continue;
         }
@@ -645,8 +522,8 @@ int main(int argc, char *argv[])
     SDL_DestroyRenderer(s_renderer);
     SDL_DestroyWindow(s_window);
     SDL_Quit();
-    if (s_script_failures > 0) {
-        fprintf(stderr, "script : %d vérification(s) en échec\n", s_script_failures);
+    if (script_failures() > 0) {
+        fprintf(stderr, "script : %d vérification(s) en échec\n", script_failures());
         return 1;
     }
     return 0;

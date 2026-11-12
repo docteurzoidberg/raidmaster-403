@@ -4,7 +4,8 @@
 # SDL2 (${SIM_SDL2_TARGET}) : trouvé par le CMakeLists.txt racine, partagé avec hal_sim (son).
 
 # demo_record.c + gif_writer.c : mode enregistrement d'un GIF de démo (tools/demo_gif.sh).
-add_executable(raidmaster-sim main.c demo_record.c gif_writer.c)
+# script.c : lecteur des actions.txt des scénarios, partagé avec le sim web (simweb/).
+add_executable(raidmaster-sim main.c script.c demo_record.c gif_writer.c)
 # Intégration LVGL :
 # On link l'UI pour piloter LVGL depuis la fenêtre SDL que ce binaire ouvre déjà.
 # raidmaster_core avant raidmaster_hal_sim : le core appelle le HAL (hal_audio_play depuis jingles.c),
