@@ -13,6 +13,7 @@ set(RAIDMASTER_CORE_SRCS
     gps_synth.c
     ubx.c
     gps_link.c
+    mag.c
     trip_engine.c
     app.c
     synth.c

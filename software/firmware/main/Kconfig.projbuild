@@ -104,4 +104,43 @@ menu "Raidmaster 403"
 
     endif
 
+    config RAIDMASTER_COMPASS
+        bool "Boussole du puck sur I2C1"
+        default RAIDMASTER_GPS_UART
+        help
+            Magnétomètre du puck (QMC5883L, IST8310, HMC5883L ou LIS3MDL, reconnu seul) sur le bus
+            I2C1. Sur le J8 de la Waveshare seule : SDA du puck sur la broche 10 (IO39), SCL sur la
+            broche 12 (IO40). Le cap est écrit dans le journal ; pas encore à l'écran.
+
+    if RAIDMASTER_COMPASS
+
+    config RAIDMASTER_COMPASS_SDA_GPIO
+        int "GPIO SDA de l'I2C1"
+        range 0 48
+        default 39
+
+    config RAIDMASTER_COMPASS_SCL_GPIO
+        int "GPIO SCL de l'I2C1"
+        range 0 48
+        default 40
+
+    config RAIDMASTER_COMPASS_YAW
+        int "Rotation de la boussole par rapport à la flèche du puck (0, 90, 180, 270°)"
+        range 0 270
+        default 0
+        help
+            Comme COMPASS_ORIENT d'ArduPilot (rotation en lacet, sens horaire vu de dessus). À
+            régler au banc : flèche du puck vers le nord, le cap lu doit valoir ~0°.
+
+    config RAIDMASTER_COMPASS_FLIPPED
+        bool "Boussole à l'envers (puce vers le bas)"
+        default n
+
+    config RAIDMASTER_COMPASS_LOG_S
+        int "Journal du cap, toutes les N secondes (0 : changements d'état seulement)"
+        range 0 60
+        default 1
+
+    endif
+
 endmenu

@@ -80,6 +80,9 @@ Si le flash n'arrive pas à se connecter : maintenir **BOOT**, appuyer sur **RES
 | Source GPS | démonstration | trajet simulé, ou **récepteur u-blox sur UART** (M9N ou puck M8N) : cherché à 115 200, 38 400 puis 9 600 bauds, reconnu par UBX-MON-VER, réglé (10 Hz, modèle automobile, RMC + GGA seules) puis passé au débit voulu ; réglé à chaque démarrage, rien n'est enregistré dans le récepteur |
 | UART, GPIO TX / RX / EN | UART1, 17 / 18 / 45 | puck sur le J8 de la Waveshare seule : TX du puck sur la broche 17 (IO18), RX sur la broche 15 (IO17), alimentation VBAT ; EN (régulateur GNSS de la carte fille) sans effet, −1 pour aucun |
 | Débit voulu, cadence | 115 200 bauds, 10 Hz | cadence du M8N en multi-constellation à vérifier au banc |
+| Boussole du puck sur I2C1 | oui avec le récepteur réel | QMC5883L, IST8310, HMC5883L ou LIS3MDL reconnu seul, lu à 20 Hz ; sur le J8 : SDA du puck broche 10 (IO39), SCL broche 12 (IO40) ; cap dans le journal |
+| Rotation, à l'envers | 0°, non | montage de la puce par rapport à la flèche du puck (comme `COMPASS_ORIENT` d'ArduPilot) : flèche vers le nord, le cap lu doit valoir ~0° |
+| Journal du cap | toutes les 1 s | 0 : changements d'état seulement |
 | Tactile en guise de boutons | oui | 5 bandes verticales invisibles, un cinquième de la largeur chacune : **A, B, −, +, Menu** (de gauche à droite) ; appui long ≥ 800 ms |
 
 **Bouton PWR** (sur la tranche, relié au PMIC ; pas le bouton BOOT) : appui long (1,5 s) = extinction
@@ -107,7 +110,7 @@ touchée (sélection une ligne plus haut ou plus bas, ou validation de l'item en
 Côté `hal_esp32/` : `board.c` (I²C, TCA9554, reset de l'écran), `board_display.c` (AXS15231B en QSPI,
 rotation logicielle, envoi par bandes, rétroéclairage), `board_touch.c`, `board_rtc.c` (RTC PCF85063,
 horloge de la carte), `board_pmu.c` (AXP2101 en lecture : USB, batterie, charge), `hal_time_esp.c`,
-`hal_storage_nvs.c`, `hal_gps_demo.c` ou `hal_gps_uart.c` (récepteur réel par `core/gps_link`, un seul
+`board_compass.c` (boussole du puck sur l'I2C1, `core/mag`), `hal_storage_nvs.c`, `hal_gps_demo.c` ou `hal_gps_uart.c` (récepteur réel par `core/gps_link`, un seul
 actif selon menuconfig), `hal_asset_partition.c`, `hal_audio_es8311.c` (son : codec,
 ampli, tâche audio sur le cœur 1). Brochage : `hal_esp32/board.h`.
 
@@ -120,7 +123,9 @@ jusqu'au premier fix GPS), `pmu: AXP2101 : REG00 …, VBUS … mV` (relevé brut
 `board: carte prête (UI tournée de 90°, QSPI 40 MHz)`, `hal_gps: GPS de démonstration` (ou, avec le récepteur réel :
 `hal_gps: récepteur sur UART1 (TX 17, RX 18, EN 45), cible 115200 bauds, 10 Hz`, puis
 `hal_gps: u-blox M8 NEO-M8N (PROTVER 18.00, …), 115200 bauds` une fois reconnu et réglé, ou
-`hal_gps: module GPS absent` après 3 s de silence),
+`hal_gps: module GPS absent` après 3 s de silence ; avec la boussole :
+`boussole: QMC5883L à 0x0D`, puis chaque seconde `boussole: (x, y, z) µT, |B| … µT, cap …° brut` (après un
+tour à plat : `tour fait : fer dur (…)` et le cap calibré en plus), ou `boussole: boussole absente`),
 `raidmaster: démarré, libre : interne … Ko, PSRAM … Ko`, `audio: codec ES8311 prêt, volume 70` (ou
 `audio: son indisponible (…)`). Puis toutes les 10 s :
 `raidmaster: <n> images/s, envoi <t> ms, libre : …` (images réellement envoyées à l'écran, durée de

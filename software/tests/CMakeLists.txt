@@ -43,6 +43,11 @@ add_executable(test_gps_link test_gps_link.c)
 target_link_libraries(test_gps_link PRIVATE raidmaster_core unity)
 add_test(NAME gps_link COMMAND test_gps_link)
 
+# Boussole (puck ou GY-271) : quatre puces émulées par leurs registres
+add_executable(test_mag test_mag.c)
+target_link_libraries(test_mag PRIVATE raidmaster_core unity)
+add_test(NAME mag COMMAND test_mag)
+
 # Scénarios de bout en bout : le simulateur sans fenêtre rejoue une trace et un script
 # d'actions avec vérifications (tests/fixtures/scenarios/<id>/actions.txt). La trace est
 # trace.nmea (versionnée, ex. enregistrement réel) ou générée au build depuis route.txt par

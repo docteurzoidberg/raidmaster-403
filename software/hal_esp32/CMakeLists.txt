@@ -3,6 +3,7 @@
 #
 # GPS : trajet simulé (hal_gps_demo.c) ou récepteur u-blox sur UART (hal_gps_uart.c, core/gps_link),
 # au choix dans menuconfig (« Source GPS ») ; les deux fichiers sont compilés, un seul est actif.
+# Boussole du puck : I2C1, core/mag (board_compass.c, si activée dans menuconfig).
 # Son : codec ES8311 par esp_codec_dev (hal_audio_es8311.c).
 #
 # WHOLE_ARCHIVE : core/ et ui/ appellent les fonctions HAL (hal_storage_*, hal_asset_*…) sans
@@ -20,6 +21,7 @@ idf_component_register(
         hal_storage_nvs.c
         hal_gps_demo.c
         hal_gps_uart.c
+        board_compass.c
         hal_asset_partition.c
         hal_audio_es8311.c
     INCLUDE_DIRS "."

@@ -6,7 +6,8 @@
  * dans la tâche app_main : LVGL n'a pas besoin de verrou.
  *
  * GPS : trajet simulé (hal_esp32/hal_gps_demo.c, par défaut) ou récepteur u-blox réel sur l'UART1
- * (hal_esp32/hal_gps_uart.c : M9N de la carte fille ou puck M8N), au choix dans menuconfig. Tactile
+ * (hal_esp32/hal_gps_uart.c : M9N de la carte fille ou puck M8N), au choix dans menuconfig ; boussole
+ * du puck sur l'I2C1 (hal_esp32/board_compass.c, cap dans le journal). Tactile
  * en guise de boutons (touch_buttons.c), réglages et distances en NVS. Toutes les 10 s, une
  * ligne de journal donne images/s, durée d'envoi d'une image et mémoire libre. Appui long sur
  * PWR : extinction propre (le PMIC rallume la carte au prochain appui).
@@ -14,7 +15,7 @@
  * Le jingle de démarrage (core/jingles, codec ES8311) part avec l'animation, une fois l'écran allumé.
  *
  * Réglages (tools/fw.sh menuconfig → « Raidmaster 403 ») : sens de l'écran, horloge QSPI,
- * rétroéclairage jour / nuit, volume du son, tactile en guise de boutons, source GPS.
+ * rétroéclairage jour / nuit, volume du son, tactile en guise de boutons, source GPS, boussole.
  *
  * Licence : GPL-3.0.
  */
@@ -115,6 +116,9 @@ void app_main(void)
     ui_theme_set_night(s_app.set.night);
     ui_init(disp);
     hal_gps_init(on_gps_line, &s_app);
+#if CONFIG_RAIDMASTER_COMPASS
+    board_compass_init(hal_time_ms());
+#endif
     ui_app_attach(&s_app);
 
     /* Première image envoyée en entier, puis laissée au panneau le temps de l'afficher (il relit sa
@@ -136,6 +140,9 @@ void app_main(void)
         hal_gps_poll();
         const uint64_t now = hal_time_ms();
         app_tick(&s_app, now);
+#if CONFIG_RAIDMASTER_COMPASS
+        board_compass_poll(now);
+#endif
 #if CONFIG_RAIDMASTER_TOUCH_BUTTONS
         touch_buttons_poll(now);
 #endif
