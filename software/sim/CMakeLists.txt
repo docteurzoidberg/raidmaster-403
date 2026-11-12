@@ -23,7 +23,8 @@ set_target_properties(raidmaster-sim PROPERTIES
 
 # GIF de démo régénéré automatiquement à chaque build qui change le sim (donc toute modif de l'UI,
 # liée statiquement). Enregistrement déterministe (temps virtuel) : docs/demo/raidmaster-demo.gif
-# n'est réécrit que si son contenu change. Désactivable : -DRAIDMASTER_DEMO_GIF=OFF.
+# n'est réécrit que si son contenu change, et recopié pour l'accueil du site (web/img/demo.gif).
+# Désactivable : -DRAIDMASTER_DEMO_GIF=OFF.
 # À la main (échelle ×2, autre sortie) : tools/demo_gif.sh.
 option(RAIDMASTER_DEMO_GIF "Régénérer docs/demo/raidmaster-demo.gif à chaque build du sim" ON)
 if(RAIDMASTER_DEMO_GIF)
@@ -39,6 +40,7 @@ if(RAIDMASTER_DEMO_GIF)
                 $<TARGET_FILE:raidmaster-sim>
         COMMAND ${CMAKE_COMMAND} -E make_directory "${RAIDMASTER_REPO_DIR}/docs/demo"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${DEMO_GIF_TMP}" "${DEMO_GIF_OUT}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${DEMO_GIF_TMP}" "${RAIDMASTER_REPO_DIR}/web/img/demo.gif"
         DEPENDS raidmaster-sim ${RAIDMASTER_BOOT_ANIM_BIN}
         COMMENT "GIF de démo de l'UI → docs/demo/raidmaster-demo.gif"
         VERBATIM)

@@ -58,7 +58,7 @@ if(RAIDMASTER_TARGET STREQUAL "sim")
     endif()
 elseif(RAIDMASTER_TARGET STREQUAL "web")
     # Simulateur web : mêmes core/ et ui/, hal_simweb/ (qui reprend hal_sim/ sauf stockage et son),
-    # front-end simweb/ ; sortie dans build-web/site/, recopiée dans mockup/sim/ par tools/web.sh.
+    # front-end simweb/ ; sortie dans build-web/site/, recopiée dans web/sim/ par tools/web.sh.
     if(NOT EMSCRIPTEN)
         message(FATAL_ERROR "La cible web se construit avec emcc : tools/web.sh (preset web).")
     endif()

@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Raidmaster 403</title>
+<meta name="description" content="Raidmaster 403 : un tripmaster GPS de rallye-raid à construire soi-même. Projet DIY, open source et open hardware, non commercial.">
+<meta name="theme-color" content="#07090a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="common/common.css">
+<link rel="stylesheet" href="home.css">
+</head>
+<body>
+<!-- fond fixe : sol en grille et horizon, qui défilent avec la page (home.js : --scroll, --fade) -->
+<div class="backdrop" aria-hidden="true">
+  <div class="floor">
+    <div class="grid"></div>
+    <div class="horizon"></div>
+  </div>
+</div>
+<div class="topbar">
+  <header class="wide">
+    <h1><a class="home" href="./" data-nav-aria="home" aria-label="Accueil" aria-current="page"><span class="brand">RAIDMASTER</span> <span class="num">403</span></a></h1>
+    <div class="tools">
+      <nav class="site-nav" data-nav-aria="site" aria-label="Pages du site">
+        <a class="btn" href="mockup/" data-nav="mockup">Maquette 3D</a>
+        <a class="btn" href="sim/" data-nav="sim">Simulateur</a>
+        <a class="btn" href="manual/" data-nav="manual">Manuel</a>
+      </nav>
+      <label class="lang-picker">
+        <span class="flag" id="flag" aria-hidden="true"></span>
+        <select id="lang" data-nav-aria="lang" aria-label="Langue">
+          <option value="fr">Français</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+      <a class="btn" href="https://github.com/docteurzoidberg/raidmaster-403" target="_blank" rel="noopener"
+         data-nav-aria="github" aria-label="Code source sur GitHub">
+        <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span>GitHub</span>
+      </a>
+    </div>
+  </header>
+</div>
+
+<main>
+  <section class="hero">
+    <p class="eyebrow" data-i18n="eyebrow">Projet DIY · open source · open hardware</p>
+    <div class="device">
+      <img class="screen" src="img/demo.gif" width="480" height="320" data-i18n-alt="altScreen"
+           alt="L'écran du Raidmaster : démarrage animé de la 403 sur la grille, écran raid, balade, menu, calibration, mode nuit">
+      <!-- légendes incrustées des capuchons du boîtier : couleurs et symboles du modèle 3D -->
+      <div class="caps" aria-hidden="true">
+        <span class="cap letter cap-a">A</span>
+        <span class="cap letter cap-b">B</span>
+        <span class="cap"><svg viewBox="-0.5 -0.5 1 1"><path fill="#ef5350" d="M-.5-.43h1v.18h-1zM-.5-.09h1v.18h-1zM-.5.25h1v.18h-1z"/></svg></span>
+        <span class="cap"><svg viewBox="-0.5 -0.5 1 1"><path fill="#f2f2f2" d="M-.5.38h1L0-.48z"/></svg></span>
+        <span class="cap"><svg viewBox="-0.5 -0.5 1 1"><path fill="#f2f2f2" d="M-.5-.38h1L0 .48z"/></svg></span>
+      </div>
+    </div>
+    <div class="title">
+      <h2 class="name">RAIDMASTER <span>403</span></h2>
+      <p class="tagline" data-i18n="tagline">Un tripmaster GPS de rallye-raid à construire soi-même. Rien à vendre : le code, la carte électronique et le boîtier sont publiés sous licence libre.</p>
+      <p class="note" data-i18n="note">L'écran ci-dessus fait tourner le vrai firmware, compilé pour le navigateur.</p>
+      <div class="actions">
+        <a class="button primary" href="sim/" data-i18n="try">Essayer le simulateur</a>
+        <a class="button" href="mockup/" data-i18n="see3d">Voir en 3D</a>
+        <a class="button" href="https://github.com/docteurzoidberg/raidmaster-403" target="_blank" rel="noopener" data-i18n="source">Sources sur GitHub</a>
+      </div>
+      <ul class="badges" data-i18n-aria="published" aria-label="Ce qui est publié">
+        <li>GPL-3.0</li>
+        <li>Firmware ESP-IDF</li>
+        <li>PCB KiCad</li>
+        <li data-i18n="bEnclosure">Boîtier STEP</li>
+        <li class="neutral" data-i18n="bNonCommercial">Non commercial</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="content">
+    <section class="split">
+      <div class="text">
+        <p class="kicker" data-i18n="n1">01 · L'écran</p>
+        <h2 data-i18n="t1">Les chiffres du roadbook, lisibles d'un coup d'œil</h2>
+        <p data-i18n="d1">Distances partielles A et B, odomètre, vitesse, cap, moyenne et chrono. Mode raid pour l'épreuve, mode balade pour tous les jours, mode nuit, calibration automatique de la distance.</p>
+        <ul class="tags">
+          <li>Raid</li><li data-i18n="tagTouring">Balade</li><li data-i18n="tagNight">Nuit</li><li data-i18n="tagCalibration">Calibration auto</li>
+        </ul>
+      </div>
+      <figure class="demo">
+        <img src="img/demo.gif" width="480" height="320" loading="lazy" data-i18n-alt="altDemo"
+             alt="Démo de l'interface : démarrage animé, écran raid, balade, menu, calibration, mode nuit">
+        <figcaption data-i18n="demoCaption">Simulateur, échelle 1:1 de l'écran 480 × 320.</figcaption>
+      </figure>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div class="text">
+          <p class="kicker" data-i18n="n2">02 · Le boîtier</p>
+          <h2 data-i18n="t2">Autonome, sans fil vers la voiture</h2>
+          <p data-i18n="d2">Imprimé en PETG ou ASA (l'habitacle monte à 60 °C en été), pare-chocs en TPU, cinq boutons (A, B, menu, haut, bas), batterie interne rechargée en USB-C. Les fichiers STEP de chaque pièce sont publiés.</p>
+        </div>
+        <a class="button" href="mockup/" data-i18n="see3dArrow">Voir en 3D →</a>
+      </div>
+      <img class="wide" src="img/enclosure-exploded.png" width="1700" height="895" loading="lazy" data-i18n-alt="altExploded"
+           alt="Rendu éclaté du boîtier : coque, façade, capuchons, trappes, pare-chocs et cartes">
+    </section>
+
+    <section>
+      <div class="text narrow">
+        <p class="kicker" data-i18n="n3">03 · L'électronique</p>
+        <h2 data-i18n="t3">Une Waveshare ESP32-S3 et une carte fille maison</h2>
+      </div>
+      <div class="boards">
+        <img src="img/pcb-top.png" width="1200" height="929" loading="lazy" data-i18n-alt="altPcbTop" alt="Carte fille et carte boutons, face dessus">
+        <img src="img/pcb-bottom.png" width="1200" height="929" loading="lazy" data-i18n-alt="altPcbBottom" alt="Carte fille et carte boutons, face dessous">
+      </div>
+      <dl class="specs">
+        <div><dt data-i18n="kBoard">Carte</dt><dd data-i18n="vBoard">ESP32-S3, 8 Mo PSRAM, 16 Mo flash</dd></div>
+        <div><dt data-i18n="kScreen">Écran</dt><dd data-i18n="vScreen">3,5" IPS 480 × 320, tactile</dd></div>
+        <div><dt>GPS</dt><dd data-i18n="vGps">NEO-M9N interne ou puck NEO-M8N</dd></div>
+        <div><dt data-i18n="kHeading">Cap</dt><dd data-i18n="vHeading">Magnétomètre QMC5883L</dd></div>
+        <div><dt data-i18n="kPower">Énergie</dt><dd>Li-ion, AXP2101, USB-C</dd></div>
+      </dl>
+    </section>
+
+    <section class="story">
+      <p class="kicker" data-i18n="n4">04 · L'histoire</p>
+      <p class="lead" data-i18n="d4">Fait maison pour une Peugeot 403 Familiale de 1956, pensé pour le raid Crazy Dust 2027 et utilisable au quotidien en mode balade.</p>
+      <p data-i18n="d4b">Distance GPS uniquement : ni capteur de roue, ni intervention sur le câblage de la voiture.</p>
+    </section>
+
+    <section>
+      <div class="text narrow">
+        <p class="kicker" data-i18n="n5">05 · À construire soi-même</p>
+        <h2 data-i18n="t5">Tout est publié, rien n'est à vendre</h2>
+        <p data-i18n="d5">Le Raidmaster est un projet personnel, partagé tel quel : pas de boutique, pas de kit, pas de support ni de garantie. Les fichiers sont là pour être lus, reconstruits, modifiés et améliorés.</p>
+      </div>
+      <div class="cards">
+        <div><strong data-i18n="cSoftware">Logiciel</strong><span data-i18n="cSoftwareText">Firmware ESP-IDF et LVGL, simulateur PC et web, tests.</span></div>
+        <div><strong data-i18n="cElectronics">Électronique</strong><span data-i18n="cElectronicsText">Projet KiCad de la carte fille et de la carte boutons, modèles 3D.</span></div>
+        <div><strong data-i18n="cEnclosure">Boîtier</strong><span data-i18n="cEnclosureText">Un fichier STEP par pièce, à imprimer en PETG, ASA et TPU.</span></div>
+        <div><strong data-i18n="cLicence">Licence</strong><span data-i18n="cLicenceText">GPL-3.0 : libre d'utiliser, d'étudier, de modifier et de redistribuer.</span></div>
+      </div>
+    </section>
+
+    <section class="closing">
+    <nav class="tiles" data-nav-aria="site" aria-label="Pages du site">
+      <a href="mockup/"><strong data-nav="mockup">Maquette 3D</strong><span data-i18n="tileMockup">Les cartes dans le boîtier, assemblé ou éclaté.</span><em data-i18n="open">Ouvrir →</em></a>
+      <a href="sim/"><strong data-nav="sim">Simulateur</strong><span data-i18n="tileSim">Le vrai firmware dans le navigateur, sur un trajet GPS rejoué.</span><em data-i18n="tryArrow">Essayer →</em></a>
+      <a href="manual/" class="pending"><strong data-nav="manual">Manuel</strong><span data-i18n="tileManual">Mise en route, boutons, menus, calibration.</span><em data-i18n="inProgress">En cours de rédaction</em></a>
+    </nav>
+
+    <footer>
+      <span data-i18n="footer">Raidmaster 403 · projet DIY non commercial · licence GPL-3.0</span>
+      <span><span data-i18n="footerSource">Code, projet KiCad et STEP sur</span> <a href="https://github.com/docteurzoidberg/raidmaster-403" target="_blank" rel="noopener">GitHub</a></span>
+      <span class="credits"><span data-i18n="design">Conception :</span> <b>DrZoid</b> · <span data-i18n="builtBy">réalisation :</span> <b>Claude</b> (Anthropic)</span>
+    </footer>
+    </section>
+  </div>
+</main>
+<script type="module" src="home.js"></script>
+</body>
+</html>

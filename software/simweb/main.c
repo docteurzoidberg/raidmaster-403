@@ -1,6 +1,6 @@
 /*
  * Raidmaster 403 — simulateur web (WebAssembly, emcc) : le core et l'UI du sim, pilotés par la page
- * mockup/sim/ (ou par simweb/tests/test_web.cjs sous Node).
+ * web/sim/ (ou par simweb/tests/test_web.cjs sous Node).
  *
  * Mêmes sources que le sim PC (core/, ui/, hal_sim/ par hal_simweb/, lecteur des actions.txt
  * sim/script.c), sans SDL : LVGL dessine dans un framebuffer RGBA 480 × 320 que la page copie dans

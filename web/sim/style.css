@@ -1,0 +1,159 @@
+/* Simulateur : tripmaster en 3D, carte, panneau ; couleurs, police et en-tête : ../common/common.css. */
+html, body { height: 100%; }
+
+.page {
+  height: 100vh; height: 100dvh; max-width: 1920px; margin: 0 auto;
+  display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 12px;
+  padding-block: 12px 16px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+:is(.touche, .onglet, select, input, button, pre):focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+
+/* Onglets : seulement sur téléphone */
+.onglets { display: none; gap: 2px; }
+.onglet {
+  flex: 1; min-height: 40px; cursor: pointer; background: var(--panel); color: var(--muted); border: 0;
+  border-top: 3px solid var(--line); font: 500 15px/1.2 var(--sans);
+}
+.onglet[aria-pressed="true"] { background: var(--inset); color: var(--text); border-top-color: var(--amber); }
+
+.banc {
+  display: grid; gap: 14px; min-height: 0;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) 300px;
+  grid-template-areas: "tripmaster carte rack";
+}
+.vue-tripmaster { grid-area: tripmaster; }
+.vue-carte { grid-area: carte; }
+.rack { grid-area: rack; }
+
+.scene, .carte {
+  position: relative; min-height: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 6px;
+}
+.scene { background: radial-gradient(110% 90% at 50% 38%, #4a4f55 0, #33373c 55%, #1f2225 100%); }
+#vue { position: absolute; inset: 0; display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+#vue.sur-bouton { cursor: pointer; }
+/* Vue « écran seul » : la sortie vidéo sur toute la largeur du cadre (hauteur limitée par celle du cadre),
+   barre des cinq boutons dessous, ligne d'état en bas (deux lignes de place sur un téléphone). */
+.scene { container-type: size; }
+.scene.ecran-seul { background: #101113; }
+#ecran2d {
+  position: absolute; left: 50%; top: calc(48px + (100cqh - 48px - 124px) / 2); transform: translate(-50%, -50%);
+  width: min(100cqw, (100cqh - 48px - 124px) * 1.5); height: auto; aspect-ratio: 3 / 2;
+  image-rendering: pixelated; background: #000;
+}
+.boutons2d {
+  position: absolute; left: 0; right: 0; bottom: 46px; display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 8px; padding: 8px; background: #1a1c1f; border-block: 1px solid var(--line);
+}
+.boutons2d button {
+  height: 48px; border-radius: 6px; border: 2px solid var(--line); cursor: pointer; touch-action: none;
+  background: #26292d; color: #f2f2f2; font: 700 22px/1 var(--mono);
+}
+.boutons2d .b-a { color: var(--amber); }
+.boutons2d .b-b { color: #5fd3f3; }
+.boutons2d .b-menu { color: #ff6b5e; }
+.boutons2d button:hover { background: #2f3337; }
+.boutons2d button.appui { border-color: var(--amber); }
+.boutons2d button.long { background: var(--amber); color: #000; }
+.outils-vue { position: absolute; right: 10px; top: 10px; z-index: 2; display: flex; gap: 8px; }
+.bascule {
+  min-height: 32px; padding: 4px 12px; cursor: pointer;
+  background: rgb(15 16 17 / .85); color: var(--text); border: 1px solid var(--line); border-radius: 6px;
+  font: 600 13px/1 var(--mono); letter-spacing: .04em;
+}
+.bascule:hover { border-color: var(--amber); }
+.attente {
+  position: absolute; inset: 0; margin: 0; display: grid; place-items: center; padding: 16px; text-align: center;
+  font: 500 14px/1.4 var(--mono); letter-spacing: .06em; color: var(--text); pointer-events: none;
+}
+.allumer {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  display: inline-flex; align-items: center; gap: 10px; padding: 12px 22px; cursor: pointer;
+  background: rgb(15 16 17 / .9); color: var(--text); border: 1px solid var(--amber); border-radius: 6px;
+  font: 600 15px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase;
+}
+.allumer:hover { background: var(--inset); }
+.pastille { width: 12px; height: 12px; border-radius: 50%; background: var(--red); box-shadow: 0 0 10px var(--red); }
+.etat {
+  position: absolute; left: 10px; bottom: 10px; right: 10px; pointer-events: none;
+  font: 500 13px/1.4 var(--mono); color: var(--text); text-shadow: 0 1px 2px #000;
+  display: flex; flex-wrap: wrap; gap: 4px 16px;
+}
+.etat:empty { display: none; }
+
+#carte { position: absolute; inset: 0; background: #1b1d20; }
+.suivre {
+  position: absolute; right: 10px; top: 10px; z-index: 500; min-height: 32px; padding: 4px 12px; cursor: pointer;
+  background: var(--panel); color: var(--muted); border: 1px solid var(--line); border-radius: 4px;
+  font: 500 14px/1.2 var(--sans);
+}
+.suivre[aria-pressed="true"] { color: var(--text); border-color: var(--amber); }
+.carte .attente { z-index: 500; background: rgb(15 16 17 / .6); }
+.leaflet-container { font: 12px/1.4 var(--sans); }
+.fleche { width: 26px; height: 26px; }
+.fleche svg { display: block; width: 100%; height: 100%; filter: drop-shadow(0 1px 2px rgb(0 0 0 / .6)); }
+
+.rack { display: grid; align-content: start; gap: 16px; min-height: 0; overflow-y: auto; scrollbar-width: thin; padding-right: 2px; }
+fieldset { min-width: 0; margin: 0; padding: 0; border: 0; display: grid; gap: 8px; }
+legend { padding: 0 0 6px; font: 600 12px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+select {
+  width: 100%; min-height: 34px; padding: 4px 8px; background: var(--panel); color: var(--text); cursor: pointer;
+  border: 1px solid var(--line); border-radius: 4px; font: 500 14px/1.2 var(--sans);
+}
+.detail { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.4; }
+.case { display: flex; gap: 8px; align-items: center; cursor: pointer; font-size: 14px; }
+.case input { width: 16px; height: 16px; margin: 0; accent-color: var(--amber); }
+.ligne { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+.champ { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.depot {
+  display: block; padding: 10px; border: 1px dashed var(--line); border-radius: 4px; cursor: pointer;
+  color: var(--muted); font-size: 13px; text-align: center;
+}
+.depot:hover, body.glisse .depot { border-color: var(--amber); color: var(--text); }
+.depot input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+body.glisse .page { outline: 2px dashed var(--amber); outline-offset: -6px; }
+
+.touches { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 2px; }
+.touches.deux { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.touche {
+  min-width: 0; min-height: 36px; padding: 6px 10px; cursor: pointer; background: var(--panel); color: var(--muted); border: 0;
+  border-top: 3px solid var(--line); font: 500 14px/1.2 var(--sans);
+}
+.touche:hover { color: var(--text); }
+.touche[aria-pressed="true"] { background: var(--inset); color: var(--text); border-top-color: var(--amber); }
+.touche.hors { border-top-color: var(--red); color: var(--text); }
+
+.bilan { margin-left: 6px; letter-spacing: .04em; }
+.bilan.ok { color: var(--green); }
+.bilan.ko { color: var(--red); }
+.expects { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; max-height: 220px; overflow-y: auto; scrollbar-width: thin; }
+.expects li {
+  display: grid; grid-template-columns: 4.5em minmax(0, 1fr); gap: 6px; padding: 3px 6px; border-left: 3px solid;
+  font: 12px/1.35 var(--mono); background: var(--panel);
+}
+.expects li.ok { border-color: var(--green); }
+.expects li.ko { border-color: var(--red); color: var(--red); }
+.expects li span:first-child { color: var(--muted); }
+
+.journal pre {
+  margin: 0; height: 180px; overflow: auto; padding: 6px 8px; background: #0a0b0c; border: 1px solid var(--line);
+  border-radius: 4px; font: 12px/1.4 var(--mono); color: var(--muted); white-space: pre-wrap; scrollbar-width: thin;
+}
+.note { margin: 0; color: var(--muted); font: 12px/1.45 var(--mono); }
+
+@media (max-width: 1280px) {
+  .banc { grid-template-columns: minmax(0, 1fr) 300px; grid-template-rows: minmax(0, 1.2fr) minmax(0, 1fr);
+          grid-template-areas: "tripmaster rack" "carte rack"; }
+}
+@media (max-width: 860px) {
+  .page { height: auto; }
+  .onglets { display: flex; }
+  .banc { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; grid-template-areas: "vue" "rack"; }
+  .vue-tripmaster, .vue-carte { grid-area: vue; height: 62vh; height: 62dvh; min-height: 320px; }
+  .banc[data-onglet="tripmaster"] .vue-carte { visibility: hidden; }
+  .banc[data-onglet="carte"] .vue-tripmaster { visibility: hidden; }
+  .rack { overflow: visible; padding-right: 0; }
+  .touche, select { min-height: 44px; }
+}

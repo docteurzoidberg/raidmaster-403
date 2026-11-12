@@ -1,0 +1,55 @@
+/* Raidmaster 403 — styles communs aux pages du site (accueil, maquette 3D, simulateur, manuel) :
+   couleurs, police, en-tête (marque, navigation, langue, GitHub). Chargé avant le style de chaque page. */
+:root {
+  color-scheme: dark;
+  --bg: #0f1011;
+  --panel: #17191b;
+  --inset: #24272a;
+  --line: #2a2d31;
+  --text: #e7e8e9;
+  --muted: #949aa0;
+  --amber: #ffb547;      /* accent des pages, légendes ambre de la façade */
+  --cyan: #4fd6e8;       /* grille de l'écran de démarrage */
+  --green: #58d68d;
+  --red: #ff6b5e;
+  --sans: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 15px/1.45 var(--sans); }
+
+/* En-tête : marque (lien vers l'accueil), chapeau de la page, outils (navigation, langue, GitHub). */
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 22px; }
+h1 { font: 600 clamp(18px, 2.2vw, 22px)/1.1 var(--mono); letter-spacing: .16em; margin: 0; }
+h1 .home { color: inherit; text-decoration: none; }
+h1 .home:hover .brand { color: var(--amber); }
+h1 .num { color: var(--amber); }
+h1 .sub { color: var(--muted); font-weight: 500; letter-spacing: .1em; text-transform: uppercase; font-size: .7em; }
+.lede { margin: 0; color: var(--muted); max-width: 78ch; }
+.tools { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; align-self: center; }
+.site-nav { display: flex; flex-wrap: wrap; gap: 6px; }
+.lang-picker { position: relative; display: flex; align-items: center; }
+.flag {
+  position: absolute; left: 9px; top: 50%; transform: translateY(-50%); pointer-events: none;
+  display: block; width: 21px; height: 14px; border-radius: 2px; overflow: hidden; box-shadow: 0 0 0 1px var(--line);
+}
+.flag svg { display: block; width: 100%; height: 100%; }
+#lang {
+  min-height: 32px; padding: 4px 8px 4px 37px; background: var(--panel); color: var(--text); cursor: pointer;
+  border: 1px solid var(--line); border-radius: 4px; font: 500 14px/1.2 var(--sans);
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 10px; border-radius: 4px;
+  border: 1px solid var(--line); background: var(--panel); color: var(--muted); text-decoration: none;
+  font: 500 14px/1.2 var(--sans);
+}
+.btn:hover { color: var(--text); border-color: var(--muted); }
+.btn[aria-current="page"] { color: var(--text); border-color: var(--amber); }
+:is(#lang, .btn, h1 .home):focus-visible { outline: 2px solid var(--cyan); outline-offset: 1px; }
+
+@media (max-width: 860px) {
+  .tools { margin-left: 0; }
+  #lang, .btn { min-height: 40px; }
+}

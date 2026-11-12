@@ -4,6 +4,9 @@ Tripmaster GPS de rallye-raid fait maison pour une **Peugeot 403 Familiale de 19
 **Crazy Dust 2027** et utilisable au quotidien en mode balade. Boîtier autonome aimanté sur la tôle du
 tableau de bord : distances partielles A et B, odomètre, vitesse, cap, moyenne, chrono.
 
+Site du projet : **<https://docteurzoidberg.github.io/raidmaster-403/>** (présentation, maquette 3D, simulateur
+dans le navigateur, manuel d'utilisation en cours de rédaction).
+
 <p align="center">
   <img src="docs/demo/raidmaster-demo.gif" alt="Démo de l'interface dans le simulateur : démarrage animé, écran raid, balade, menu, calibration, mode nuit" width="480">
 </p>
@@ -33,7 +36,7 @@ Distance **GPS uniquement**, sans capteur de roue ni intervention sur le câblag
 | 3 | Interface LVGL câblée sur le core : raid, balade, menu réglages actif, calibration auto, démarrage animé, mode nuit | fait |
 | 4 | Simulateur : rejeu de traces NMEA, trajet simulé, scénarios de bout en bout | 23 scénarios en place (GPS, puck débranché, calibration de la boussole) ; simulateur web dans le navigateur (WebAssembly, maquette 3D et carte) ; inclinomètre et matériel à venir |
 | 5-6 | HAL ESP32 et firmware sur la carte | en cours : firmware de démo validé sur la carte (écran, tactile, core et UI du sim, trajet GPS simulé, NVS, heure de la RTC, état USB / batterie), jingle de démarrage par le codec ES8311 (à écouter sur la carte) ; pilote du récepteur GPS réel écrit (NEO-M9N ou puck NEO-M8N sur UART : débit trouvé, modèle reconnu, réglé à 10 Hz) et de sa boussole (QMC5883L, IST8310, HMC5883L ou LIS3MDL sur I²C, cap dans le journal), à essayer sur la carte ; cap à l'écran, boutons, charge de la batterie à venir |
-| 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B reçue, datasheets et modèle 3D rassemblés ; PCB placé, non routé (version 1.1 : GPS interne ou puck externe) ; maquette 3D des cartes dans un boîtier de principe validée ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/)) ; boîtier dessiné dans Fusion, STEP des pièces dans `enclosure/stepfiles/`, à éprouver |
+| 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B reçue, datasheets et modèle 3D rassemblés ; PCB placé, non routé (version 1.1 : GPS interne ou puck externe) ; maquette 3D des cartes dans un boîtier de principe validée ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/mockup/)) ; boîtier dessiné dans Fusion, STEP des pièces dans `enclosure/stepfiles/`, à éprouver |
 
 Pas encore là : compensation d'inclinaison de la boussole, réglages de charge de la batterie (l'état
 USB / batterie est lu, pas configuré), température réelle, log GPX.
@@ -41,8 +44,8 @@ USB / batterie est lu, pas configuré), température réelle, log GPX.
 ## Maquette 3D
 
 Les trois cartes (Waveshare, carte fille GPS et magnétomètre, carte boutons) dans leur boîtier (aspect
-retenu : cannelures, pare-chocs en TPU, liseré et lettrage), assemblé ou éclaté, à faire tourner dans le navigateur : **<https://docteurzoidberg.github.io/raidmaster-403/>**. Sources de la page
-dans [`mockup/`](mockup/) ; modèles 3D externes et fichiers STEP du boîtier dessiné dans Fusion (pièces
+retenu : cannelures, pare-chocs en TPU, liseré et lettrage), assemblé ou éclaté, à faire tourner dans le navigateur : **<https://docteurzoidberg.github.io/raidmaster-403/mockup/>**. Sources de la page
+dans [`web/mockup/`](web/mockup/) ; modèles 3D externes et fichiers STEP du boîtier dessiné dans Fusion (pièces
 à éprouver) dans [`enclosure/`](enclosure/README.md).
 
 <p align="center">
@@ -58,8 +61,8 @@ dans [`mockup/`](mockup/) ; modèles 3D externes et fichiers STEP du boîtier de
 
 Le firmware (mêmes `core/` et `ui/`, compilés en WebAssembly) tourne dans la maquette 3D : l'écran est
 vivant, les cinq capuchons se cliquent (appui long en gardant le doigt 0,6 s), et une carte OpenStreetMap
-suit le trajet GPS rejoué : **<https://docteurzoidberg.github.io/raidmaster-403/sim/>** (lien « Essayer le
-simulateur » de la maquette). Trajets : les scénarios des tests, ou un fichier NMEA à glisser sur la page
+suit le trajet GPS rejoué : **<https://docteurzoidberg.github.io/raidmaster-403/sim/>** (menu de toutes les
+pages du site). Trajets : les scénarios des tests, ou un fichier NMEA à glisser sur la page
 (il reste dans le navigateur) ; vitesse ×1 à ×1000 ; la case « Jouer les actions et les vérifications »
 rejoue les appuis du scénario et affiche ses vérifications en vert ou rouge. Trips et réglages restent dans
 le navigateur (bouton « Remise à zéro »). Son coupé par défaut (bouton « Son »). Mêmes touches que le
@@ -67,14 +70,14 @@ simulateur PC. Le tripmaster s'affiche de face (bouton « Recentrer » après un
 seul » montre l'écran sur toute la largeur, avec une barre des cinq boutons dessous (`?vue=2d` l'ouvre
 directement). Sur la carte, « Centrer » garde le véhicule au centre (un glisser le coupe).
 
-Construit en local et commité dans `mockup/sim/` (publié avec la maquette). Prérequis :
+Construit en local et commité dans `web/sim/` (publié avec le site). Prérequis :
 [emsdk](https://emscripten.org/docs/getting_started/downloads.html) installé dans `~/sdk/emsdk` (ou
 `EMSDK_DIR`), Node (celui d'emsdk suffit).
 
 ```bash
 cd software
-tools/web.sh             # build (build-web/), test sous Node, copie dans mockup/sim/
-tools/web.sh serve       # sert mockup/ : http://localhost:8000/sim/
+tools/web.sh             # build (build-web/), test sous Node, copie dans web/sim/
+tools/web.sh serve       # sert le site web/ : http://localhost:8000/ (accueil), …/sim/
 ```
 
 `tools/web.sh build`, `test` et `copy` font chaque étape seule. Le test joue les 23 scénarios dans le
@@ -313,9 +316,11 @@ hardware/kicad/carte-fille/
                  projet KiCad 10 de la carte fille et de la carte boutons (schémas, PCB, bibliothèques,
                  3d/ : modèles 3D propres et leur provenance, export/ : STEP des deux cartes)
 enclosure/       boîtier : modèles 3D externes utilisés (README.md), stepfiles/ : exports STEP des pièces du boîtier
-mockup/          maquette 3D des cartes dans leur boîtier (page three.js, publiée sur GitHub Pages) ;
-                 sim/ : simulateur web (page, module construit par tools/web.sh, scénarios)
-.github/         workflow de publication de mockup/ sur GitHub Pages
+web/             site publié sur GitHub Pages : accueil (index.html), common/ : en-tête et styles communs,
+                 mockup/ : maquette 3D des cartes dans leur boîtier (page three.js et modèle GLB),
+                 sim/ : simulateur web (page, module construit par tools/web.sh, scénarios),
+                 manual/ : manuel d'utilisation (en cours de rédaction), img/ : images de l'accueil
+.github/         workflow de publication de web/ sur GitHub Pages
 docs/demo/       GIF de démo, rendus des cartes (KiCad) et du boîtier (Blender)
 ```
 
@@ -328,8 +333,8 @@ docs/demo/       GIF de démo, rendus des cartes (KiCad) et du boîtier (Blender
 - [`software/tests/fixtures/scenarios/README.md`](software/tests/fixtures/scenarios/README.md) : catalogue
   des scénarios de bout en bout.
 - [`enclosure/README.md`](enclosure/README.md) : modèles 3D externes et fichiers STEP du boîtier.
-- [`mockup/README.md`](mockup/README.md) : maquette 3D ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/))
-  et simulateur web ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/sim/)).
+- [`web/README.md`](web/README.md) : le site ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/)) :
+  accueil, maquette 3D, simulateur web, manuel.
 
 ## Licence
 
@@ -347,7 +352,7 @@ Composants tiers :
 | [minmea](https://github.com/kosma/minmea) | MIT (au choix WTFPL / MIT / LGPL-3) | décodage NMEA, dans `core/third_party/minmea/` |
 | [Unity](https://github.com/ThrowTheSwitch/Unity) v2.6.1 | MIT | tests, téléchargé au build |
 | [Share Tech Mono](https://fonts.google.com/specimen/Share+Tech+Mono) | SIL OFL 1.1 | police, dans `ui/assets/` |
-| [three.js](https://threejs.org) 0.186.1 | MIT | maquette 3D et simulateur web (`mockup/`), chargé depuis jsDelivr |
-| [Leaflet](https://leafletjs.com) 1.9.4 | BSD-2-Clause | carte du simulateur web (`mockup/sim/`), chargé depuis jsDelivr |
+| [three.js](https://threejs.org) 0.186.1 | MIT | maquette 3D et simulateur web (`web/`), chargé depuis jsDelivr |
+| [Leaflet](https://leafletjs.com) 1.9.4 | BSD-2-Clause | carte du simulateur web (`web/sim/`), chargé depuis jsDelivr |
 | Tuiles [OpenStreetMap](https://www.openstreetmap.org/copyright) | données ODbL, attribution affichée | fond de carte du simulateur web, usage léger ([politique des tuiles](https://operations.osmfoundation.org/policies/tiles/)) |
 | [Emscripten](https://emscripten.org) | MIT / University of Illinois NCSA | compilateur du simulateur web, installé à part ; son code d'exécution est dans le module construit |

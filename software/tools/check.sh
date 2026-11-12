@@ -5,7 +5,7 @@
 # tests ctest (avec le décompte Unity : réussis / échoués / ignorés), état du GIF de démo, puis
 # build du firmware ESP32 (mêmes core/ et ui/, tools/fw.sh build) si ESP-IDF est installé, et
 # simulateur web (tools/web.sh test : build emcc, scénarios et image de l'écran sous Node, puis
-# état de mockup/sim/) si emsdk est installé.
+# état de web/sim/) si emsdk est installé.
 # Les journaux complets restent dans build-sim/check-build.log, build-sim/Testing/,
 # build-firmware/fw-build.log et build-web/web-build.log.
 #
@@ -95,16 +95,16 @@ if [ "$WEB" = 1 ]; then
     elif [ "$rc" != 0 ]; then
         status=1
     else
-        # mockup/sim/ (commité, publié) doit contenir le module et les scénarios qui viennent d'être construits.
+        # web/sim/ (commité, publié) doit contenir le module et les scénarios qui viennent d'être construits.
         stale=0
         for f in build-web/site/raidmaster-sim-*.{js,wasm,data} build-web/site/scenarios/*; do   # build.json : suit le module
             [ -f "$f" ] || continue
-            cmp -s "$f" "../mockup/sim/${f#build-web/site/}" || stale=$((stale + 1))
+            cmp -s "$f" "../web/sim/${f#build-web/site/}" || stale=$((stale + 1))
         done
         if [ "$stale" = 0 ]; then
-            echo "WEB MOCKUP : mockup/sim/ à jour"
+            echo "WEB SIM : web/sim/ à jour"
         else
-            echo "WEB MOCKUP : $stale fichier(s) de mockup/sim/ en retard — tools/web.sh copy, puis commiter"
+            echo "WEB SIM : $stale fichier(s) de web/sim/ en retard — tools/web.sh copy, puis commiter"
         fi
     fi
 fi

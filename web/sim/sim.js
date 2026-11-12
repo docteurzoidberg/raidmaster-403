@@ -1,5 +1,5 @@
 // Simulateur web du Raidmaster 403 : le firmware (core/ + ui/, compilés en WebAssembly par tools/web.sh) tourne
-// dans la maquette 3D (../raidmaster.glb, écran vivant, capuchons cliquables) et rejoue un trajet GPS suivi sur
+// dans la maquette 3D (../mockup/raidmaster.glb, écran vivant, capuchons cliquables) et rejoue un trajet GPS suivi sur
 // une carte OpenStreetMap. Fichiers construits (ne pas modifier à la main) : build.json, raidmaster-sim-*.js /
 // .wasm / .data, scenarios/ (software/tools/web.sh, voir README.md).
 //
@@ -9,6 +9,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { applyLanguage, initialLanguage, onLanguageChange } from "../common/common.js";
 
 const W = 480, H = 320;
 const APPUI_LONG_MS = 600;            // seuil de l'appui long, à garder égal à celui de la carte boutons
@@ -31,7 +32,7 @@ const TEXTES = {
     description: "Simulateur du Raidmaster 403 dans le navigateur : le firmware tourne dans la maquette 3D et rejoue des trajets GPS sur une carte.",
     sous: "simulateur",
     chapeau: "Le firmware du tripmaster tourne dans la maquette 3D et rejoue un trajet GPS, suivi sur la carte. Cliquer les capuchons : appui court, ou long en gardant le doigt.",
-    maquette: "Maquette 3D", langue: "Langue", github: "Code source sur GitHub", vues: "Vues",
+    vues: "Vues",
     tripmaster: "Tripmaster", carte: "Carte", ecranSeul: "Écran seul", vue3d: "Vue 3D", recentrer: "Recentrer",
     scene: "Tripmaster en 3D : cliquer les capuchons, glisser pour tourner",
     panneau: "Panneau de développement",
@@ -63,7 +64,7 @@ const TEXTES = {
     description: "The Raidmaster 403 in the browser: the firmware runs inside the 3D model and replays GPS trips on a map.",
     sous: "simulator",
     chapeau: "The tripmaster firmware runs inside the 3D model and replays a GPS trip, followed on the map. Click the button caps: short press, or long press by holding.",
-    maquette: "3D model", langue: "Language", github: "Source code on GitHub", vues: "Views",
+    vues: "Views",
     tripmaster: "Tripmaster", carte: "Map", ecranSeul: "Screen only", vue3d: "3D view", recentrer: "Reset view",
     scene: "Tripmaster in 3D: click the button caps, drag to rotate",
     panneau: "Developer panel",
@@ -119,26 +120,12 @@ const SCENARIOS_EN = {
   s17_midnight_utc: "UTC midnight while driving: local time and distance carry on",
 };
 
-const DRAPEAUX = {
-  fr: '<svg viewBox="0 0 3 2"><path fill="#002654" d="M0 0h1v2H0z"/><path fill="#fff" d="M1 0h1v2H1z"/><path fill="#ce1126" d="M2 0h1v2H2z"/></svg>',
-  en: '<svg viewBox="0 0 60 30" preserveAspectRatio="none"><clipPath id="uj"><path d="M30 15h30v15zv15H0zH0V0zV0h30z"/></clipPath><path fill="#012169" d="M0 0v30h60V0z"/><path stroke="#fff" stroke-width="6" d="M0 0l60 30m0-30L0 30"/><path stroke="#c8102e" stroke-width="4" clip-path="url(#uj)" d="M0 0l60 30m0-30L0 30"/><path stroke="#fff" stroke-width="10" d="M30 0v30M0 15h60"/><path stroke="#c8102e" stroke-width="6" d="M30 0v30M0 15h60"/></svg>',
-};
-
 const params = new URLSearchParams(location.search);
 const $ = (id) => document.getElementById(id);
 const lit = (cle, defaut) => { try { return JSON.parse(localStorage.getItem(cle)) ?? defaut; } catch { return defaut; } };
 const ecrit = (cle, v) => { try { localStorage.setItem(cle, JSON.stringify(v)); } catch { /* stockage indisponible */ } };
 
-function langueInitiale() {
-  const demandee = params.get("lang");
-  if (demandee in TEXTES) return demandee;
-  try {
-    const gardee = localStorage.getItem("raidmaster-langue");
-    if (gardee in TEXTES) return gardee;
-  } catch { /* stockage indisponible */ }
-  return (navigator.language || "fr").toLowerCase().startsWith("fr") ? "fr" : "en";
-}
-let langue = langueInitiale();
+let langue = initialLanguage();
 const t = (cle) => TEXTES[langue][cle];
 const fmt = (v, d) => (langue === "fr" ? v.toFixed(d).replace(".", ",") : v.toFixed(d));
 const horloge = (ms) => {
@@ -584,7 +571,7 @@ if (renderer) {
   controls.maxDistance = 1500;
   controls.addEventListener("change", () => { sale = true; });
 
-  new GLTFLoader().load("../raidmaster.glb", prepareModele,
+  new GLTFLoader().load("../mockup/raidmaster.glb", prepareModele,
     (e) => {
       if (!allume) {
         $("attente").textContent = t("chargementModele")(e.lengthComputable
@@ -817,20 +804,17 @@ for (const b of $("onglets").children) {
 
 function changeLangue(l) {
   langue = l in TEXTES ? l : "fr";
-  document.documentElement.lang = langue;
   document.title = t("titre");
   document.querySelector('meta[name="description"]').content = t("description");
   for (const e of document.querySelectorAll("[data-i18n]")) e.textContent = t(e.dataset.i18n);
   for (const e of document.querySelectorAll("[data-i18n-aria]")) e.setAttribute("aria-label", t(e.dataset.i18nAria));
-  $("langue").value = langue;
-  $("drapeau").innerHTML = DRAPEAUX[langue];
-  try { localStorage.setItem("raidmaster-langue", langue); } catch { /* stockage indisponible */ }
+  applyLanguage(langue);   // en-tête commun : navigation, sélecteur, drapeau, choix gardé
   if (scenarios.length) remplitScenarios();
   appliqueVue();
   if (build) $("version").textContent = t("version")(build);
   afficheExpects();
 }
-$("langue").addEventListener("change", (e) => changeLangue(e.target.value));
+onLanguageChange(changeLangue);
 changeLangue(langue);
 
 // --- son : coupé par défaut (décision du propriétaire, 2026-11-12), bouton « Son », choix gardé dans le navigateur.

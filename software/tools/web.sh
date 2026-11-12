@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Raidmaster 403 — simulateur web (WebAssembly) : build, test, publication dans mockup/sim/.
+# Raidmaster 403 — simulateur web (WebAssembly) : build, test, publication dans web/sim/.
 #
 # Active emsdk (${EMSDK_DIR:-~/sdk/emsdk}, hors PATH), configure le preset web au besoin (sources LVGL
 # et Python repris de build-sim/ s'ils y sont ; animation de démarrage : la planche si elle est là,
@@ -10,9 +10,9 @@
 #   build  build seul (journal complet : build-web/web-build.log)
 #   test   build, puis simweb/tests/test_web.cjs sous Node : chaque scénario du dépôt avec ses
 #          expect, et une capture de l'écran comparée à celle du sim PC (build-sim/raidmaster-sim)
-#   copy   build, puis recopie build-web/site/ dans mockup/sim/ (anciens modules retirés)
+#   copy   build, puis recopie build-web/site/ dans web/sim/ (anciens modules retirés)
 #   all    build, test et copie (défaut)
-#   serve  sert mockup/ en local (python3 -m http.server, port 8000) : http://localhost:8000/sim/
+#   serve  sert web/ en local (python3 -m http.server, port 8000) : http://localhost:8000/sim/
 # Code de sortie : 0 si tout est vert (build sans avertissement, test réussi), 1 sinon, 3 si emsdk
 # manque.
 #
@@ -22,12 +22,12 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 CMD="${1:-all}"
-MOCKUP="$ROOT/../mockup"
+WEB="$ROOT/../web"
 
 if [ "$CMD" = serve ]; then
     port="${2:-8000}"
     echo "http://localhost:$port/sim/  (Ctrl+C pour arrêter)"
-    exec python3 -m http.server "$port" --directory "$MOCKUP"
+    exec python3 -m http.server "$port" --directory "$WEB"
 fi
 case "$CMD" in build|test|copy|all) ;; *) sed -n '2,19p' "$0"; exit 2 ;; esac
 
@@ -81,7 +81,7 @@ if [ "$CMD" = test ] || [ "$CMD" = all ]; then
 fi
 
 if [ "$CMD" = copy ] || [ "$CMD" = all ]; then
-    dst="$MOCKUP/sim"
+    dst="$WEB/sim"
     mkdir -p "$dst/scenarios"
     n=0
     for f in "$site/$mod".js "$site/$mod".wasm "$site/$mod".data "$site"/scenarios/*; do
@@ -98,6 +98,6 @@ if [ "$CMD" = copy ] || [ "$CMD" = all ]; then
     # build.json (empreinte git du build) suit le module : seulement si quelque chose a changé, sinon il
     # changerait à chaque commit.
     if [ "$n" != 0 ] || [ ! -f "$dst/build.json" ]; then cp "$site/build.json" "$dst/build.json"; n=$((n + 1)); fi
-    echo "WEB COPIE : mockup/sim/ $([ "$n" = 0 ] && echo "déjà à jour" || echo "$n fichier(s) mis à jour")"
+    echo "WEB COPIE : web/sim/ $([ "$n" = 0 ] && echo "déjà à jour" || echo "$n fichier(s) mis à jour")"
 fi
 exit "$status"

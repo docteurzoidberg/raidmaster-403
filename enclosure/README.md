@@ -3,7 +3,7 @@
 Le boîtier du Raidmaster 403 est dessiné dans Fusion, en modèle paramétrique, pour une impression en PETG ou
 ASA (pas de PLA : l'habitacle monte à 60 °C en été) avec des pare-chocs en TPU. Il mesure 123 × 93,6 ×
 33,2 mm (126,6 × 34,7 × 97,2 mm hors tout avec les pare-chocs et les capuchons des boutons). Une
-[maquette 3D](../mockup/) montre les cartes dans leur boîtier ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/)).
+[maquette 3D](../web/mockup/) montre les cartes dans leur boîtier ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/mockup/)).
 
 Les cotes sont encore à éprouver (inserts, jeux, languettes du TPU) : ces fichiers ne sont pas une version
 validée pour l'impression.

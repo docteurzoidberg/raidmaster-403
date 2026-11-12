@@ -1,11 +1,11 @@
-# Publie la maquette 3D (dossier mockup/) à la racine de GitHub Pages.
+# Publie le site (dossier web/ : accueil, maquette 3D, simulateur, manuel) à la racine de GitHub Pages.
 # Ne tourne que sur le dépôt public : la condition du job l'ignore ailleurs.
 name: Pages
 
 on:
   push:
     branches: [main]
-    paths: ["mockup/**", ".github/workflows/pages.yml"]
+    paths: ["web/**", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
 permissions:
@@ -29,6 +29,6 @@ jobs:
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: mockup
+          path: web
       - id: deploiement
         uses: actions/deploy-pages@v4

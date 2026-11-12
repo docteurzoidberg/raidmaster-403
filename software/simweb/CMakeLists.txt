@@ -4,7 +4,7 @@
 # Sortie dans build-web/site/ : raidmaster-sim-<VERSION>.js / .wasm / .data (numéro de version dans le
 # nom : le cache de GitHub Pages ne sert pas un ancien module), build.json (nom des fichiers, version,
 # empreinte git) et scenarios/ (traces et actions des scénarios du dépôt, index.json) ; tools/web.sh
-# recopie le tout dans mockup/sim/.
+# recopie le tout dans web/sim/.
 
 include("${RAIDMASTER_REPO_DIR}/software/cmake/version.cmake")
 raidmaster_version_read(RAIDMASTER_VERSION)

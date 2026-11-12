@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { applyLanguage, initialLanguage, onLanguageChange } from "../common/common.js";
 
 // Axes de vue, dans le repère de la scène : X à droite, Y en haut, façade vers +Z.
 const VUES = { iso: [0.95, 0.5, 1], face: [0, 0.02, 1], cote: [1, 0.14, 0.04], dos: [-0.8, 0.42, -1] };
@@ -22,9 +23,6 @@ const TEXTES = {
     titre: "Raidmaster éclaté",
     description: "Maquette 3D du Raidmaster 403 : la carte Waveshare, la carte fille et la carte boutons dans leur boîtier, assemblé ou éclaté.",
     chapeau: "Les trois cartes du tripmaster dans leur boîtier, assemblé ou éclaté, avec la trappe de la carte micro-SD et le câble en démonstration.",
-    langue: "Langue",
-    github: "Code source sur GitHub",
-    essayer: "Essayer le simulateur",
     scene: "Maquette 3D : glisser pour tourner, molette ou pincement pour zoomer",
     chargement: "Chargement du modèle…",
     maquette: "Maquette",
@@ -56,9 +54,6 @@ const TEXTES = {
     titre: "Raidmaster exploded view",
     description: "3D model of the Raidmaster 403: the Waveshare board, the daughter board and the button board in their enclosure, assembled or exploded.",
     chapeau: "The tripmaster's three boards in their enclosure, assembled or exploded, with the micro-SD card door and the cable shown in a demonstration.",
-    langue: "Language",
-    github: "Source code on GitHub",
-    essayer: "Try the simulator",
     scene: "3D model: drag to rotate, scroll or pinch to zoom",
     chargement: "Loading the model…",
     maquette: "Model",
@@ -116,22 +111,7 @@ const MODELE_EN = {
   },
 };
 
-const DRAPEAUX = {
-  fr: '<svg viewBox="0 0 3 2"><path fill="#002654" d="M0 0h1v2H0z"/><path fill="#fff" d="M1 0h1v2H1z"/><path fill="#ce1126" d="M2 0h1v2H2z"/></svg>',
-  en: '<svg viewBox="0 0 60 30" preserveAspectRatio="none"><clipPath id="uj"><path d="M30 15h30v15zv15H0zH0V0zV0h30z"/></clipPath><path fill="#012169" d="M0 0v30h60V0z"/><path stroke="#fff" stroke-width="6" d="M0 0l60 30m0-30L0 30"/><path stroke="#c8102e" stroke-width="4" clip-path="url(#uj)" d="M0 0l60 30m0-30L0 30"/><path stroke="#fff" stroke-width="10" d="M30 0v30M0 15h60"/><path stroke="#c8102e" stroke-width="6" d="M30 0v30M0 15h60"/></svg>',
-};
-
-// ?lang=fr|en, sinon le dernier choix, sinon la langue du navigateur.
-function langueInitiale() {
-  const demandee = new URLSearchParams(location.search).get("lang");
-  if (demandee in TEXTES) return demandee;
-  try {
-    const gardee = localStorage.getItem("raidmaster-langue");
-    if (gardee in TEXTES) return gardee;
-  } catch { /* stockage indisponible */ }
-  return (navigator.language || "fr").toLowerCase().startsWith("fr") ? "fr" : "en";
-}
-let langue = langueInitiale();
+let langue = initialLanguage();
 const t = (cle) => TEXTES[langue][cle];
 
 const $ = (id) => document.getElementById(id);
@@ -602,22 +582,19 @@ function traduitModele() {
 
 function changeLangue(l) {
   langue = l in TEXTES ? l : "fr";
-  document.documentElement.lang = langue;
   document.title = t("titre");
   const description = document.querySelector('meta[name="description"]');   // absente de la page en un seul fichier
   if (description) description.content = t("description");
   for (const e of document.querySelectorAll("[data-i18n]")) e.textContent = t(e.dataset.i18n);
   if (!attente.hidden) attente.textContent = t(etatAttente);
   for (const e of document.querySelectorAll("[data-i18n-aria]")) e.setAttribute("aria-label", t(e.dataset.i18nAria));
-  $("langue").value = langue;
-  $("drapeau").innerHTML = DRAPEAUX[langue];
-  try { localStorage.setItem("raidmaster-langue", langue); } catch { /* stockage indisponible */ }
+  applyLanguage(langue);   // en-tête commun : navigation, sélecteur, drapeau, choix gardé
   traduitModele();
   if (pieces.length) montreFiche();
   else $("fiche-detail").textContent = ficheParDefaut();
 }
 
-$("langue").addEventListener("change", (e) => changeLangue(e.target.value));
+onLanguageChange(changeLangue);
 changeLangue(langue);
 
 // --- boucle : rien n'est dessiné tant que rien ne change
