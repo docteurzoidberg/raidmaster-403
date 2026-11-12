@@ -64,8 +64,8 @@ I²C pour le branchement à chaud) ; la **carte boutons**
 rejoint la carte fille par une nappe souple de 6 voies. Tout se soude au fer.
 
 <p align="center">
-  <img src="docs/demo/pcb-dessus.png" alt="Les deux cartes vues de dessus : GPS, boussole et régulateurs sur la carte fille ; expandeurs et connecteur de nappe au dos de la carte boutons" width="410">
-  <img src="docs/demo/pcb-dessous.png" alt="Les deux cartes vues de dessous : connecteur 2 × 16 vers la Waveshare et connecteur de nappe sur la carte fille ; poussoirs et voyants de la carte boutons" width="410">
+  <img src="docs/demo/pcb-dessus.png" alt="Les deux cartes vues de dessus : GPS, boussole, régulateurs et protection de la prise du puck sur la carte fille ; expandeurs et connecteur de nappe au dos de la carte boutons" width="410">
+  <img src="docs/demo/pcb-dessous.png" alt="Les deux cartes vues de dessous : connecteur 2 × 16 vers la Waveshare, connecteur de nappe, prise JST-PH du puck et prise d'antenne U.FL sur la carte fille ; poussoirs et voyants de la carte boutons" width="410">
 </p>
 
 <p align="center"><sub>Rendus du visualiseur 3D de KiCad, dessus (côté batterie) et dessous (côté écran) : composants placés, routage à venir.</sub></p>
