@@ -1,7 +1,7 @@
 /*
  * Raidmaster 403 — hal_gps de démonstration sur l'ESP32 : le trajet simulé du sim
- * (core/gps_synth), en temps réel, tant qu'aucun récepteur n'est branché. Le pilote du NEO-M9N
- * (UART1, GPIO 17/18) prendra sa place.
+ * (core/gps_synth), en temps réel. Choix par défaut de menuconfig (« Source GPS ») ; le récepteur
+ * réel (M9N ou puck M8N sur l'UART1) est dans hal_gps_uart.c.
  *
  * Heure de départ : horloge de la carte (RTC) si elle a l'heure, sinon date et heure du build
  * (heure locale de la machine de build, prise pour UTC+1 comme le fuseau par défaut du core).
@@ -10,6 +10,10 @@
  *
  * Licence : GPL-3.0.
  */
+
+#include "sdkconfig.h"
+
+#if !CONFIG_RAIDMASTER_GPS_UART
 
 #include "esp_log.h"
 
@@ -44,3 +48,5 @@ void hal_gps_poll(void)
 {
     gps_synth_run(&s_synth, hal_time_ms() - s_t0_ms, true, s_cb, s_user);
 }
+
+#endif /* !CONFIG_RAIDMASTER_GPS_UART */

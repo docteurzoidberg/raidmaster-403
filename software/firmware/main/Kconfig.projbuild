@@ -47,4 +47,61 @@ menu "Raidmaster 403"
             Appui court au relâchement, appui long après 800 ms de maintien. Pour essayer l'UI
             au banc tant que la carte boutons n'existe pas.
 
+    choice RAIDMASTER_GPS_SOURCE
+        prompt "Source GPS"
+        default RAIDMASTER_GPS_DEMO
+        help
+            Trajet simulé (démonstration, sans récepteur) ou récepteur u-blox réel sur un UART :
+            NEO-M9N de la carte fille ou puck de drone NEO-M8N (sur le J8 de la Waveshare seule :
+            TX du puck sur la broche 17 = IO18, RX sur la broche 15 = IO17). Le récepteur est
+            reconnu (MON-VER) et réglé à chaque démarrage.
+
+        config RAIDMASTER_GPS_DEMO
+            bool "Démonstration (trajet simulé)"
+        config RAIDMASTER_GPS_UART
+            bool "Récepteur u-blox sur UART (M9N ou puck M8N)"
+    endchoice
+
+    if RAIDMASTER_GPS_UART
+
+    config RAIDMASTER_GPS_UART_NUM
+        int "UART du récepteur"
+        range 1 2
+        default 1
+
+    config RAIDMASTER_GPS_TX_GPIO
+        int "GPIO TX de l'ESP32 (vers RXD du récepteur)"
+        range 0 48
+        default 17
+
+    config RAIDMASTER_GPS_RX_GPIO
+        int "GPIO RX de l'ESP32 (depuis TXD du récepteur)"
+        range 0 48
+        default 18
+
+    config RAIDMASTER_GPS_EN_GPIO
+        int "GPIO d'allumage du régulateur GNSS (-1 : aucun)"
+        range -1 48
+        default 45
+        help
+            EN de l'AP2112K de la carte fille (IO45, broche de strapping tirée au 0 au démarrage :
+            le GPS s'allume quand le firmware la met à 1). Sans effet sur la Waveshare seule.
+
+    config RAIDMASTER_GPS_BAUD
+        int "Débit voulu après réglage (bauds)"
+        range 9600 921600
+        default 115200
+        help
+            Le firmware cherche le récepteur à 115 200, 38 400 puis 9 600 bauds, puis le passe à ce
+            débit (non enregistré dans le récepteur : il reprend son débit d'usine à la coupure).
+
+    config RAIDMASTER_GPS_RATE_HZ
+        int "Cadence des positions (Hz)"
+        range 1 10
+        default 10
+        help
+            10 Hz : maximum du M8N en GPS + GLONASS ; à vérifier au banc en multi-constellation.
+
+    endif
+
 endmenu

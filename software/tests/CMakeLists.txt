@@ -34,6 +34,15 @@ add_executable(test_synth test_synth.c)
 target_link_libraries(test_synth PRIVATE raidmaster_core unity)
 add_test(NAME synth COMMAND test_synth)
 
+# Liaison avec le récepteur u-blox (puck M8 ou M9 soudé) : trames UBX et automate
+add_executable(test_ubx test_ubx.c)
+target_link_libraries(test_ubx PRIVATE raidmaster_core unity)
+add_test(NAME ubx COMMAND test_ubx)
+
+add_executable(test_gps_link test_gps_link.c)
+target_link_libraries(test_gps_link PRIVATE raidmaster_core unity)
+add_test(NAME gps_link COMMAND test_gps_link)
+
 # Scénarios de bout en bout : le simulateur sans fenêtre rejoue une trace et un script
 # d'actions avec vérifications (tests/fixtures/scenarios/<id>/actions.txt). La trace est
 # trace.nmea (versionnée, ex. enregistrement réel) ou générée au build depuis route.txt par

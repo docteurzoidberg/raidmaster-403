@@ -11,6 +11,8 @@
 set(RAIDMASTER_CORE_SRCS
     gps_parser.c
     gps_synth.c
+    ubx.c
+    gps_link.c
     trip_engine.c
     app.c
     synth.c

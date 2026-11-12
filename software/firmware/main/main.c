@@ -5,7 +5,8 @@
  * hal_gps et sauvegarde par hal_storage, l'UI LVGL est câblée sur le core (ui_app). Tout tourne
  * dans la tâche app_main : LVGL n'a pas besoin de verrou.
  *
- * Première version : GPS de démonstration (trajet simulé, hal_esp32/hal_gps_demo.c), tactile
+ * GPS : trajet simulé (hal_esp32/hal_gps_demo.c, par défaut) ou récepteur u-blox réel sur l'UART1
+ * (hal_esp32/hal_gps_uart.c : M9N de la carte fille ou puck M8N), au choix dans menuconfig. Tactile
  * en guise de boutons (touch_buttons.c), réglages et distances en NVS. Toutes les 10 s, une
  * ligne de journal donne images/s, durée d'envoi d'une image et mémoire libre. Appui long sur
  * PWR : extinction propre (le PMIC rallume la carte au prochain appui).
@@ -13,7 +14,7 @@
  * Le jingle de démarrage (core/jingles, codec ES8311) part avec l'animation, une fois l'écran allumé.
  *
  * Réglages (tools/fw.sh menuconfig → « Raidmaster 403 ») : sens de l'écran, horloge QSPI,
- * rétroéclairage jour / nuit, volume du son, tactile en guise de boutons.
+ * rétroéclairage jour / nuit, volume du son, tactile en guise de boutons, source GPS.
  *
  * Licence : GPL-3.0.
  */

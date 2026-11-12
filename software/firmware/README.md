@@ -5,8 +5,9 @@ métier) et `ui/` (écrans LVGL) y sont déclarés comme composants ESP-IDF, `ha
 carte les interfaces HAL du core (`core/include/hal/`). Même boucle que `sim/main.c` : le core reçoit le
 NMEA, l'UI affiche son état.
 
-**Version actuelle : démo.** Aucun périphérique externe : le GPS est le trajet simulé du sim
-(`core/gps_synth`, en temps réel), le tactile tient lieu des 5 boutons, réglages et distances sont
+**Version actuelle : démo.** Aucun périphérique externe : par défaut, le GPS est le trajet simulé du sim
+(`core/gps_synth`, en temps réel) ; un récepteur u-blox réel (NEO-M9N, ou puck de drone NEO-M8N branché sur
+l'UART1) se choisit dans menuconfig (§ Réglages, pas encore essayé sur la carte). Le tactile tient lieu des 5 boutons, réglages et distances sont
 sauvegardés en NVS. L'animation de démarrage est lue dans sa partition flash. L'heure affichée est
 celle de la RTC (PCF85063), réglée au premier fix d'un vrai GPS : sans pile de sauvegarde ni GPS, elle
 reste inconnue (`--:--`), le GPS de démonstration ne la règle pas. La barre d'état montre l'alimentation
@@ -76,6 +77,9 @@ Si le flash n'arrive pas à se connecter : maintenir **BOOT**, appuyer sur **RES
 | Horloge QSPI | 40 MHz | comme Waveshare ; plus haut à valider sur la carte |
 | Rétroéclairage jour / nuit | 100 % / 30 % | suit le mode nuit du menu |
 | Volume du haut-parleur | 70 | volume du codec ES8311 pour tous les sons, 0 à 100 (0 = muet) |
+| Source GPS | démonstration | trajet simulé, ou **récepteur u-blox sur UART** (M9N ou puck M8N) : cherché à 115 200, 38 400 puis 9 600 bauds, reconnu par UBX-MON-VER, réglé (10 Hz, modèle automobile, RMC + GGA seules) puis passé au débit voulu ; réglé à chaque démarrage, rien n'est enregistré dans le récepteur |
+| UART, GPIO TX / RX / EN | UART1, 17 / 18 / 45 | puck sur le J8 de la Waveshare seule : TX du puck sur la broche 17 (IO18), RX sur la broche 15 (IO17), alimentation VBAT ; EN (régulateur GNSS de la carte fille) sans effet, −1 pour aucun |
+| Débit voulu, cadence | 115 200 bauds, 10 Hz | cadence du M8N en multi-constellation à vérifier au banc |
 | Tactile en guise de boutons | oui | 5 bandes verticales invisibles, un cinquième de la largeur chacune : **A, B, −, +, Menu** (de gauche à droite) ; appui long ≥ 800 ms |
 
 **Bouton PWR** (sur la tranche, relié au PMIC ; pas le bouton BOOT) : appui long (1,5 s) = extinction
@@ -103,7 +107,8 @@ touchée (sélection une ligne plus haut ou plus bas, ou validation de l'item en
 Côté `hal_esp32/` : `board.c` (I²C, TCA9554, reset de l'écran), `board_display.c` (AXS15231B en QSPI,
 rotation logicielle, envoi par bandes, rétroéclairage), `board_touch.c`, `board_rtc.c` (RTC PCF85063,
 horloge de la carte), `board_pmu.c` (AXP2101 en lecture : USB, batterie, charge), `hal_time_esp.c`,
-`hal_storage_nvs.c`, `hal_gps_demo.c`, `hal_asset_partition.c`, `hal_audio_es8311.c` (son : codec,
+`hal_storage_nvs.c`, `hal_gps_demo.c` ou `hal_gps_uart.c` (récepteur réel par `core/gps_link`, un seul
+actif selon menuconfig), `hal_asset_partition.c`, `hal_audio_es8311.c` (son : codec,
 ampli, tâche audio sur le cœur 1). Brochage : `hal_esp32/board.h`.
 
 ## Journal de la carte
@@ -112,7 +117,10 @@ Au démarrage : `rtc: heure de la RTC : …` (ou `heure perdue` / `antérieure a
 jusqu'au premier fix GPS), `pmu: AXP2101 : REG00 …, VBUS … mV` (relevé brut) puis
 `pmu: alimentation : USB, batterie absente` (une ligne à chaque changement ensuite), puis
 `raidmaster: extinction (appui long sur PWR)` à l'extinction,
-`board: carte prête (UI tournée de 90°, QSPI 40 MHz)`, `hal_gps: GPS de démonstration`,
+`board: carte prête (UI tournée de 90°, QSPI 40 MHz)`, `hal_gps: GPS de démonstration` (ou, avec le récepteur réel :
+`hal_gps: récepteur sur UART1 (TX 17, RX 18, EN 45), cible 115200 bauds, 10 Hz`, puis
+`hal_gps: u-blox M8 NEO-M8N (PROTVER 18.00, …), 115200 bauds` une fois reconnu et réglé, ou
+`hal_gps: module GPS absent` après 3 s de silence),
 `raidmaster: démarré, libre : interne … Ko, PSRAM … Ko`, `audio: codec ES8311 prêt, volume 70` (ou
 `audio: son indisponible (…)`). Puis toutes les 10 s :
 `raidmaster: <n> images/s, envoi <t> ms, libre : …` (images réellement envoyées à l'écran, durée de

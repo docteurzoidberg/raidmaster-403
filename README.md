@@ -32,7 +32,7 @@ Distance **GPS uniquement**, sans capteur de roue ni intervention sur le câblag
 | 2 | Core portable + tests : `gps_parser` (NMEA, sur minmea), `trip_engine` (distance, moyenne, chrono, calibration), `app` (boutons, menu, sauvegarde) | fait |
 | 3 | Interface LVGL câblée sur le core : raid, balade, menu réglages actif, calibration auto, démarrage animé, mode nuit | fait |
 | 4 | Simulateur : rejeu de traces NMEA, trajet simulé, scénarios de bout en bout | 21 scénarios GPS en place ; boussole et matériel à venir |
-| 5-6 | HAL ESP32 et firmware sur la carte | en cours : firmware de démo validé sur la carte (écran, tactile, core et UI du sim, trajet GPS simulé, NVS, heure de la RTC, état USB / batterie), jingle de démarrage par le codec ES8311 (à écouter sur la carte) ; GPS, boutons, charge de la batterie à venir |
+| 5-6 | HAL ESP32 et firmware sur la carte | en cours : firmware de démo validé sur la carte (écran, tactile, core et UI du sim, trajet GPS simulé, NVS, heure de la RTC, état USB / batterie), jingle de démarrage par le codec ES8311 (à écouter sur la carte) ; pilote du récepteur GPS réel écrit (NEO-M9N ou puck NEO-M8N sur UART : débit trouvé, modèle reconnu, réglé à 10 Hz), à essayer sur la carte ; boussole, boutons, charge de la batterie à venir |
 | 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B reçue, datasheets et modèle 3D rassemblés ; PCB placé, non routé (version 1.1 : GPS interne ou puck externe) ; maquette 3D des cartes dans un boîtier de principe validée ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/)) ; boîtier dessiné dans Fusion, STEP des pièces dans `enclosure/stepfiles/`, à éprouver |
 
 Pas encore là : boussole (le cap affiché est la route GPS), réglages de charge de la batterie (l'état
@@ -251,7 +251,7 @@ cd software
 tools/fw.sh build        # compile (ESP-IDF chargé par le script)
 tools/fw.sh flash        # programme + animation de démarrage, puis 10 s de journal de la carte
 tools/fw.sh log 20       # redémarre la carte et affiche 20 s de journal
-tools/fw.sh menuconfig   # menu « Raidmaster 403 » : sens de l'écran, rétroéclairage, volume, tactile-boutons
+tools/fw.sh menuconfig   # menu « Raidmaster 403 » : sens de l'écran, rétroéclairage, volume, tactile-boutons, source GPS
 ```
 
 Installation d'ESP-IDF, liaison de la carte à WSL (usbipd), réglages et dépannage :
@@ -263,12 +263,13 @@ Installation d'ESP-IDF, liaison de la carte à WSL (usbipd), réglages et dépan
 software/        tout le code ; CMakeLists.txt et CMakePresets.json, build dans software/build-sim/ ;
                  VERSION : numéro de version
   core/          logique métier en C11 portable (aucun accès matériel) : gps_parser, trip_engine, app,
-                 gps_synth (trajet simulé), synth et jingles (son) ; core/include/hal/ : interfaces matériel ;
+                 gps_synth (trajet simulé), ubx et gps_link (liaison avec un récepteur u-blox), synth et
+                 jingles (son) ; core/include/hal/ : interfaces matériel ;
                  core/third_party/minmea
   ui/            interface LVGL v9 : écrans, thème jour / nuit, polices, images, animation de démarrage
   sim/           simulateur PC SDL2 : fenêtre, clavier, options, mode script, captures, GIF
   hal_sim/       HAL du simulateur : GPS (rejeu, trajet simulé), stockage JSON, horloge, assets, son SDL
-  hal_esp32/     HAL et pilotes de la carte (écran QSPI, tactile, RTC, PMIC, son ES8311, NVS, GPS de démo…),
+  hal_esp32/     HAL et pilotes de la carte (écran QSPI, tactile, RTC, PMIC, son ES8311, NVS, GPS de démo ou réel…),
                  composant ESP-IDF
   firmware/      projet ESP-IDF (main/, sdkconfig.defaults, partitions.csv), build dans software/build-firmware/
   cmake/         modules CMake communs au sim et au firmware (animation de démarrage, version)
