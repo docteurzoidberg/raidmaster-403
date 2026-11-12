@@ -1,16 +1,33 @@
 # Boîtier
 
-Le boîtier du Raidmaster 403 sera dessiné dans Fusion et imprimé en PETG ou ASA (pas de PLA : l'habitacle
-monte à 60 °C en été). Il n'est pas encore dessiné ; une [maquette 3D de principe](../mockup/) vérifie déjà
-l'encombrement des trois cartes ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/)).
+Le boîtier du Raidmaster 403 est dessiné dans Fusion, en modèle paramétrique, pour une impression en PETG ou
+ASA (pas de PLA : l'habitacle monte à 60 °C en été) avec des pare-chocs en TPU. Il mesure 123 × 93,6 ×
+33,2 mm (126,6 × 34,7 × 97,2 mm hors tout avec les pare-chocs et les capuchons des boutons). Une
+[maquette 3D](../mockup/) montre les cartes dans leur boîtier ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/)).
+
+Les cotes sont encore à éprouver (inserts, jeux, languettes du TPU) : ces fichiers ne sont pas une version
+validée pour l'impression.
 
 ## Fichiers STEP du projet (`stepfiles/`)
 
-Exports STEP du boîtier depuis Fusion, à venir.
+Exports STEP des pièces depuis Fusion (2026-11-12), toutes dans le même repère (origine au centre de la vitre
+de l'écran, sur sa face arrière ; X vers la droite vu de face, Y vers l'arrière, Z vers le haut ; mm) : elles
+s'assemblent sans déplacement. Les pièces multi-filament contiennent un corps par couleur.
 
-| Fichier | Contenu |
-|---|---|
-| — | aucun pour l'instant |
+| Fichier | Contenu | Matière |
+|---|---|---|
+| `coque_arriere.step` | coque arrière : parois, cloison entre l'électronique et la batterie, poche de la batterie, colonnes des vis de fermeture, cannelures, logements du TPU | PETG gris foncé |
+| `facade.step` | façade : fenêtre de l'écran, bossages des inserts et de la carte boutons, lèvre de centrage qui entre dans la coque arrière, cannelures ; corps séparés pour le liseré et le lettrage « RAIDMASTER 403 » (ambre) et les deux fenêtres de LED (translucide) | PETG gris foncé, ambre, translucide |
+| `capuchon_A.step`, `capuchon_B.step`, `capuchon_menu.step`, `capuchon_haut.step`, `capuchon_bas.step` | capuchons des 5 boutons, Ø 14,5 à collerette ; légende incrustée de 0,6 mm en corps séparé (A ambre, B cyan, menu rouge, flèches blanches) | PETG gris + couleur de la légende |
+| `poussoir_pwr.step` | poussoir du bouton marche, avec son éclair rouge incrusté | PETG gris + rouge |
+| `trappe_sd.step` | trappe coulissante de la carte micro-SD, à cran | PETG gris |
+| `trappe_batterie.step` | trappe de la batterie, tenue par 4 vis M3 × 5 | PETG gris |
+| `manchon_usb.step` | manchon de la prise USB-C, rapporté dans le flanc droit | PETG gris |
+| `pare_chocs.step` | les 4 coins en TPU, coincés entre la façade et la coque arrière | TPU orange |
+
+Visserie (non fournie en STEP) : 4 vis CHC M3 × 10 et 4 inserts à chaud M3 (fermeture), 4 vis CHC M3 × 5 et
+4 inserts à chaud M3 (trappe de la batterie), 4 vis CHC M2 × 12 (cartes), 4 vis CHC M2 × 6 (carte boutons),
+toutes en inox ; inserts dans des perçages Ø 4,33 mm.
 
 ## Modèles 3D externes utilisés
 

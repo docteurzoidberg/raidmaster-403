@@ -1,6 +1,7 @@
 # Fichiers STEP du boîtier
 
-Les fichiers STEP du boîtier du Raidmaster 403, exportés depuis Fusion, se trouveront ici. Le boîtier
-n'est pas encore dessiné : le dossier est vide pour l'instant.
+Exports STEP des pièces du boîtier du Raidmaster 403, depuis le modèle Fusion. Toutes les pièces sont dans le
+même repère et s'assemblent sans déplacement.
 
-Chaque fichier ajouté est listé dans [`../README.md`](../README.md) (section « Fichiers STEP du projet »).
+La liste des fichiers et leur contenu sont dans [`../README.md`](../README.md) (section « Fichiers STEP du
+projet »).
