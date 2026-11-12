@@ -10,7 +10,8 @@
  *   ├──────────────────────────────────────────────────────────┤
  *   │ B                                         3.47        km │  Trip B (cyan, 44 px)
  *   ├──────────────────────────────────────────────────────────┤
- *   │ V           68  km/h  │ CAP   ➤      127°  SE            │  V / CAP (38 px) + flèche 3D
+ *   │ V           68  km/h  │ CAP   ➤      127°  SE            │  V / CAP (38 px) + flèche 3D,
+ *   │                       │ MAG                              │  source du cap sous « CAP »
  *   ├──────────────────────────────────────────────────────────┤
  *   │ ODO 48 273 km          MOY 42 km/h       CHRONO 0:14:27  │
  *   └──────────────────────────────────────────────────────────┘
@@ -50,6 +51,7 @@ static lv_obj_t      *s_lbl_trip_b;
 static lv_obj_t      *s_lbl_speed;
 static lv_obj_t      *s_lbl_cap;
 static lv_obj_t      *s_lbl_card;
+static lv_obj_t      *s_lbl_cap_src;
 static lv_obj_t      *s_img_cap;
 static lv_obj_t      *s_img_cap_shadow;
 static lv_obj_t      *s_lbl_odo;
@@ -95,6 +97,9 @@ static void build_row_mid(void)
     /* Cellule CAP : libellé | flèche 3D | valeur | point cardinal. */
     lv_obj_t *cap = ui_label(s_scr, UI_FONT_STATUS, UI_C_MUTED, "CAP");
     ui_place_baseline(cap, COL2_X, MID_BASE, LV_TEXT_ALIGN_LEFT, 0);
+    /* Source du cap sous le libellé : MAG, GPS, MAG × ou MAG ?. */
+    s_lbl_cap_src = ui_label(s_scr, UI_FONT_SMALL, UI_C_MUTED, "");
+    ui_place_baseline(s_lbl_cap_src, COL2_X, MID_BASE + 18, LV_TEXT_ALIGN_LEFT, 0);
     s_lbl_cap = ui_label(s_scr, UI_FONT_CELL, UI_C_TEXT, "---°");
     ui_place_baseline(s_lbl_cap, 445, MID_BASE, LV_TEXT_ALIGN_RIGHT, 100);
     s_lbl_card = ui_label(s_scr, UI_FONT_SMALL, UI_C_MUTED, "N");
@@ -186,6 +191,9 @@ void screen_raid_update(const ui_trip_state_t *s)
         lv_label_set_text_fmt(s_lbl_cap, "%03d°", cap);
         lv_label_set_text(s_lbl_card, cardinal_for_heading(cap));
     }
+    lv_color_t tag_c;
+    lv_label_set_text(s_lbl_cap_src, ui_heading_tag(s, &tag_c));
+    lv_obj_set_style_text_color(s_lbl_cap_src, tag_c, 0);
     lv_image_set_rotation(s_img_cap, cap * 10);
     lv_image_set_rotation(s_img_cap_shadow, cap * 10);
 

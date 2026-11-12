@@ -1,0 +1,10 @@
+# s40 — calibration de la boussole sur place (40 s d'arrêt, voiture tournée vers l'est), puis
+# 24 s à 50 km/h et arrêt.
+heading 90
+stop 40
+mark depart
+drive 4 0 50
+drive 20 50 50
+drive 4 50 0
+mark arrivee
+stop 20

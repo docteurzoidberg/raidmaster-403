@@ -16,6 +16,7 @@
 #include "screen_balade.h"
 #include "screen_menu.h"
 #include "screen_calib.h"
+#include "screen_magcal.h"
 #include "ui_demo.h"
 #include <stdio.h>
 
@@ -36,6 +37,7 @@ static lv_obj_t *ensure_screen(ui_screen_id_t id)
         case UI_SCREEN_BALADE: s_screens[id] = screen_balade_create(); break;
         case UI_SCREEN_MENU:   s_screens[id] = screen_menu_create();   break;
         case UI_SCREEN_CALIB:  s_screens[id] = screen_calib_create();  break;
+        case UI_SCREEN_MAGCAL: s_screens[id] = screen_magcal_create(); break;
         default: break;
     }
     return s_screens[id];
@@ -132,6 +134,7 @@ void ui_show_screen(ui_screen_id_t id)
         if (id == UI_SCREEN_BALADE) screen_balade_update(&s_last_state);
         if (id == UI_SCREEN_MENU)   screen_menu_update(&s_last_state);
         if (id == UI_SCREEN_CALIB)  screen_calib_update(&s_last_state);
+        if (id == UI_SCREEN_MAGCAL) screen_magcal_update(&s_last_state);
     }
 }
 
@@ -142,13 +145,14 @@ ui_screen_id_t ui_current_screen(void)
 
 void ui_cycle_screen(void)
 {
-    /* Boucle : raid → balade → menu → raid, saute le boot. */
+    /* Boucle : raid → balade → menu → calibrations → raid, saute le boot. */
     switch (s_current) {
         case UI_SCREEN_BOOT:
         case UI_SCREEN_RAID:   ui_show_screen(UI_SCREEN_BALADE); break;
         case UI_SCREEN_BALADE: ui_show_screen(UI_SCREEN_MENU);   break;
         case UI_SCREEN_MENU:   ui_show_screen(UI_SCREEN_CALIB);  break;
-        case UI_SCREEN_CALIB:  ui_show_screen(UI_SCREEN_RAID);   break;
+        case UI_SCREEN_CALIB:  ui_show_screen(UI_SCREEN_MAGCAL); break;
+        case UI_SCREEN_MAGCAL: ui_show_screen(UI_SCREEN_RAID);   break;
         default:               ui_show_screen(UI_SCREEN_RAID);   break;
     }
 }
@@ -187,4 +191,5 @@ void ui_push_trip_state(const ui_trip_state_t *s)
     if (s_screens[UI_SCREEN_BALADE] != NULL) screen_balade_update(s);
     if (s_screens[UI_SCREEN_MENU]   != NULL) screen_menu_update(s);
     if (s_screens[UI_SCREEN_CALIB]  != NULL) screen_calib_update(s);
+    if (s_screens[UI_SCREEN_MAGCAL] != NULL) screen_magcal_update(s);
 }

@@ -1,5 +1,5 @@
 /*
- * Raidmaster 403 — HAL GPS : livre les lignes NMEA brutes (UART1 NEO-M9N sur l'ESP32,
+ * Raidmaster 403 — HAL GPS : livre les lignes NMEA brutes (UART1 : NEO-M9N ou puck M8N sur l'ESP32,
  * rejeu de fichier ou trajet simulé sur le sim). Le décodage est dans core/gps_parser.
  *
  * Licence : GPL-3.0.
@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <stdbool.h>
 #include <stddef.h>
 
 #ifdef __cplusplus
@@ -20,6 +21,10 @@ void hal_gps_init(hal_gps_line_cb cb, void *user);
 
 /* À appeler souvent depuis la boucle principale : livre les lignes disponibles. */
 void hal_gps_poll(void);
+
+/* Récepteur présent (il a parlé il y a moins de 3 s), même sans fix. Faux : module GPS absent
+ * (puck débranché, UART muet). */
+bool hal_gps_present(void);
 
 #ifdef __cplusplus
 }

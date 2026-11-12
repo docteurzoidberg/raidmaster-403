@@ -127,6 +127,11 @@ static void log_changes(uint64_t now)
     }
 }
 
+bool hal_gps_present(void)
+{
+    return gps_link_present(&s_link, hal_time_ms());
+}
+
 void hal_gps_poll(void)
 {
     uint8_t buf[256];

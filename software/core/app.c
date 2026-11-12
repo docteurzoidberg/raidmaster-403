@@ -10,14 +10,23 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "hal/hal_gps.h"
 #include "hal/hal_storage.h"
 #include "hal/hal_time.h"
 
 #define STORE_KEY   "state"
 #define STORE_MAGIC 0x524D0001u     /* « RM », version 1 : changer à chaque évolution du format */
+#define MAGCAL_KEY   "magcal"
+#define MAGCAL_MAGIC 0x4D430001u    /* « MC », version 1 */
+#define MAG_SMOOTH   0.25f          /* lissage exponentiel du champ horizontal (20 Hz : ~0,2 s) */
 
 /* Bloc sauvegardé. Format interne (même compilateur, même cible) : une version différente ou
  * une taille inattendue fait repartir des valeurs par défaut. */
+typedef struct {
+    uint32_t  magic;
+    mag_cal_t cal;
+} magcal_store_t;
+
 typedef struct {
     uint32_t       magic;
     trip_persist_t trip;
@@ -71,6 +80,16 @@ void app_init(app_t *a, uint64_t now_ms)
         }
     }
     trip_engine_init(&a->engine, NULL, persist);
+
+    mag_cal_identity(&a->mag.cal);
+    magcal_store_t mc;
+    len = sizeof(mc);
+    if (hal_storage_get(MAGCAL_KEY, &mc, &len) == 0 && len == sizeof(mc) && mc.magic == MAGCAL_MAGIC &&
+        isfinite(mc.cal.offset.x) && isfinite(mc.cal.offset.y) && isfinite(mc.cal.offset.z) &&
+        mc.cal.scale.x > 0.0f && mc.cal.scale.y > 0.0f && mc.cal.scale.z > 0.0f) {
+        a->mag.cal = mc.cal;
+        a->mag.calibrated = true;
+    }
     a->chrono_armed = true;
     a->now_ms = now_ms;
     a->last_save_ms = now_ms;
@@ -114,9 +133,131 @@ void app_gps_line(app_t *a, const char *line, uint64_t now_ms)
     }
 }
 
+/* ------------------------------------------------------------------ cap */
+
+static bool mag_fresh(const app_t *a, uint64_t now_ms)
+{
+    return a->mag.have && now_ms - a->mag.t_ms < APP_MAG_STALE_MS;
+}
+
+static float mag_heading(const app_t *a)
+{
+    return mag_heading_deg((mag_vec_t){a->mag.hx, a->mag.hy, 0.0f});
+}
+
+/* Source du cap : boussole calibrée à basse vitesse, route GPS au-dessus, avec hystérésis. */
+static void update_heading_src(app_t *a, uint64_t now_ms)
+{
+    trip_state_t t;
+    trip_engine_get_state(&a->engine, now_ms, &t);
+    const bool mag_ok = a->mag.calibrated && mag_fresh(a, now_ms);
+    const bool gps_ok = t.fix_ok && !isnan(t.course_deg);
+    const float v = t.fix_ok && !isnan(t.speed_kmh) ? t.speed_kmh : 0.0f;
+    app_heading_src_t want;
+    if (mag_ok && gps_ok) {
+        if (v >= APP_HEAD_GPS_ABOVE_KMH)      want = APP_HEAD_GPS;
+        else if (v < APP_HEAD_MAG_BELOW_KMH)  want = APP_HEAD_MAG;
+        else want = a->head_src == APP_HEAD_NONE ? APP_HEAD_MAG : a->head_src;   /* entre les deux : on garde */
+    } else if (mag_ok) {
+        want = APP_HEAD_MAG;
+    } else if (gps_ok) {
+        want = APP_HEAD_GPS;
+    } else {
+        want = APP_HEAD_NONE;
+    }
+    a->head_src = want;
+}
+
+static unsigned popcount64(uint64_t v)
+{
+    unsigned n = 0;
+    for (; v != 0; v &= v - 1) n++;
+    return n;
+}
+
+void app_mag_sample(app_t *a, mag_vec_t raw, uint64_t now_ms)
+{
+    a->now_ms = now_ms;
+    const float fx = (raw.x - a->mag.cal.offset.x) * a->mag.cal.scale.x;
+    const float fy = (raw.y - a->mag.cal.offset.y) * a->mag.cal.scale.y;
+    if (!a->mag.have || now_ms - a->mag.t_ms >= APP_MAG_STALE_MS) {
+        a->mag.hx = fx;
+        a->mag.hy = fy;
+    } else {
+        a->mag.hx += MAG_SMOOTH * (fx - a->mag.hx);
+        a->mag.hy += MAG_SMOOTH * (fy - a->mag.hy);
+    }
+    a->mag.have = true;
+    a->mag.t_ms = now_ms;
+    if (a->mag.cal_running) {
+        mag_cal_feed(&a->mag.acc, raw);
+        app_mag_t *m = &a->mag;
+        const uint16_t k = m->n_points;
+        if (k < APP_MAGCAL_POINTS &&
+            (k == 0 || fabsf(raw.x - m->px[k - 1]) + fabsf(raw.y - m->py[k - 1]) >= 1.5f)) {
+            m->px[k] = raw.x;
+            m->py[k] = raw.y;
+            m->n_points = (uint16_t)(k + 1);
+        }
+    }
+    update_heading_src(a, now_ms);
+}
+
+/* Secteurs de 10° couverts par les points du tour, autour du centre des extrêmes (le fer dur de la
+ * voiture peut dépasser le champ terrestre : le cap brut, lui, ne ferait pas le tour). */
+static uint64_t magcal_mask(const app_t *a)
+{
+    const app_mag_t *m = &a->mag;
+    if (!m->cal_running || m->n_points < 2) return 0;
+    const float cx = (m->acc.min.x + m->acc.max.x) * 0.5f;
+    const float cy = (m->acc.min.y + m->acc.max.y) * 0.5f;
+    uint64_t bits = 0;
+    for (uint16_t i = 0; i < m->n_points; i++) {
+        const float h = mag_heading_deg((mag_vec_t){m->px[i] - cx, m->py[i] - cy, 0.0f});
+        bits |= 1ULL << ((unsigned)(h / (360.0f / APP_MAGCAL_SECTORS)) % APP_MAGCAL_SECTORS);
+    }
+    return bits;
+}
+
+static bool magcal_ready(const app_t *a, mag_cal_t *out)
+{
+    mag_cal_t c;
+    return a->mag.cal_running && popcount64(magcal_mask(a)) >= APP_MAGCAL_MIN_SECTORS &&
+           mag_cal_compute(&a->mag.acc, APP_MAGCAL_MIN_SPAN_UT, out != NULL ? out : &c);
+}
+
+void app_magcal_start(app_t *a)
+{
+    mag_cal_reset(&a->mag.acc);
+    a->mag.n_points = 0;
+    a->mag.cal_running = true;
+}
+
+void app_magcal_stop(app_t *a)
+{
+    a->mag.cal_running = false;
+}
+
+bool app_magcal_apply(app_t *a)
+{
+    mag_cal_t c;
+    if (!magcal_ready(a, &c)) return false;
+    a->mag.cal = c;
+    a->mag.calibrated = true;
+    a->mag.cal_running = false;
+    a->mag.have = false;                    /* lissage repris sur la nouvelle calibration */
+    const magcal_store_t mc = {.magic = MAGCAL_MAGIC, .cal = c};
+    if (hal_storage_set(MAGCAL_KEY, &mc, sizeof(mc)) != 0)
+        fprintf(stderr, "app : échec de la sauvegarde de la calibration de la boussole\n");
+    return true;
+}
+
+/* ------------------------------------------------------------------ boucle */
+
 void app_tick(app_t *a, uint64_t now_ms)
 {
     a->now_ms = now_ms;
+    update_heading_src(a, now_ms);
     if (a->dirty && now_ms - a->last_save_ms >= APP_SAVE_PERIOD_MS)
         app_save(a);
 }
@@ -140,6 +281,23 @@ void app_get_state(const app_t *a, uint64_t now_ms, app_state_t *out)
     }
     out->autocal_running = trip_engine_autocal_running(&a->engine);
     out->autocal_raw_m = trip_engine_autocal_raw_m(&a->engine);
+
+    out->gps_present = hal_gps_present();
+    out->mag_present = mag_fresh(a, now_ms);
+    out->mag_calibrated = a->mag.calibrated;
+    out->heading_src = a->head_src;
+    if (a->head_src == APP_HEAD_MAG && out->mag_present && a->mag.calibrated) {
+        out->heading_deg = mag_heading(a);
+    } else if (a->head_src == APP_HEAD_GPS && out->trip.fix_ok && !isnan(out->trip.course_deg)) {
+        out->heading_deg = out->trip.course_deg;
+    } else {
+        out->heading_src = APP_HEAD_NONE;
+        out->heading_deg = NAN;
+    }
+    out->magcal_running = a->mag.cal_running;
+    out->magcal_mask = magcal_mask(a);
+    out->magcal_sectors = (uint8_t)popcount64(out->magcal_mask);
+    out->magcal_ready = magcal_ready(a, NULL);
 }
 
 void app_reset_trip(app_t *a, app_trip_t t)

@@ -1,10 +1,12 @@
 /*
  * Raidmaster 403 — tests unitaires de core/app (Unity) : actions boutons et menu, chrono,
- * heure locale, alarme, sauvegarde et relecture (hal_storage en mémoire, fake_storage.c).
+ * heure locale, alarme, sauvegarde et relecture (hal_storage en mémoire, fake_storage.c), source du
+ * cap et calibration de la boussole.
  *
  * Licence : GPL-3.0.
  */
 
+#include <math.h>
 #include <stdio.h>
 
 #include "app.h"
@@ -16,8 +18,11 @@
 static app_t A;
 static app_state_t S;
 
+extern bool fake_gps_present;
+
 void setUp(void)
 {
+    fake_gps_present = true;
     fake_storage_clear();
     fake_clock_clear();
     app_init(&A, 0);
@@ -258,6 +263,137 @@ static void test_autocalibration(void)
     TEST_ASSERT_FLOAT_WITHIN(1e-6f, -2.0f, S.trip.calib_pct);
 }
 
+/* ------------------------------------------------------------------ boussole et cap */
+
+#define MAG_OFF_X 12.0f     /* fer dur de la voiture (µT) */
+#define MAG_OFF_Y -7.0f
+#define MAG_H     21.0f     /* composante horizontale du champ terrestre */
+
+/* Mesure brute de la boussole pour un cap vrai (°), avec le fer dur. */
+static mag_vec_t mag_for(float head_deg)
+{
+    const float r = head_deg * 3.14159265f / 180.0f;
+    return (mag_vec_t){MAG_OFF_X + MAG_H * cosf(r), MAG_OFF_Y - MAG_H * sinf(r), 42.0f};
+}
+
+/* Roule plein nord à v km/h pendant dur_ms (10 Hz GPS, 20 Hz boussole tournée vers head). */
+static double roll(uint32_t *t, double n, float kmh, uint32_t dur_ms, float head, bool with_mag)
+{
+    for (uint32_t k = 0; k < dur_ms; k += 50) {
+        if (k % 100 == 0) {
+            n += kmh / 3.6 * 0.1;
+            epoch(*t, n, kmh);
+        }
+        if (with_mag) app_mag_sample(&A, mag_for(head), *t);
+        app_tick(&A, *t);
+        *t += 50;
+    }
+    return n;
+}
+
+/* Tour de calibration sur place : 360° en turn_s secondes, 20 Hz. */
+static void spin(uint32_t *t, float from_deg, float sweep_deg, float turn_s)
+{
+    const int n = (int)(turn_s * 20.0f);
+    for (int i = 0; i <= n; i++) {
+        app_mag_sample(&A, mag_for(from_deg + sweep_deg * (float)i / (float)n), *t);
+        *t += 50;
+    }
+}
+
+static void test_cap_sans_boussole(void)
+{
+    uint32_t t = 0;
+    roll(&t, 0.0, 0.0f, 2000, 0.0f, false);
+    state(t);
+    TEST_ASSERT_TRUE(S.gps_present);
+    TEST_ASSERT_FALSE(S.mag_present);
+    TEST_ASSERT_EQUAL_INT(APP_HEAD_NONE, S.heading_src);        /* à l'arrêt : pas de route */
+    TEST_ASSERT_TRUE(isnan(S.heading_deg));
+    roll(&t, 0.0, 50.0f, 2000, 0.0f, false);
+    state(t);
+    TEST_ASSERT_EQUAL_INT(APP_HEAD_GPS, S.heading_src);
+    TEST_ASSERT_FLOAT_WITHIN(0.5f, 0.0f, S.heading_deg);
+    fake_gps_present = false;
+    state(t);
+    TEST_ASSERT_FALSE(S.gps_present);
+}
+
+static void test_boussole_non_calibree_ignoree(void)
+{
+    uint32_t t = 0;
+    roll(&t, 0.0, 0.0f, 2000, 90.0f, true);
+    state(t);
+    TEST_ASSERT_TRUE(S.mag_present);
+    TEST_ASSERT_FALSE(S.mag_calibrated);
+    TEST_ASSERT_EQUAL_INT(APP_HEAD_NONE, S.heading_src);
+}
+
+static void test_calibration_boussole(void)
+{
+    uint32_t t = 0;
+    app_magcal_start(&A);
+    spin(&t, 0.0f, 180.0f, 10.0f);                              /* demi-tour : insuffisant */
+    state(t);
+    TEST_ASSERT_TRUE(S.magcal_running);
+    TEST_ASSERT_FALSE(S.magcal_ready);
+    TEST_ASSERT_FALSE(app_magcal_apply(&A));
+    spin(&t, 180.0f, 200.0f, 10.0f);                            /* le tour complet */
+    state(t);
+    TEST_ASSERT_TRUE(S.magcal_sectors >= APP_MAGCAL_MIN_SECTORS);
+    TEST_ASSERT_TRUE(S.magcal_ready);
+    TEST_ASSERT_TRUE(app_magcal_apply(&A));
+    state(t);
+    TEST_ASSERT_FALSE(S.magcal_running);
+    TEST_ASSERT_TRUE(S.mag_calibrated);
+    TEST_ASSERT_FLOAT_WITHIN(0.5f, MAG_OFF_X, A.mag.cal.offset.x);
+    TEST_ASSERT_FLOAT_WITHIN(0.5f, MAG_OFF_Y, A.mag.cal.offset.y);
+    /* enregistrée : relue au démarrage suivant */
+    app_init(&A, t);
+    state(t);
+    TEST_ASSERT_TRUE(S.mag_calibrated);
+}
+
+static void test_source_du_cap(void)
+{
+    uint32_t t = 0;
+    app_magcal_start(&A);
+    spin(&t, 0.0f, 370.0f, 20.0f);
+    TEST_ASSERT_TRUE(app_magcal_apply(&A));
+
+    /* à l'arrêt, voiture tournée vers l'est : boussole */
+    double n = roll(&t, 0.0, 0.0f, 2000, 90.0f, true);
+    state(t);
+    TEST_ASSERT_EQUAL_INT(APP_HEAD_MAG, S.heading_src);
+    TEST_ASSERT_FLOAT_WITHIN(1.0f, 90.0f, S.heading_deg);
+
+    /* en route plein nord à 50 km/h : route GPS (la boussole perturbée dirait autre chose) */
+    n = roll(&t, n, 50.0f, 2000, 30.0f, true);
+    state(t);
+    TEST_ASSERT_EQUAL_INT(APP_HEAD_GPS, S.heading_src);
+    TEST_ASSERT_FLOAT_WITHIN(0.5f, 0.0f, S.heading_deg);
+
+    /* 15 km/h : entre les seuils, on garde la route GPS */
+    n = roll(&t, n, 15.0f, 2000, 30.0f, true);
+    state(t);
+    TEST_ASSERT_EQUAL_INT(APP_HEAD_GPS, S.heading_src);
+
+    /* 10 km/h : boussole */
+    n = roll(&t, n, 10.0f, 2000, 30.0f, true);
+    state(t);
+    TEST_ASSERT_EQUAL_INT(APP_HEAD_MAG, S.heading_src);
+    TEST_ASSERT_FLOAT_WITHIN(1.0f, 30.0f, S.heading_deg);
+
+    /* boussole débranchée : route GPS en repli, puis rien à l'arrêt */
+    n = roll(&t, n, 10.0f, 2000, 0.0f, false);
+    state(t);
+    TEST_ASSERT_FALSE(S.mag_present);
+    TEST_ASSERT_EQUAL_INT(APP_HEAD_GPS, S.heading_src);
+    roll(&t, n, 0.0f, 2000, 0.0f, false);
+    state(t);
+    TEST_ASSERT_EQUAL_INT(APP_HEAD_NONE, S.heading_src);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -272,5 +408,9 @@ int main(void)
     RUN_TEST(test_sauvegarde_differee);
     RUN_TEST(test_sauvegarde_illisible);
     RUN_TEST(test_autocalibration);
+    RUN_TEST(test_cap_sans_boussole);
+    RUN_TEST(test_boussole_non_calibree_ignoree);
+    RUN_TEST(test_calibration_boussole);
+    RUN_TEST(test_source_du_cap);
     return UNITY_END();
 }

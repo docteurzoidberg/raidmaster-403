@@ -5,12 +5,18 @@
  * C portable, sans LVGL ni matériel : le sim et le firmware l'appellent de la même façon.
  *   app_init()          au démarrage (relit la sauvegarde via hal_storage)
  *   app_gps_line()      pour chaque ligne NMEA (callback de hal_gps)
+ *   app_mag_sample()    pour chaque mesure de la boussole (hal_mag_poll)
  *   app_tick()          souvent (sauvegarde différée toutes les 10 s si quelque chose a bougé)
  *   app_get_state()     pour l'affichage
  *   app_<action>()      boutons et menu ; les réglages sont sauvegardés tout de suite
  *
  * Heure affichée : celle de l'horloge de la carte (hal_time_utc_ms), réglée sur l'heure GPS au
  * premier fix de chaque démarrage (pas de synchronisation permanente).
+ *
+ * Cap affiché : boussole calibrée à l'arrêt et à basse vitesse (sous 13 km/h, retour au-dessus de
+ * 17 km/h), route GPS au-delà ; chaque source sert de repli à l'autre. Boussole non calibrée :
+ * jamais utilisée (son cap peut être faux de plusieurs dizaines de degrés dans une voiture).
+ * Déclinaison magnétique négligée (±2° en France et au Maroc).
  *
  * Licence : GPL-3.0.
  */
@@ -21,6 +27,7 @@
 #include <stdint.h>
 
 #include "gps_parser.h"
+#include "mag.h"
 #include "trip_engine.h"
 
 #ifdef __cplusplus
@@ -37,6 +44,15 @@ extern "C" {
 
 typedef enum { APP_TRIP_A = 0, APP_TRIP_B } app_trip_t;
 typedef enum { APP_VIEW_RAID = 0, APP_VIEW_BALADE } app_view_t;
+typedef enum { APP_HEAD_NONE = 0, APP_HEAD_GPS, APP_HEAD_MAG } app_heading_src_t;
+
+#define APP_HEAD_MAG_BELOW_KMH  13.0f   /* boussole sous cette vitesse… */
+#define APP_HEAD_GPS_ABOVE_KMH  17.0f   /* …route GPS au-dessus de celle-ci (hystérésis) */
+#define APP_MAG_STALE_MS        1000U   /* boussole muette au-delà */
+#define APP_MAGCAL_SECTORS      36      /* tour de calibration : secteurs de 10° */
+#define APP_MAGCAL_MIN_SECTORS  32      /* secteurs à parcourir pour valider */
+#define APP_MAGCAL_MIN_SPAN_UT  20.0f   /* étendue minimale du champ en X et Y */
+#define APP_MAGCAL_POINTS       256     /* points du tour gardés (espacés de 1,5 µT au moins) */
 
 /* Réglages du menu (sauvegardés). La calibration est dans trip_persist_t. */
 typedef struct {
@@ -56,7 +72,29 @@ typedef struct {
     int8_t         local_mm;
     bool           autocal_running;
     double         autocal_raw_m;
+    bool           gps_present;     /* récepteur présent (hal_gps_present) */
+    bool           mag_present;     /* boussole présente (mesure de moins d'une seconde) */
+    bool           mag_calibrated;
+    app_heading_src_t heading_src;
+    float          heading_deg;     /* cap affiché 0..360, NAN si aucune source */
+    bool           magcal_running;  /* tour de calibration de la boussole en cours */
+    uint8_t        magcal_sectors;  /* secteurs de 10° parcourus (0..APP_MAGCAL_SECTORS) */
+    uint64_t       magcal_mask;     /* bit i : secteur [10 i, 10 i + 10[ du cap du champ parcouru */
+    bool           magcal_ready;    /* tour suffisant : app_magcal_apply possible */
 } app_state_t;
+
+/* Boussole : calibration, dernière mesure lissée, tour de calibration. */
+typedef struct {
+    mag_cal_t      cal;
+    bool           calibrated;
+    bool           have;            /* au moins une mesure */
+    uint64_t       t_ms;            /* dernière mesure */
+    float          hx, hy;          /* composantes horizontales calibrées, lissées */
+    bool           cal_running;
+    mag_cal_acc_t  acc;
+    float          px[APP_MAGCAL_POINTS], py[APP_MAGCAL_POINTS];   /* champ horizontal brut */
+    uint16_t       n_points;
+} app_mag_t;
 
 typedef struct {
     gps_parser_t   parser;
@@ -68,12 +106,15 @@ typedef struct {
     bool           dirty;           /* distances à sauvegarder */
     uint64_t       last_save_ms;
     uint64_t       now_ms;
+    app_mag_t      mag;
+    app_heading_src_t head_src;     /* source du cap retenue (hystérésis) */
 } app_t;
 
 void app_settings_default(app_settings_t *s);
 
 void app_init(app_t *a, uint64_t now_ms);
 void app_gps_line(app_t *a, const char *line, uint64_t now_ms);
+void app_mag_sample(app_t *a, mag_vec_t raw, uint64_t now_ms);
 void app_tick(app_t *a, uint64_t now_ms);
 void app_save(app_t *a);
 void app_get_state(const app_t *a, uint64_t now_ms, app_state_t *out);
@@ -99,6 +140,12 @@ uint16_t app_speed_alarm_step(uint16_t kmh, int dir);
 void app_autocal_start(app_t *a);
 void app_autocal_stop(app_t *a);
 bool app_autocal_apply(app_t *a, double real_m, float *pct);
+
+/* Calibration de la boussole : un tour complet sur place, lentement. apply enregistre la
+ * calibration si le tour est suffisant (magcal_ready) et renvoie false sinon. */
+void app_magcal_start(app_t *a);
+void app_magcal_stop(app_t *a);
+bool app_magcal_apply(app_t *a);
 
 #ifdef __cplusplus
 }

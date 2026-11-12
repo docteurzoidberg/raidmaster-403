@@ -26,6 +26,7 @@ set(RAIDMASTER_UI_SRCS
     screen_balade.c
     screen_menu.c
     screen_calib.c
+    screen_magcal.c
     # Polices bitmap Share Tech Mono (générées par fonts/gen_fonts.sh).
     fonts/stm_12.c
     fonts/stm_13.c

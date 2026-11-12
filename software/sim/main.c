@@ -24,6 +24,9 @@
  *                  <ms> <bouton>   a b plus minus m, en majuscules pour l'appui long (A, PLUS, M…)
  *                  <ms> night      bascule jour / nuit
  *                  <ms> signal     coupe / rétablit le signal GPS
+ *                  <ms> gps        débranche / rebranche le récepteur (repart à 9 600 bauds)
+ *                  <ms> mag        débranche / rebranche la boussole
+ *                  <ms> spin       la voiture tourne sur place (30°/s) / s'arrête de tourner
  *                  <ms> power_cut  coupure d'alimentation : le core redémarre sur la dernière
  *                                  sauvegarde, sans sauvegarder (l'UI et le GPS continuent)
  *                  <ms> shot <nom> capture <dossier>/<nom>.ppm
@@ -31,7 +34,10 @@
  *                                  champs : trip_a trip_b odo (km), speed avg max (km/h), calib (%),
  *                                  active (0 A, 1 B), fix, night, view (0 raid, 1 balade),
  *                                  hhmm (heure locale, -1 inconnue), alarm, chrono (en marche),
- *                                  gps_err (phrases rejetées : checksum ou champs illisibles)
+ *                                  gps_err (phrases rejetées : checksum ou champs illisibles),
+ *                                  gps (récepteur présent), mag (boussole présente), mag_cal
+ *                                  (calibrée), head_src (0 aucun, 1 route GPS, 2 boussole),
+ *                                  heading (°, -1 inconnu), magcal (secteurs de 10° parcourus)
  *                  <ms> quit
  *                <ms> : temps depuis le lancement, sur une horloge virtuelle (pas de 10 ms, sans
  *                attente) : résultat déterministe, une minute se joue en une fraction de seconde.
@@ -44,6 +50,9 @@
  *   n ou Tab                      → bascule mode nuit
  *   v                             → cycle entre écrans raid / balade / menu / calib (debug)
  *   d                             → coupe / rétablit le signal GPS (tunnel)
+ *   g                             → débranche / rebranche le récepteur GPS (puck)
+ *   c                             → débranche / rebranche la boussole
+ *   r                             → la voiture tourne sur place / s'arrête (calibration boussole)
  *   p                             → alimentation suivante : batterie, USB en charge, USB batterie
  *                                   pleine, USB sans batterie, batterie faible (barre d'état)
  *   Échap                         → quitter (sauvegarde)
@@ -77,6 +86,7 @@
 #include "app.h"
 #include "jingles.h"
 #include "hal/hal_gps.h"
+#include "hal/hal_mag.h"
 #include "hal/hal_time.h"
 #include "hal_sim.h"
 #include "ui_app.h"
@@ -169,7 +179,17 @@ static void save_ppm(const char *dir, const char *name)
 }
 
 /* État fixe = valeurs de la maquette mode raid jour, avec l'alimentation donnée. */
+static void push_mockup_state_ex(uint8_t power, uint8_t battery_pct, bool gps_absent, uint8_t head_src,
+                                 uint8_t mag_state);
+
 static void push_mockup_state(uint8_t power, uint8_t battery_pct)
+{
+    push_mockup_state_ex(power, battery_pct, false, UI_HEAD_SRC_UNSET, UI_MAG_OK);
+}
+
+/* Variante : module GPS absent, source du cap, état de la boussole. */
+static void push_mockup_state_ex(uint8_t power, uint8_t battery_pct, bool gps_absent, uint8_t head_src,
+                                 uint8_t mag_state)
 {
     ui_trip_state_t st;
     memset(&st, 0, sizeof(st));
@@ -185,6 +205,14 @@ static void push_mockup_state(uint8_t power, uint8_t battery_pct)
     st.power       = power;
     st.t_cabin_c   = 22.0f;
     snprintf(st.time_hhmm, sizeof(st.time_hhmm), "14:23");
+    st.gps_absent  = gps_absent;
+    st.heading_src = head_src;
+    st.mag_state   = mag_state;
+    if (gps_absent) {
+        st.fix_type = UI_FIX_NONE;
+        st.speed_kmh = 0.0f;
+        st.heading_unknown = head_src == UI_HEAD_SRC_UNSET;
+    }
     ui_push_trip_state(&st);
 }
 
@@ -208,7 +236,14 @@ static int shots_step(const char *dir, uint32_t t_ms)
                  ui_show_screen(UI_SCREEN_RAID); push_mockup_state(UI_PWR_CHARGING, 68); break;
         case 8:  save_ppm(dir, "8-raid-charge");
                  push_mockup_state(UI_PWR_EXTERNAL, UI_BATT_UNKNOWN); break;
-        case 9:  save_ppm(dir, "9-raid-usb"); return 0;
+        case 9:  save_ppm(dir, "9-raid-usb");
+                 push_mockup_state_ex(UI_PWR_BATTERY, 68, false, UI_HEAD_SRC_MAG, UI_MAG_OK); break;
+        case 10: save_ppm(dir, "10-raid-cap-boussole");
+                 push_mockup_state_ex(UI_PWR_BATTERY, 68, true, UI_HEAD_SRC_UNSET, UI_MAG_ABSENT); break;
+        case 11: save_ppm(dir, "11-raid-gps-absent"); ui_show_screen(UI_SCREEN_BALADE); break;
+        case 12: save_ppm(dir, "12-balade-gps-absent"); ui_show_screen(UI_SCREEN_MAGCAL);
+                 push_mockup_state(UI_PWR_BATTERY, 68); break;
+        case 13: save_ppm(dir, "13-calib-boussole"); return 0;
         default: return 0;
     }
     /* Après le boot, on attend la fin du timer boot→raid (qui lance la démo) avant de figer
@@ -256,6 +291,18 @@ static void handle_key(const SDL_KeyboardEvent *k, int *running)
             break;
         case SDLK_p:
             printf("[sim] alimentation : %s\n", hal_power_sim_cycle());
+            break;
+        case SDLK_g:
+            hal_gps_sim_set_plugged(!hal_gps_sim_plugged());
+            printf("[sim] récepteur GPS %s\n", hal_gps_sim_plugged() ? "rebranché (9 600 bauds)" : "débranché");
+            break;
+        case SDLK_c:
+            hal_mag_sim_set_plugged(!hal_mag_sim_plugged());
+            printf("[sim] boussole %s\n", hal_mag_sim_plugged() ? "rebranchée" : "débranchée");
+            break;
+        case SDLK_r:
+            hal_mag_sim_set_spin(!hal_mag_sim_spin());
+            printf("[sim] rotation sur place %s\n", hal_mag_sim_spin() ? "en cours" : "arrêtée");
             break;
         case SDLK_d:
             if (s_app_on) {
@@ -313,6 +360,12 @@ static void script_expect(const char *args)
     else if (strcmp(field, "chrono") == 0) got = st.trip.chrono_running;
     else if (strcmp(field, "gps_err") == 0)
         got = s_app.parser.stats.bad_checksum + s_app.parser.stats.parse_errors;
+    else if (strcmp(field, "gps") == 0)      got = st.gps_present;
+    else if (strcmp(field, "mag") == 0)      got = st.mag_present;
+    else if (strcmp(field, "mag_cal") == 0)  got = st.mag_calibrated;
+    else if (strcmp(field, "head_src") == 0) got = st.heading_src;
+    else if (strcmp(field, "heading") == 0)  got = isnan(st.heading_deg) ? -1.0 : st.heading_deg;
+    else if (strcmp(field, "magcal") == 0)   got = st.magcal_sectors;
     else {
         fprintf(stderr, "script : champ inconnu « %s »\n", field);
         s_script_failures++;
@@ -385,6 +438,12 @@ static int script_step(uint32_t t_ms)
             ui_app_toggle_night();
         } else if (strcmp(verb, "signal") == 0) {
             hal_gps_sim_set_signal(!hal_gps_sim_signal());
+        } else if (strcmp(verb, "gps") == 0) {
+            hal_gps_sim_set_plugged(!hal_gps_sim_plugged());
+        } else if (strcmp(verb, "mag") == 0) {
+            hal_mag_sim_set_plugged(!hal_mag_sim_plugged());
+        } else if (strcmp(verb, "spin") == 0) {
+            hal_mag_sim_set_spin(!hal_mag_sim_spin());
         } else if (strcmp(verb, "power_cut") == 0) {
             app_init(&s_app, hal_time_ms());
         } else {
@@ -512,6 +571,7 @@ int main(int argc, char *argv[])
     ui_init(disp);
     if (s_app_on) {
         hal_gps_init(on_gps_line, &s_app);
+        hal_mag_init();
         ui_app_attach(&s_app);
         if (s_script == NULL) jingle_play(&JINGLE_BOOT);   /* avec l'animation de démarrage */
         printf("[sim] GPS : %s (×%g%s), sauvegarde : %s\n", replay ? replay : "trajet simulé", speed,
@@ -551,6 +611,8 @@ int main(int argc, char *argv[])
 
         if (s_app_on) {
             hal_gps_poll();
+            mag_vec_t mag;
+            if (hal_mag_poll(&mag)) app_mag_sample(&s_app, mag, hal_time_ms());
             app_tick(&s_app, hal_time_ms());
         }
 

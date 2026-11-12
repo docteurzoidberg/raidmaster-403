@@ -30,6 +30,7 @@ typedef enum {
     UI_SCREEN_BALADE,
     UI_SCREEN_MENU,
     UI_SCREEN_CALIB,
+    UI_SCREEN_MAGCAL,       /* calibration de la boussole */
     UI_SCREEN__COUNT,
 } ui_screen_id_t;
 
@@ -46,7 +47,7 @@ void ui_show_screen(ui_screen_id_t id);
 /* Renvoie l'écran courant. */
 ui_screen_id_t ui_current_screen(void);
 
-/* Cycle entre les écrans RAID → BALADE → MENU → RAID (helper pour la touche `v` du sim). */
+/* Cycle RAID → BALADE → MENU → CALIB → MAGCAL → RAID (helper pour la touche `v` du sim). */
 void ui_cycle_screen(void);
 
 /* Pousse un état trip au bon écran (raid ou balade selon celui qui est affiché). */

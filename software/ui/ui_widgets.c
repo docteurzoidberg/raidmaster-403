@@ -195,9 +195,11 @@ void ui_statusbar_update(ui_statusbar_t *sb, const ui_trip_state_t *s)
 
     const char *fix_txt = "--";
     lv_color_t  dot     = UI_C_CRIT;
-    if (s->fix_type == UI_FIX_2D)      { fix_txt = "2D"; dot = UI_C_WARN; }
+    if (s->gps_absent)                 fix_txt = "GPS ×";     /* module GPS absent */
+    else if (s->fix_type == UI_FIX_2D) { fix_txt = "2D"; dot = UI_C_WARN; }
     else if (s->fix_type == UI_FIX_3D) { fix_txt = "3D"; dot = UI_C_OK; }
     lv_label_set_text(sb->fix, fix_txt);
+    lv_obj_set_style_text_color(sb->fix, s->gps_absent ? UI_C_CRIT : UI_C_MUTED, 0);
     lv_obj_set_style_bg_color(sb->fix_dot, dot, 0);
     lv_obj_set_style_shadow_color(sb->fix_dot, dot, 0);
 
@@ -236,4 +238,21 @@ void ui_statusbar_update(ui_statusbar_t *sb, const ui_trip_state_t *s)
         if (isnan(s->t_cabin_c)) lv_label_set_text(sb->temp, "--°C");
         else lv_label_set_text_fmt(sb->temp, "%d°C", (int)lroundf(s->t_cabin_c));
     }
+}
+
+const char *ui_heading_tag(const ui_trip_state_t *s, lv_color_t *color)
+{
+    *color = UI_C_MUTED;
+    if (s->heading_src == UI_HEAD_SRC_MAG) return "MAG";
+    if (s->heading_src == UI_HEAD_SRC_GPS) return "GPS";
+    if (!s->heading_unknown) return "";
+    if (s->mag_state == UI_MAG_ABSENT) {
+        *color = UI_C_CRIT;
+        return "MAG ×";
+    }
+    if (s->mag_state == UI_MAG_UNCAL) {
+        *color = UI_C_WARN;
+        return "MAG ?";
+    }
+    return "";
 }

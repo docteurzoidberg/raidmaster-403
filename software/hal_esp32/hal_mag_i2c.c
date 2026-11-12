@@ -1,17 +1,19 @@
 /*
- * Raidmaster 403 — boussole du puck sur l'I2C1 (IO39 SDA, IO40 SCL, 100 kHz) : bus ESP-IDF pour
- * core/mag, sondage dans la boucle principale, journal du cap.
+ * Raidmaster 403 — hal_mag sur l'ESP32 : boussole du puck sur l'I2C1 (IO39 SDA, IO40 SCL,
+ * 100 kHz), puce reconnue et lue par core/mag, journal du cap brut. La calibration (tour complet
+ * depuis le menu), le lissage et le choix de la source du cap sont dans core/app.
  *
  * Le bus I2C1 est aussi celui prévu pour la carte boutons (PCF8574 0x20 / 0x21) : pas de conflit
  * d'adresse avec les boussoles (0x0C à 0x0F, 0x1C, 0x1E).
  *
- * Calibration provisoire pour le banc : les extrêmes du champ sont relevés en continu et appliqués
- * dès qu'un tour à plat est fait (calibration définitive avec l'UI : plus tard).
+ * Boussole coupée dans menuconfig : jamais de mesure, « boussole absente ».
  *
  * Licence : GPL-3.0.
  */
 
 #include "sdkconfig.h"
+
+#include "hal/hal_mag.h"
 
 #if CONFIG_RAIDMASTER_COMPASS
 
@@ -20,8 +22,7 @@
 #include "driver/i2c_master.h"
 #include "esp_log.h"
 
-#include "board.h"
-#include "mag.h"
+#include "hal/hal_time.h"
 
 static const char *TAG = "boussole";
 
@@ -33,7 +34,6 @@ static const char *TAG = "boussole";
 #else
 #define COMPASS_FLIPPED false
 #endif
-#define CAL_SPAN_UT   30.0f       /* composante horizontale ~21 µT en France : étendue ~42 µT par tour */
 
 typedef struct {
     uint8_t                 addr;
@@ -44,8 +44,6 @@ typedef struct {
 static i2c_master_bus_handle_t s_bus;
 static dev_slot_t             s_devs[MAX_DEVS];
 static mag_t                  s_mag;
-static mag_cal_acc_t          s_acc;
-static bool                   s_calibrated;
 static bool                   s_present;
 static uint64_t               s_next_log_ms;
 
@@ -105,7 +103,7 @@ static bool bus_write(uint8_t addr, uint8_t reg, uint8_t val, void *user)
     return ok;
 }
 
-void board_compass_init(uint64_t now_ms)
+void hal_mag_init(void)
 {
     const i2c_master_bus_config_t bc = {
         .i2c_port = I2C_NUM_1,
@@ -119,72 +117,58 @@ void board_compass_init(uint64_t now_ms)
         ESP_LOGE(TAG, "bus I2C1 indisponible");
         return;
     }
+    const uint64_t now = hal_time_ms();
     const mag_bus_t bus = {.read = bus_read, .write = bus_write};
-    mag_init(&s_mag, &bus, now_ms);
+    mag_init(&s_mag, &bus, now);
     mag_set_orient(&s_mag, (mag_orient_t){.yaw_quarter = CONFIG_RAIDMASTER_COMPASS_YAW / 90,
                                           .flipped = COMPASS_FLIPPED});
-    mag_cal_reset(&s_acc);
-    s_next_log_ms = now_ms;
+    s_next_log_ms = now;
     ESP_LOGI(TAG, "I2C1 (SDA %d, SCL %d, 100 kHz), rotation %d°%s", CONFIG_RAIDMASTER_COMPASS_SDA_GPIO,
              CONFIG_RAIDMASTER_COMPASS_SCL_GPIO, CONFIG_RAIDMASTER_COMPASS_YAW,
              COMPASS_FLIPPED ? ", à l'envers" : "");
 }
 
-#if CONFIG_RAIDMASTER_COMPASS_LOG_S > 0
-static void log_heading(void)
+bool hal_mag_poll(mag_vec_t *raw)
 {
-    const mag_vec_t r = mag_raw(&s_mag);
-    const mag_vec_t f = mag_field(&s_mag);
-    const float norm = sqrtf(r.x * r.x + r.y * r.y + r.z * r.z);
-    if (s_calibrated) {
-        ESP_LOGI(TAG, "(%.1f, %.1f, %.1f) µT, |B| %.0f µT, cap %.0f° brut, %.0f° calibré", r.x, r.y, r.z, norm,
-                 mag_heading_deg(r), mag_heading_deg(f));
-    } else {
-        ESP_LOGI(TAG, "(%.1f, %.1f, %.1f) µT, |B| %.0f µT, cap %.0f° brut (faire un tour à plat pour calibrer)",
-                 r.x, r.y, r.z, norm, mag_heading_deg(r));
-    }
-}
-#endif
-
-void board_compass_poll(uint64_t now_ms)
-{
-    if (s_bus == NULL) return;
-    if (mag_tick(&s_mag, now_ms)) {
-        mag_cal_feed(&s_acc, mag_raw(&s_mag));
-        mag_cal_t c;
-        if (mag_cal_compute(&s_acc, CAL_SPAN_UT, &c)) {
-            if (!s_calibrated) ESP_LOGI(TAG, "tour fait : fer dur (%.1f, %.1f) µT", c.offset.x, c.offset.y);
-            s_calibrated = true;
-            mag_set_cal(&s_mag, &c);
-        }
-    }
-    const bool present = mag_present(&s_mag, now_ms);
+    if (s_bus == NULL) return false;
+    const uint64_t now = hal_time_ms();
+    const bool fresh = mag_tick(&s_mag, now);
+    const bool present = mag_present(&s_mag, now);
     if (present != s_present) {
         s_present = present;
-        if (present) {
-            ESP_LOGI(TAG, "%s à 0x%02X", mag_chip_name(mag_chip(&s_mag)), mag_addr(&s_mag));
-        } else {
-            ESP_LOGW(TAG, "boussole absente");
-            mag_cal_reset(&s_acc);              /* autre puck possible : calibration à refaire */
-            s_calibrated = false;
-            mag_cal_t id;
-            mag_cal_identity(&id);
-            mag_set_cal(&s_mag, &id);
-        }
+        if (present) ESP_LOGI(TAG, "%s à 0x%02X", mag_chip_name(mag_chip(&s_mag)), mag_addr(&s_mag));
+        else         ESP_LOGW(TAG, "boussole absente");
     }
 #if CONFIG_RAIDMASTER_COMPASS_LOG_S > 0
-    if (present && now_ms >= s_next_log_ms) {
-        s_next_log_ms = now_ms + CONFIG_RAIDMASTER_COMPASS_LOG_S * 1000ULL;
-        log_heading();
+    if (present && now >= s_next_log_ms) {
+        s_next_log_ms = now + CONFIG_RAIDMASTER_COMPASS_LOG_S * 1000ULL;
+        const mag_vec_t r = mag_raw(&s_mag);
+        ESP_LOGI(TAG, "(%.1f, %.1f, %.1f) µT, |B| %.0f µT, cap brut %.0f° (non calibré)", r.x, r.y, r.z,
+                 sqrtf(r.x * r.x + r.y * r.y + r.z * r.z), mag_heading_deg(r));
     }
 #endif
+    if (fresh) *raw = mag_raw(&s_mag);
+    return fresh;
 }
 
-bool board_compass_heading(uint64_t now_ms, float *deg)
+bool hal_mag_present(void)
 {
-    if (s_bus == NULL || !mag_present(&s_mag, now_ms)) return false;
-    *deg = mag_heading_deg(mag_field(&s_mag));
-    return true;
+    return s_bus != NULL && mag_present(&s_mag, hal_time_ms());
+}
+
+#else /* boussole coupée dans menuconfig */
+
+void hal_mag_init(void) {}
+
+bool hal_mag_poll(mag_vec_t *raw)
+{
+    (void)raw;
+    return false;
+}
+
+bool hal_mag_present(void)
+{
+    return false;
 }
 
 #endif /* CONFIG_RAIDMASTER_COMPASS */

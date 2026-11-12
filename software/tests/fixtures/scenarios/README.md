@@ -32,6 +32,9 @@ se joue en une fraction de seconde). L'écran de démarrage dure 3 s et ignore l
 3600 m                           # bouton : a b plus minus m ; en majuscules = appui long (A, PLUS, M…)
 3900 a
 4000 signal                      # coupe / rétablit le signal GPS
+4000 gps                         # débranche / rebranche le récepteur (repart à 9 600 bauds)
+4000 mag                         # débranche / rebranche la boussole
+4000 spin                        # la voiture tourne sur place (30°/s) / s'arrête
 4050 power_cut                   # coupure d'alimentation : le core repart de la dernière sauvegarde
 4100 night                       # bascule jour / nuit
 4100 shot raid-apres-raz         # capture <dossier --out>/<nom>.ppm
@@ -40,7 +43,9 @@ se joue en une fraction de seconde). L'écran de démarrage dure 3 s et ignore l
 
 Champs de `expect` : `trip_a`, `trip_b`, `odo` (km), `speed`, `avg`, `max` (km/h), `calib` (%), `active`
 (0 A, 1 B), `fix`, `night`, `view` (0 raid, 1 balade), `hhmm` (heure locale, −1 inconnue), `alarm`,
-`chrono` (en marche), `gps_err` (phrases rejetées). Le sim sort en code 1 si une vérification échoue.
+`chrono` (en marche), `gps_err` (phrases rejetées), `gps` (récepteur présent), `mag` (boussole présente),
+`mag_cal` (calibrée), `head_src` (0 aucun, 1 route GPS, 2 boussole), `heading` (°, −1 inconnu), `magcal`
+(secteurs de 10° parcourus pendant la calibration). Le sim sort en code 1 si une vérification échoue.
 
 Les instants `@<s>` sont comptés depuis la première phrase horodatée de la trace ; un silence du module
 en tête de trace se joue donc avec `signal`. Le démarrage (3 s simulées) couvre `3 × --speed` secondes
@@ -64,13 +69,15 @@ chrono, sauvegarde toutes les 10 s) s'étire d'autant : les scénarios qui teste
 | 4 | `s15_backtrack` | ×10 | demi-tour à 180° : la distance continue de monter |
 | 4 | `s11_tunnel_loss` | ×10 | 2 min sans fix : trips figés ; rattrapage (règle provisoire) |
 | 4 | `s14_fix_degraded_3d_to_2d` | ×50 | fix 2D pendant 10 min : distance inchangée |
+| 4 | `s18_gps_debranche` | ×10 | puck débranché en roulant puis rebranché à 9 600 bauds : « GPS × », recherche, réglage, rattrapage |
 | 5 | `s30_full_raid_day` | ×1000 | étape de 12 h, bruit, pics de HDOP : 717 km à ±0,2 % |
 | 5 | `s31_power_loss_mid` | ×1 | coupure d'alimentation à 90 km/h : réglages relus, ≤ 250 m perdus |
 | 6 | `s04_mountain_pass` | ×100 | col, virages à 25 °/s |
 | 6 | `s05_offroad_slow` | ×100 | piste 20-40 km/h, cahots |
+| 6 | `s40_calibration_rotation` | ×1 | calibration de la boussole par l'interface (tour sur place), cap boussole à l'arrêt, route GPS en roulant, boussole débranchée |
 | 7 | `s12_canyon_hdop` | ×50 | HDOP 8 pendant 2 min : fixs refusés, fix perdu, ±2 % |
 | 7 | `s16_antimeridian` | ×10 | traversée du méridien 180° |
 | 7 | `s17_midnight_utc` | ×10 | minuit UTC en roulant : heure locale et distance continuent |
 
-À venir : boussole et inclinomètre (s40, s41, s42), dégradations matérielles (s32 SD pleine, s33
+À venir : inclinomètre et perturbation magnétique (s41, s42), dégradations matérielles (s32 SD pleine, s33
 batterie critique).

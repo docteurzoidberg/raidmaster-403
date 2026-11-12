@@ -7,7 +7,7 @@
  *
  * GPS : trajet simulé (hal_esp32/hal_gps_demo.c, par défaut) ou récepteur u-blox réel sur l'UART1
  * (hal_esp32/hal_gps_uart.c : M9N de la carte fille ou puck M8N), au choix dans menuconfig ; boussole
- * du puck sur l'I2C1 (hal_esp32/board_compass.c, cap dans le journal). Tactile
+ * du puck sur l'I2C1 (hal_esp32/hal_mag_i2c.c ; cap à l'écran par core/app). Tactile
  * en guise de boutons (touch_buttons.c), réglages et distances en NVS. Toutes les 10 s, une
  * ligne de journal donne images/s, durée d'envoi d'une image et mémoire libre. Appui long sur
  * PWR : extinction propre (le PMIC rallume la carte au prochain appui).
@@ -34,6 +34,7 @@
 #include "board.h"
 #include "jingles.h"
 #include "hal/hal_gps.h"
+#include "hal/hal_mag.h"
 #include "hal/hal_time.h"
 #include "theme.h"
 #include "touch_buttons.h"
@@ -116,9 +117,7 @@ void app_main(void)
     ui_theme_set_night(s_app.set.night);
     ui_init(disp);
     hal_gps_init(on_gps_line, &s_app);
-#if CONFIG_RAIDMASTER_COMPASS
-    board_compass_init(hal_time_ms());
-#endif
+    hal_mag_init();
     ui_app_attach(&s_app);
 
     /* Première image envoyée en entier, puis laissée au panneau le temps de l'afficher (il relit sa
@@ -140,9 +139,8 @@ void app_main(void)
         hal_gps_poll();
         const uint64_t now = hal_time_ms();
         app_tick(&s_app, now);
-#if CONFIG_RAIDMASTER_COMPASS
-        board_compass_poll(now);
-#endif
+        mag_vec_t mag;
+        if (hal_mag_poll(&mag)) app_mag_sample(&s_app, mag, now);
 #if CONFIG_RAIDMASTER_TOUCH_BUTTONS
         touch_buttons_poll(now);
 #endif

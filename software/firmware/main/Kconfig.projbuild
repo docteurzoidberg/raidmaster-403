@@ -110,7 +110,8 @@ menu "Raidmaster 403"
         help
             Magnétomètre du puck (QMC5883L, IST8310, HMC5883L ou LIS3MDL, reconnu seul) sur le bus
             I2C1. Sur le J8 de la Waveshare seule : SDA du puck sur la broche 10 (IO39), SCL sur la
-            broche 12 (IO40). Le cap est écrit dans le journal ; pas encore à l'écran.
+            broche 12 (IO40). Cap à l'écran après calibration (menu « Calibration boussole »),
+            cap brut dans le journal.
 
     if RAIDMASTER_COMPASS
 

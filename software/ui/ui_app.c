@@ -7,7 +7,9 @@
  *   menu : + monte, − descend, Menu choisit (édition, bascule ou écran dédié), Menu long sort ;
  *          en édition, +/− changent la valeur et Menu (court ou long) termine ;
  *   calibration auto : A départ puis arrivée, +/− distance réelle (long : ±100 m), Menu valide,
- *                      B annule, Menu long revient au menu.
+ *                      B annule, Menu long revient au menu ;
+ *   calibration boussole : A commence le tour, Menu enregistre (tour complet), B annule,
+ *                      Menu long revient au menu.
  *
  * Licence : GPL-3.0.
  */
@@ -22,6 +24,7 @@
 #include "hal/hal_power.h"
 #include "hal/hal_time.h"
 #include "screen_calib.h"
+#include "screen_magcal.h"
 #include "screen_menu.h"
 #include "theme.h"
 #include "ui.h"
@@ -37,7 +40,15 @@ typedef enum {
     CAL_DONE,           /* résultat affiché */
 } cal_phase_t;
 
+typedef enum {
+    MAGCAL_IDLE = 0,    /* consigne, en attente de A */
+    MAGCAL_TURNING,     /* tour en cours */
+    MAGCAL_SAVED,       /* calibration enregistrée */
+    MAGCAL_SHORT,       /* MENU avant la fin du tour */
+} magcal_phase_t;
+
 static app_t      *s_app;
+static magcal_phase_t s_magcal;
 static bool        s_editing;
 static cal_phase_t s_cal;
 static double      s_cal_real_m;
@@ -86,7 +97,7 @@ static void refresh_menu(const app_state_t *st)
         snprintf(b, sizeof(b), "%u km/h", (unsigned)st->set.speed_alarm_kmh);
     screen_menu_set_value(MENU_ALARM, b);
     screen_menu_set_value(MENU_GPX, st->set.gpx_log ? "ON" : "OFF");
-    screen_menu_set_value(MENU_COMPASS, "›");
+    screen_menu_set_value(MENU_COMPASS, !st->mag_present ? "ABSENTE" : (st->mag_calibrated ? "OK" : "À FAIRE"));
     screen_menu_set_editing(s_editing);
 }
 
@@ -126,6 +137,42 @@ static void refresh_calib(const app_state_t *st)
     }
 }
 
+static void refresh_magcal(const app_state_t *st)
+{
+    char cap[16];
+    if (st->heading_src == APP_HEAD_MAG && !isnan(st->heading_deg))
+        snprintf(cap, sizeof(cap), "%03d°", (int)lroundf(st->heading_deg) % 360);
+    else
+        snprintf(cap, sizeof(cap), "---");
+    const uint64_t mask = st->magcal_running ? st->magcal_mask : (s_magcal == MAGCAL_SAVED ? ~0ULL : 0);
+    if (!st->mag_present) {
+        screen_magcal_set("Boussole absente : vérifier le branchement du puck. MENU long : retour.", mask, cap,
+                          "BOUSSOLE ABSENTE", MAGCAL_TONE_ALERT);
+        return;
+    }
+    switch (s_magcal) {
+    case MAGCAL_IDLE:
+        screen_magcal_set("Sur place, loin des autres véhicules : faire un tour complet, lentement (volant "
+                          "braqué). A : commencer. MENU long : retour.",
+                          0, cap, st->mag_calibrated ? "CALIBRÉE · A : REFAIRE" : "À CALIBRER · A : COMMENCER",
+                          st->mag_calibrated ? MAGCAL_TONE_OK : MAGCAL_TONE_INFO);
+        break;
+    case MAGCAL_TURNING:
+    case MAGCAL_SHORT:
+        screen_magcal_set("Tourner lentement jusqu'à remplir l'anneau, puis MENU pour enregistrer. B : annuler.",
+                          mask, cap,
+                          st->magcal_ready ? "TOUR COMPLET · MENU : ENREGISTRER"
+                                           : (s_magcal == MAGCAL_SHORT ? "TOUR INCOMPLET · CONTINUER" : "TOURNER ENCORE"),
+                          st->magcal_ready ? MAGCAL_TONE_OK : (s_magcal == MAGCAL_SHORT ? MAGCAL_TONE_ALERT : MAGCAL_TONE_INFO));
+        break;
+    case MAGCAL_SAVED:
+        screen_magcal_set("Calibration enregistrée : le cap de la boussole s'affiche à l'arrêt et sous 15 km/h. "
+                          "A : refaire. MENU long : retour.",
+                          mask, cap, "CALIBRATION ENREGISTRÉE", MAGCAL_TONE_OK);
+        break;
+    }
+}
+
 static void refresh(lv_timer_t *t)
 {
     (void)t;
@@ -140,9 +187,13 @@ static void refresh(lv_timer_t *t)
     u.odo_km = st.trip.odo_m / 1000.0;
     u.speed_kmh = st.trip.speed_kmh;
     u.avg_kmh = st.trip.avg_kmh;
-    /* Cap : route GPS en attendant la boussole (QMC5883L), inconnu à l'arrêt. */
-    u.heading_unknown = isnan(st.trip.course_deg);
-    u.heading_deg = u.heading_unknown ? 0 : (int)lroundf(st.trip.course_deg) % 360;
+    /* Cap : boussole à l'arrêt et à basse vitesse, route GPS au-delà (choix du core). */
+    u.heading_unknown = isnan(st.heading_deg);
+    u.heading_deg = u.heading_unknown ? 0 : (int)lroundf(st.heading_deg) % 360;
+    u.heading_src = st.heading_src == APP_HEAD_MAG ? UI_HEAD_SRC_MAG
+                  : (st.heading_src == APP_HEAD_GPS ? UI_HEAD_SRC_GPS : UI_HEAD_SRC_UNSET);
+    u.mag_state = !st.mag_present ? UI_MAG_ABSENT : (st.mag_calibrated ? UI_MAG_OK : UI_MAG_UNCAL);
+    u.gps_absent = !st.gps_present;
     u.chrono_s = st.trip.chrono_ms / 1000U;
     u.fix_type = st.trip.fix_ok ? UI_FIX_3D : UI_FIX_NONE;
     hal_power_t pw;
@@ -163,6 +214,7 @@ static void refresh(lv_timer_t *t)
 
     refresh_menu(&st);
     refresh_calib(&st);
+    refresh_magcal(&st);
 }
 
 static void refresh_now(void)
@@ -237,7 +289,8 @@ static void activate_selected(void)
         app_set_gpx_log(s_app, !s_app->set.gpx_log);
         break;
     case MENU_COMPASS:
-        printf("[ui] calibration boussole : à venir (QMC5883L)\n");
+        s_magcal = MAGCAL_IDLE;
+        ui_show_screen(UI_SCREEN_MAGCAL);
         break;
     default:
         break;
@@ -301,6 +354,33 @@ static void on_calib_screen(ui_button_t btn, bool lng)
     }
 }
 
+static void on_magcal_screen(ui_button_t btn, bool lng)
+{
+    switch (btn) {
+    case UI_BTN_A:
+        if (!lng) {
+            app_magcal_start(s_app);
+            s_magcal = MAGCAL_TURNING;
+        }
+        break;
+    case UI_BTN_B:
+        app_magcal_stop(s_app);
+        s_magcal = MAGCAL_IDLE;
+        break;
+    case UI_BTN_MENU:
+        if (lng) {
+            app_magcal_stop(s_app);
+            s_magcal = MAGCAL_IDLE;
+            ui_show_screen(UI_SCREEN_MENU);
+        } else if (s_magcal == MAGCAL_TURNING || s_magcal == MAGCAL_SHORT) {
+            s_magcal = app_magcal_apply(s_app) ? MAGCAL_SAVED : MAGCAL_SHORT;
+        }
+        break;
+    default:
+        break;
+    }
+}
+
 static void on_view_screen(ui_button_t btn, bool lng)
 {
     switch (btn) {
@@ -330,6 +410,7 @@ static void on_button(ui_button_t btn, ui_button_event_t ev, void *user)
     case UI_SCREEN_BOOT:   return;
     case UI_SCREEN_MENU:   on_menu_screen(btn, lng); break;
     case UI_SCREEN_CALIB:  on_calib_screen(btn, lng); break;
+    case UI_SCREEN_MAGCAL: on_magcal_screen(btn, lng); break;
     default:               on_view_screen(btn, lng); break;
     }
     refresh_now();

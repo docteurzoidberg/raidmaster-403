@@ -125,13 +125,6 @@ esp_err_t board_amp_enable(bool on);
  * prise pour UTC+1) en ms UTC, -1 si illisibles. Borne basse de toute heure valable. */
 int64_t board_build_time_utc_ms(void);
 
-/* Boussole du puck sur l'I2C1 (menuconfig « Boussole du puck », board_compass.c) : bus créé à
- * l'init, puce cherchée puis lue à 20 Hz par poll (boucle principale), cap dans le journal.
- * heading : false si la boussole est absente ou l'option coupée. */
-void board_compass_init(uint64_t now_ms);
-void board_compass_poll(uint64_t now_ms);
-bool board_compass_heading(uint64_t now_ms, float *deg);
-
 /* Fonctions internes au composant. */
 void      board_backlight_init(void);   /* PWM à 0 % : rétroéclairage éteint */
 esp_err_t board_display_init(uint32_t pclk_hz);

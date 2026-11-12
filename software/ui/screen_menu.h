@@ -25,7 +25,7 @@ typedef enum {
     MENU_VIEW,          /* Affichage RAID / BALADE (bascule) */
     MENU_ALARM,         /* Alarme vitesse (édition +/−) */
     MENU_GPX,           /* Log GPX sur SD (bascule) */
-    MENU_COMPASS,       /* Calibration boussole → écran dédié (à venir) */
+    MENU_COMPASS,       /* Calibration boussole → écran dédié */
     MENU__COUNT,
 } menu_item_id_t;
 

@@ -80,7 +80,7 @@ Si le flash n'arrive pas à se connecter : maintenir **BOOT**, appuyer sur **RES
 | Source GPS | démonstration | trajet simulé, ou **récepteur u-blox sur UART** (M9N ou puck M8N) : cherché à 115 200, 38 400 puis 9 600 bauds, reconnu par UBX-MON-VER, réglé (10 Hz, modèle automobile, RMC + GGA seules) puis passé au débit voulu ; réglé à chaque démarrage, rien n'est enregistré dans le récepteur |
 | UART, GPIO TX / RX / EN | UART1, 17 / 18 / 45 | puck sur le J8 de la Waveshare seule : TX du puck sur la broche 17 (IO18), RX sur la broche 15 (IO17), alimentation VBAT ; EN (régulateur GNSS de la carte fille) sans effet, −1 pour aucun |
 | Débit voulu, cadence | 115 200 bauds, 10 Hz | cadence du M8N en multi-constellation à vérifier au banc |
-| Boussole du puck sur I2C1 | oui avec le récepteur réel | QMC5883L, IST8310, HMC5883L ou LIS3MDL reconnu seul, lu à 20 Hz ; sur le J8 : SDA du puck broche 10 (IO39), SCL broche 12 (IO40) ; cap dans le journal |
+| Boussole du puck sur I2C1 | oui avec le récepteur réel | QMC5883L, IST8310, HMC5883L ou LIS3MDL reconnu seul, lu à 20 Hz ; sur le J8 : SDA du puck broche 10 (IO39), SCL broche 12 (IO40) ; cap à l'écran après calibration (menu « Calibration boussole » : un tour sur place), cap brut dans le journal |
 | Rotation, à l'envers | 0°, non | montage de la puce par rapport à la flèche du puck (comme `COMPASS_ORIENT` d'ArduPilot) : flèche vers le nord, le cap lu doit valoir ~0° |
 | Journal du cap | toutes les 1 s | 0 : changements d'état seulement |
 | Tactile en guise de boutons | oui | 5 bandes verticales invisibles, un cinquième de la largeur chacune : **A, B, −, +, Menu** (de gauche à droite) ; appui long ≥ 800 ms |
@@ -124,8 +124,8 @@ jusqu'au premier fix GPS), `pmu: AXP2101 : REG00 …, VBUS … mV` (relevé brut
 `hal_gps: récepteur sur UART1 (TX 17, RX 18, EN 45), cible 115200 bauds, 10 Hz`, puis
 `hal_gps: u-blox M8 NEO-M8N (PROTVER 18.00, …), 115200 bauds` une fois reconnu et réglé, ou
 `hal_gps: module GPS absent` après 3 s de silence ; avec la boussole :
-`boussole: QMC5883L à 0x0D`, puis chaque seconde `boussole: (x, y, z) µT, |B| … µT, cap …° brut` (après un
-tour à plat : `tour fait : fer dur (…)` et le cap calibré en plus), ou `boussole: boussole absente`),
+`boussole: QMC5883L à 0x0D`, puis chaque seconde `boussole: (x, y, z) µT, |B| … µT, cap brut …° (non
+calibré)`, ou `boussole: boussole absente`),
 `raidmaster: démarré, libre : interne … Ko, PSRAM … Ko`, `audio: codec ES8311 prêt, volume 70` (ou
 `audio: son indisponible (…)`). Puis toutes les 10 s :
 `raidmaster: <n> images/s, envoi <t> ms, libre : …` (images réellement envoyées à l'écran, durée de

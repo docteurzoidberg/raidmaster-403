@@ -31,11 +31,11 @@ Distance **GPS uniquement**, sans capteur de roue ni intervention sur le câblag
 | 1 | Squelette CMake + simulateur SDL 480 × 320 | fait |
 | 2 | Core portable + tests : `gps_parser` (NMEA, sur minmea), `trip_engine` (distance, moyenne, chrono, calibration), `app` (boutons, menu, sauvegarde) | fait |
 | 3 | Interface LVGL câblée sur le core : raid, balade, menu réglages actif, calibration auto, démarrage animé, mode nuit | fait |
-| 4 | Simulateur : rejeu de traces NMEA, trajet simulé, scénarios de bout en bout | 21 scénarios GPS en place ; boussole et matériel à venir |
+| 4 | Simulateur : rejeu de traces NMEA, trajet simulé, scénarios de bout en bout | 23 scénarios en place (GPS, puck débranché, calibration de la boussole) ; inclinomètre et matériel à venir |
 | 5-6 | HAL ESP32 et firmware sur la carte | en cours : firmware de démo validé sur la carte (écran, tactile, core et UI du sim, trajet GPS simulé, NVS, heure de la RTC, état USB / batterie), jingle de démarrage par le codec ES8311 (à écouter sur la carte) ; pilote du récepteur GPS réel écrit (NEO-M9N ou puck NEO-M8N sur UART : débit trouvé, modèle reconnu, réglé à 10 Hz) et de sa boussole (QMC5883L, IST8310, HMC5883L ou LIS3MDL sur I²C, cap dans le journal), à essayer sur la carte ; cap à l'écran, boutons, charge de la batterie à venir |
 | 7-13 | Essai en modules, carte fille 4 couches (GPS, magnétomètre), boîtier aimanté, essai raid | à faire ; carte 3.5B reçue, datasheets et modèle 3D rassemblés ; PCB placé, non routé (version 1.1 : GPS interne ou puck externe) ; maquette 3D des cartes dans un boîtier de principe validée ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/)) ; boîtier dessiné dans Fusion, STEP des pièces dans `enclosure/stepfiles/`, à éprouver |
 
-Pas encore là : boussole (le cap affiché est la route GPS), réglages de charge de la batterie (l'état
+Pas encore là : compensation d'inclinaison de la boussole, réglages de charge de la batterie (l'état
 USB / batterie est lu, pas configuré), température réelle, log GPX.
 
 ## Maquette 3D
@@ -104,6 +104,9 @@ avec l'animation par la sortie audio SDL (WSLg sous WSL) ; `SDL_AUDIODRIVER=dumm
 | `Maj` + touche | appui long : `Maj`+`m` entre dans le menu ou en sort, `Maj`+`+`/`−` ±100 m |
 | `n` ou `Tab` | bascule jour / nuit |
 | `d` | coupe / rétablit le signal GPS (tunnel) |
+| `g` | débranche / rebranche le récepteur GPS (« GPS × », puis recherche du débit et réglage) |
+| `c` | débranche / rebranche la boussole |
+| `r` | la voiture tourne sur place / s'arrête (calibration de la boussole) |
 | `p` | alimentation suivante (barre d'état) : batterie 68 %, USB en charge, USB batterie pleine, USB sans batterie, batterie 8 % |
 | `v` | écran suivant (debug) |
 | `Échap` | quitter (sauvegarde) |
@@ -118,8 +121,9 @@ tools/check.sh        # build + avertissements + tests + GIF + build firmware, r
 ```
 
 - Tests unitaires du core avec [Unity](https://github.com/ThrowTheSwitch/Unity) : parseur NMEA, moteur
-  de distance, application (boutons, menu, sauvegarde), synthétiseur et jingle de démarrage.
-- Scénarios de bout en bout (`software/tests/fixtures/scenarios/`, 21 au catalogue) : le simulateur sans fenêtre
+  de distance, application (boutons, menu, sauvegarde, source du cap), liaison avec le récepteur u-blox,
+  boussole, synthétiseur et jingle de démarrage.
+- Scénarios de bout en bout (`software/tests/fixtures/scenarios/`, 23 au catalogue) : le simulateur sans fenêtre
   rejoue une trace, appuie sur les boutons et vérifie l'état, en temps virtuel (une étape de 12 h se
   joue en moins d'une seconde, la suite entière en ~1,5 s). Les traces sont générées au build depuis
   l'itinéraire `route.txt` de chaque scénario (`software/tests/tools/gen_route.py`, Python sans dépendance).

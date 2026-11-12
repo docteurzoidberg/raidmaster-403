@@ -1,0 +1,11 @@
+# s18 — module GPS débranché en roulant : 2 min plein nord à 60 km/h ; le puck est débranché puis
+# rebranché par le script (action gps), la trace ne change pas.
+heading 0
+stop 20
+mark depart
+drive 4 0 60
+mark debranche
+drive 116 60 60
+drive 4 60 0
+mark arrivee
+stop 30

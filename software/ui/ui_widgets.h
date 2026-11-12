@@ -59,6 +59,10 @@ void ui_statusbar_create(lv_obj_t *parent, ui_statusbar_t *sb, bool show_hz, boo
                          const char *mode_text);
 void ui_statusbar_update(ui_statusbar_t *sb, const ui_trip_state_t *s);
 
+/* Étiquette de la source du cap (cellules CAP) : « MAG », « GPS », « MAG × » (boussole absente,
+ * aucun cap), « MAG ? » (pas calibrée, aucun cap) ou rien ; couleur dans *color. */
+const char *ui_heading_tag(const ui_trip_state_t *s, lv_color_t *color);
+
 #ifdef __cplusplus
 }
 #endif

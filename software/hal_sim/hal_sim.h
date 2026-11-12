@@ -2,7 +2,8 @@
  * Raidmaster 403 — HAL du simulateur PC : réglages propres au sim.
  *
  * Implémente hal/hal_storage.h (fichier JSON), hal/hal_gps.h (rejeu d'un .nmea ou trajet
- * simulé), hal/hal_time.h (CLOCK_MONOTONIC, horloge de la carte émulée), hal/hal_power.h
+ * simulé, par core/gps_link face à un M8N émulé), hal/hal_mag.h (boussole émulée),
+ * hal/hal_time.h (CLOCK_MONOTONIC, horloge de la carte émulée), hal/hal_power.h
  * (état d'alimentation choisi au clavier) et hal/hal_audio.h (sortie audio SDL).
  *
  * Licence : GPL-3.0.
@@ -30,6 +31,22 @@ bool hal_gps_sim_config(const char *path, double speed, bool loop);
 /* Coupe / rétablit le signal (tunnel) ; touche `d` du sim. */
 void hal_gps_sim_set_signal(bool on);
 bool hal_gps_sim_signal(void);
+
+/* Débranche / rebranche le récepteur (puck) ; touche `g` du sim. Rebranché, il repart à 9 600
+ * bauds (débit d'usine) : la liaison (core/gps_link) le cherche et le règle de nouveau. */
+void hal_gps_sim_set_plugged(bool on);
+bool hal_gps_sim_plugged(void);
+
+/* Cap vrai du véhicule simulé (trajet simulé ou dernière RMC rejouée en mouvement), en degrés. */
+double hal_gps_sim_heading(void);
+
+/* Boussole émulée : champ terrestre (21 µT horizontal, 42 µT vertical) tourné selon le cap du
+ * véhicule, fer dur de la voiture (8, −5, 3) µT, bruit de ±0,3 µT, 20 Hz. */
+void hal_mag_sim_set_plugged(bool on);      /* touche `c` */
+bool hal_mag_sim_plugged(void);
+void hal_mag_sim_set_spin(bool on);         /* touche `r` : la voiture tourne sur place, 30°/s ;
+                                              * à l'arrêt, elle retrouve le cap de son trajet */
+bool hal_mag_sim_spin(void);
 
 /* Horloge virtuelle : hal_time ne bouge plus que par hal_time_sim_advance_ms (mode script). */
 void hal_time_sim_virtual(bool on);

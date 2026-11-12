@@ -25,7 +25,7 @@ target_compile_definitions(test_trip_engine PRIVATE
 add_test(NAME trip_engine COMMAND test_trip_engine)
 
 # core/app : hal_storage en mémoire, horloge de la carte figée.
-add_executable(test_app test_app.c fake_storage.c fake_clock.c)
+add_executable(test_app test_app.c fake_storage.c fake_clock.c fake_gps.c)
 target_link_libraries(test_app PRIVATE raidmaster_core unity)
 add_test(NAME app COMMAND test_app)
 
@@ -71,10 +71,12 @@ set(SCENARIOS
     "s15_backtrack|10"
     "s11_tunnel_loss|10"
     "s14_fix_degraded_3d_to_2d|50"
+    "s18_gps_debranche|10"
     # Phase 5 — longue durée
     "s30_full_raid_day|1000"
     "s31_power_loss_mid|1"
-    # Phases 6 et 7 — parties GPS (boussole : à venir)
+    # Phases 6 et 7
+    "s40_calibration_rotation|1"
     "s04_mountain_pass|100"
     "s05_offroad_slow|100"
     "s12_canyon_hdop|50"

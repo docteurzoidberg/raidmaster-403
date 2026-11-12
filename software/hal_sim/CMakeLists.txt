@@ -1,8 +1,9 @@
-# HAL du simulateur PC : stockage JSON, GPS (rejeu .nmea ou trajet simulé), horloge POSIX,
+# HAL du simulateur PC : stockage JSON, GPS (rejeu .nmea ou trajet simulé), boussole émulée, horloge POSIX,
 # alimentation choisie au clavier, assets générés au build (animation de démarrage), son SDL.
 add_library(raidmaster_hal_sim STATIC
     hal_storage_json.c
     hal_gps_sim.c
+    hal_mag_sim.c
     hal_time_posix.c
     hal_power_sim.c
     hal_asset_file.c

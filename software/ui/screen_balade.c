@@ -26,6 +26,7 @@ static ui_statusbar_t s_sb;
 static lv_obj_t      *s_lbl_speed;
 static lv_obj_t      *s_lbl_odo;
 static lv_obj_t      *s_lbl_cap;
+static lv_obj_t      *s_lbl_cap_src;
 static lv_obj_t      *s_lbl_trip;
 static lv_obj_t      *s_lbl_temp;
 static lv_obj_t      *s_lbl_trip_name;
@@ -72,6 +73,8 @@ lv_obj_t *screen_balade_create(void)
     /* Trois cellules du bas. */
     ui_hline(s_scr, X_L, BTM_DIV, X_R - X_L);
     s_lbl_cap  = btm_cell(0, "CAP", "---°", NULL);
+    s_lbl_cap_src = ui_label(s_scr, UI_FONT_SMALL, UI_C_MUTED, "");     /* MAG, GPS, MAG ×, MAG ? */
+    ui_place_baseline(s_lbl_cap_src, X_L + 44, BTM_LBL, LV_TEXT_ALIGN_LEFT, 0);
     s_lbl_trip = btm_cell(1, "TRIP", "0,0 km", &s_lbl_trip_name);
     s_lbl_temp = btm_cell(2, "T°", "--°C", NULL);
 
@@ -98,6 +101,9 @@ void screen_balade_update(const ui_trip_state_t *s)
     if (cap < 0) cap += 360;
     if (s->heading_unknown) lv_label_set_text(s_lbl_cap, "---°");
     else lv_label_set_text_fmt(s_lbl_cap, "%03d° %s", cap, cardinal_for_heading(cap));
+    lv_color_t tag_c;
+    lv_label_set_text(s_lbl_cap_src, ui_heading_tag(s, &tag_c));
+    lv_obj_set_style_text_color(s_lbl_cap_src, tag_c, 0);
 
     ui_fmt_km(buf, sizeof(buf), s->active_trip ? s->trip_b_km : s->trip_a_km, 1);
     lv_label_set_text_fmt(s_lbl_trip, "%s km", buf);

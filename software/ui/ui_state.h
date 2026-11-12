@@ -30,6 +30,19 @@ typedef enum {
     UI_PWR_CHARGING,        /* alimentation externe, batterie en charge */
 } ui_power_t;
 
+/* Source du cap affiché. UNSET (démo, maquettes) : pas d'étiquette. */
+typedef enum {
+    UI_HEAD_SRC_UNSET = 0,
+    UI_HEAD_SRC_GPS,        /* route GPS (en roulant) */
+    UI_HEAD_SRC_MAG,        /* boussole calibrée (à l'arrêt, basse vitesse) */
+} ui_heading_src_t;
+
+typedef enum {
+    UI_MAG_OK = 0,
+    UI_MAG_ABSENT,          /* boussole absente (puck débranché, I²C muet) */
+    UI_MAG_UNCAL,           /* présente mais pas calibrée (menu « Calibration boussole ») */
+} ui_mag_state_t;
+
 #define UI_BATT_UNKNOWN 0xFFu   /* battery_pct : pas de batterie, ou charge inconnue */
 
 typedef struct {
@@ -38,7 +51,7 @@ typedef struct {
     double   odo_km;         /* Odomètre total */
     float    speed_kmh;      /* Vitesse instantanée */
     float    avg_kmh;        /* Vitesse moyenne (hors arrêts) */
-    int      heading_deg;    /* Cap boussole 0..359 */
+    int      heading_deg;    /* Cap affiché 0..359 (boussole ou route GPS, voir heading_src) */
     uint32_t chrono_s;       /* Chrono (s) */
     uint8_t  fix_type;       /* ui_fix_type_t */
     uint8_t  battery_pct;    /* 0..100, UI_BATT_UNKNOWN sans batterie ou si inconnue */
@@ -46,8 +59,11 @@ typedef struct {
     float    t_cabin_c;      /* Température habitacle (°C), NAN si inconnue */
     char     time_hhmm[6];   /* "HH:MM" zéro-terminé, vide si heure inconnue */
     uint8_t  active_trip;    /* 0 : Trip A, 1 : Trip B (celui que corrigent +/−) */
-    bool     heading_unknown;/* cap inconnu (pas de boussole ni de route GPS) */
+    bool     heading_unknown;/* cap inconnu (ni boussole calibrée ni route GPS) */
     bool     speed_alarm;    /* vitesse au-dessus du seuil d'alarme */
+    bool     gps_absent;     /* module GPS absent (récepteur muet) : « GPS × » dans la barre d'état */
+    uint8_t  heading_src;    /* ui_heading_src_t */
+    uint8_t  mag_state;      /* ui_mag_state_t */
 } ui_trip_state_t;
 
 #ifdef __cplusplus

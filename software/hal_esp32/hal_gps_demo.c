@@ -44,6 +44,11 @@ void hal_gps_init(hal_gps_line_cb cb, void *user)
     ESP_LOGI(TAG, "GPS de démonstration : trajet simulé (aucun récepteur)");
 }
 
+bool hal_gps_present(void)
+{
+    return true;
+}
+
 void hal_gps_poll(void)
 {
     gps_synth_run(&s_synth, hal_time_ms() - s_t0_ms, true, s_cb, s_user);

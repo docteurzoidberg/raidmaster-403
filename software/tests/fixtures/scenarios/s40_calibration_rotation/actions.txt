@@ -1,0 +1,37 @@
+# s40 — ×1. Calibration de la boussole par l'interface, voiture à l'arrêt tournée vers l'est :
+# menu « Calibration boussole », A, un tour sur place (spin : 30°/s), MENU enregistre. Puis cap de
+# la boussole à l'arrêt, route GPS en roulant à 50 km/h, boussole débranchée : route GPS en
+# roulant, plus de cap à l'arrêt. Boussole émulée avec un fer dur de (8, −5) µT.
+3500 expect mag      1
+3500 expect mag_cal  0
+3500 expect head_src 0               # à l'arrêt, boussole pas calibrée : pas de cap
+3500 M                               # menu
+3600 minus
+3700 minus
+3800 minus
+3900 minus
+4000 minus
+4100 minus
+4200 minus                           # Calibration boussole
+4300 m                               # écran de calibration
+4500 a                               # départ du tour
+4600 spin
+10600 expect magcal 24 4             # demi-tour en 6 s (secteurs surestimés tant que le centre
+                                     # du cercle n'est pas connu)
+10700 m                              # MENU trop tôt : refusé
+10800 expect mag_cal 0
+16800 spin                           # 12,2 s : un peu plus d'un tour
+16900 expect magcal 36 2
+17000 m                              # enregistre
+17100 expect mag_cal 1
+18000 expect head_src 2              # à l'arrêt : boussole
+18000 expect heading 90 3
+18100 M                              # retour au menu
+@50 expect head_src 1                # 50 km/h : route GPS
+@50 expect heading 90 1
+@60 mag                              # boussole débranchée en roulant
+@62 expect mag       0
+@62 expect head_src  1               # repli : route GPS
+@75 expect head_src  0               # à l'arrêt, sans boussole : pas de cap
+@75 expect heading   -1
+@76 quit
