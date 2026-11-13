@@ -2,7 +2,7 @@
 
 Le boîtier du Raidmaster 403 est dessiné dans Fusion, en modèle paramétrique, pour une impression en PETG ou
 ASA (pas de PLA : l'habitacle monte à 60 °C en été) avec des pare-chocs en TPU. Il mesure 123 × 93,6 ×
-33,2 mm, 37,2 mm sur la bosse de la trappe de la batterie (126,6 × 38,7 × 97,2 mm hors tout avec les pare-chocs et les capuchons des boutons). Une
+33,2 mm, 37,2 mm sur la bosse de la trappe de la batterie (126,6 × 39,7 × 97,2 mm hors tout avec les pare-chocs et les capuchons des boutons). Une
 [maquette 3D](../web/mockup/) montre les cartes dans leur boîtier ([en ligne](https://docteurzoidberg.github.io/raidmaster-403/mockup/)).
 
 Les cotes sont encore à éprouver (inserts, jeux, languettes du TPU) : ces fichiers ne sont pas une version
@@ -10,15 +10,15 @@ validée pour l'impression.
 
 ## Fichiers STEP du projet (`stepfiles/`)
 
-Exports STEP des pièces depuis Fusion (2026-11-12 ; coque arrière, façade et trappe de la batterie le 2026-11-13), toutes dans le même repère (origine au centre de la vitre
+Exports STEP des pièces depuis Fusion (2026-11-12 ; coque arrière, façade et trappe de la batterie le 2026-11-13 ; façade, capuchons et pare-chocs refaits le même jour : capuchons plus saillants, guides anti-rotation, coins en TPU plus épais devant), toutes dans le même repère (origine au centre de la vitre
 de l'écran, sur sa face arrière ; X vers la droite vu de face, Y vers l'arrière, Z vers le haut ; mm) : elles
 s'assemblent sans déplacement. Les pièces multi-filament contiennent un corps par couleur.
 
 | Fichier | Contenu | Matière |
 |---|---|---|
 | `coque_arriere.step` | coque arrière : parois, cloison entre l'électronique et la batterie, poche de la batterie, colonnes des vis de fermeture, cannelures, logements du TPU et ses 12 nervures d'accroche, ouverture du flanc gauche pour la connectique GPS | PETG gris foncé |
-| `facade.step` | façade : fenêtre de l'écran, bossages des inserts et de la carte boutons, lèvre de centrage qui entre dans la coque arrière, cannelures ; corps séparés pour le liseré et le lettrage « RAIDMASTER 403 » (ambre) et les deux fenêtres de LED (translucide) | PETG gris foncé, ambre, translucide |
-| `capuchon_A.step`, `capuchon_B.step`, `capuchon_menu.step`, `capuchon_haut.step`, `capuchon_bas.step` | capuchons des 5 boutons, Ø 14,5 à collerette ; légende incrustée de 0,6 mm en corps séparé (A ambre, B cyan, menu rouge, flèches blanches) | PETG gris + couleur de la légende |
+| `facade.step` | façade : fenêtre de l'écran, bossages des inserts et de la carte boutons, lèvre de centrage qui entre dans la coque arrière, cannelures, deux nervures anti-rotation par bouton au dos (cachées de face) ; corps séparés pour le liseré et le lettrage « RAIDMASTER 403 » (ambre) et les deux fenêtres de LED (translucide) | PETG gris foncé, ambre, translucide |
+| `capuchon_A.step`, `capuchon_B.step`, `capuchon_menu.step`, `capuchon_haut.step`, `capuchon_bas.step` | capuchons des 5 boutons, Ø 14,5 à collerette, 2 mm de saillie devant la façade, deux encoches opposées dans la collerette (guides anti-rotation) ; légende incrustée de 0,6 mm en corps séparé (A ambre, B cyan, menu rouge, flèches blanches) | PETG gris + couleur de la légende |
 | `poussoir_pwr.step` | poussoir du bouton marche, avec son éclair rouge incrusté | PETG gris + rouge |
 | `trappe_sd.step` | trappe coulissante de la carte micro-SD, à cran | PETG gris |
 | `trappe_batterie.step` | trappe de la batterie (Li-ion 103665 couchée) : bosse de 4 mm en pentes jusqu'aux bords, cannelures du boîtier sur le dessus, tenue par 4 vis M2 × 6 dans des puits | PETG gris |
