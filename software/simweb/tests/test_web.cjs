@@ -74,22 +74,22 @@ function readPpm(buf) {
 (async () => {
   // 1. scénarios
   const t0 = Date.now();
-  const echecs = [];
+  const failedIds = [];
   let total = 0;
   for (const sc of index) {
     const r = await play(sc);
     total += r.n;
     if (!r.ok) {
-      echecs.push(sc.id);
+      failedIds.push(sc.id);
       console.log(`  ${sc.id} : ÉCHEC (${r.failures} échec(s), ${r.n} expect)`);
       for (const e of r.bad ?? []) console.log(`    expect ${e.field} ${e.got} (attendu ${e.want} ± ${e.tol})`);
       for (const l of r.log.filter((l) => /ÉCHEC|inconnu|mal formé|illisible/.test(l)).slice(0, 5)) console.log(`    ${l}`);
     }
   }
   const s = ((Date.now() - t0) / 1000).toFixed(1);
-  if (echecs.length) {
+  if (failedIds.length) {
     failed = true;
-    console.log(`WEB TEST : scénarios en ÉCHEC : ${echecs.join(", ")} (${index.length} scénarios, ${s} s)`);
+    console.log(`WEB TEST : scénarios en ÉCHEC : ${failedIds.join(", ")} (${index.length} scénarios, ${s} s)`);
   } else {
     console.log(`WEB TEST : ${index.length} scénarios verts, ${total} expect (${s} s)`);
   }

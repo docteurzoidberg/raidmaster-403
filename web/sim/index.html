@@ -23,8 +23,8 @@
 <body>
 <div class="page">
   <header>
-    <h1><a class="home" href="../" data-nav-aria="home" aria-label="Accueil"><span class="brand">RAIDMASTER</span> <span class="num">403</span></a> <span class="sub" data-i18n="sous">simulateur</span></h1>
-    <p class="lede" data-i18n="chapeau">Le firmware du tripmaster tourne dans la maquette 3D et rejoue un trajet GPS, suivi sur la carte. Cliquer les capuchons : appui court, ou long en gardant le doigt.</p>
+    <h1><a class="home" href="../" data-nav-aria="home" aria-label="Accueil"><span class="brand">RAIDMASTER</span> <span class="num">403</span></a> <span class="sub" data-i18n="sub">simulateur</span></h1>
+    <p class="lede" data-i18n="lede">Le firmware du tripmaster tourne dans la maquette 3D et rejoue un trajet GPS, suivi sur la carte. Cliquer les capuchons : appui court, ou long en gardant le doigt.</p>
     <div class="tools">
       <nav class="site-nav" data-nav-aria="site" aria-label="Pages du site">
         <a class="btn" href="../mockup/" data-nav="mockup">Maquette 3D</a>
@@ -46,86 +46,86 @@
     </div>
   </header>
 
-  <nav class="onglets" id="onglets" data-i18n-aria="vues" aria-label="Vues">
-    <button type="button" class="onglet" data-onglet="tripmaster" aria-pressed="true" data-i18n="tripmaster">Tripmaster</button>
-    <button type="button" class="onglet" data-onglet="carte" aria-pressed="false" data-i18n="carte">Carte</button>
+  <nav class="tabs" id="tabs" data-i18n-aria="views" aria-label="Vues">
+    <button type="button" class="tab" data-tab="tripmaster" aria-pressed="true" data-i18n="tripmaster">Tripmaster</button>
+    <button type="button" class="tab" data-tab="map" aria-pressed="false" data-i18n="map">Carte</button>
   </nav>
 
-  <main class="banc" id="banc" data-onglet="tripmaster">
-    <section class="scene vue-tripmaster" id="scene" data-i18n-aria="scene" aria-label="Tripmaster en 3D : cliquer les capuchons, glisser pour tourner">
-      <canvas id="vue"></canvas>
-      <canvas id="ecran2d" width="480" height="320" hidden></canvas>
-      <div class="boutons2d" id="boutons2d" hidden>
-        <button type="button" data-bouton="0" class="b-a">A</button>
-        <button type="button" data-bouton="1" class="b-b">B</button>
-        <button type="button" data-bouton="4" class="b-menu" aria-label="Menu">☰</button>
-        <button type="button" data-bouton="2" aria-label="+">▲</button>
-        <button type="button" data-bouton="3" aria-label="−">▼</button>
+  <main class="workspace" id="workspace" data-tab="tripmaster">
+    <section class="scene pane-tripmaster" id="scene" data-i18n-aria="scene" aria-label="Tripmaster en 3D : cliquer les capuchons, glisser pour tourner">
+      <canvas id="view"></canvas>
+      <canvas id="screen2d" width="480" height="320" hidden></canvas>
+      <div class="buttons2d" id="buttons2d" hidden>
+        <button type="button" data-button="0" class="b-a">A</button>
+        <button type="button" data-button="1" class="b-b">B</button>
+        <button type="button" data-button="4" class="b-menu" aria-label="Menu">☰</button>
+        <button type="button" data-button="2" aria-label="+">▲</button>
+        <button type="button" data-button="3" aria-label="−">▼</button>
       </div>
-      <div class="outils-vue">
-        <button type="button" class="bascule" id="recentrer" data-i18n="recentrer" hidden>Recentrer</button>
-        <button type="button" class="bascule" id="bascule-vue" aria-pressed="false" hidden>Écran seul</button>
+      <div class="view-tools">
+        <button type="button" class="toggle" id="recenter" data-i18n="recenter" hidden>Recentrer</button>
+        <button type="button" class="toggle" id="view-toggle" aria-pressed="false" hidden>Écran seul</button>
       </div>
-      <p class="attente" id="attente" role="status">Chargement…</p>
-      <button type="button" class="allumer" id="allumer" hidden>
-        <span class="pastille" aria-hidden="true"></span><span data-i18n="allumer">Allumer</span>
+      <p class="waiting" id="waiting" role="status">Chargement…</p>
+      <button type="button" class="power" id="power" hidden>
+        <span class="led" aria-hidden="true"></span><span data-i18n="powerOn">Allumer</span>
       </button>
-      <div class="etat" id="etat" aria-live="off"></div>
+      <div class="status" id="status" aria-live="off"></div>
     </section>
 
-    <section class="carte vue-carte" id="zone-carte" data-i18n-aria="carte" aria-label="Carte">
-      <div id="carte"></div>
-      <button type="button" class="suivre" id="suivre" aria-pressed="true" data-i18n="suivre">Centrer</button>
-      <p class="attente" id="attente-carte" hidden></p>
+    <section class="map pane-map" id="map-zone" data-i18n-aria="map" aria-label="Carte">
+      <div id="map"></div>
+      <button type="button" class="follow" id="follow" aria-pressed="true" data-i18n="follow">Centrer</button>
+      <p class="waiting" id="map-waiting" hidden></p>
     </section>
 
-    <aside class="rack" data-i18n-aria="panneau" aria-label="Panneau de développement">
+    <aside class="rack" data-i18n-aria="panel" aria-label="Panneau de développement">
       <fieldset>
-        <legend data-i18n="trajet">Trajet GPS</legend>
+        <legend data-i18n="trip">Trajet GPS</legend>
         <select id="scenario" data-i18n-aria="scenario" aria-label="Scénario"></select>
         <p class="detail" id="scenario-detail"></p>
-        <label class="case"><input type="checkbox" id="actions"> <span data-i18n="actions">Jouer les actions et les vérifications</span></label>
-        <div class="ligne">
-          <label class="champ"><span data-i18n="vitesse">Vitesse</span>
-            <select id="vitesse"></select>
+        <label class="check"><input type="checkbox" id="actions"> <span data-i18n="actions">Jouer les actions et les vérifications</span></label>
+        <div class="row">
+          <label class="field"><span data-i18n="speed">Vitesse</span>
+            <select id="speed"></select>
           </label>
-          <button type="button" class="touche" id="relancer" data-i18n="relancer">Relancer</button>
+          <button type="button" class="key" id="restart" data-i18n="restart">Relancer</button>
         </div>
-        <label class="depot" id="depot">
-          <input type="file" id="fichier" accept=".nmea,.txt,.log">
-          <span data-i18n="importer">Importer un fichier NMEA (ou le glisser sur la page)</span>
+        <label class="drop" id="drop">
+          <input type="file" id="file" accept=".nmea,.txt,.log">
+          <span data-i18n="import">Importer un fichier NMEA (ou le glisser sur la page)</span>
         </label>
       </fieldset>
 
-      <fieldset id="bloc-expect" hidden>
-        <legend><span data-i18n="verifications">Vérifications</span> <span class="bilan" id="bilan"></span></legend>
+      <fieldset id="expect-block" hidden>
+        <legend><span data-i18n="checks">Vérifications</span> <span class="summary" id="summary"></span></legend>
         <ol class="expects" id="expects"></ol>
       </fieldset>
 
       <fieldset>
-        <legend data-i18n="essais">Essais</legend>
-        <div class="touches deux" id="essais">
-          <button class="touche" type="button" data-touche="n" data-etat="night" data-i18n="nuit">Nuit</button>
-          <button class="touche" type="button" data-touche="d" data-etat="signal" data-i18n="signal">Signal GPS</button>
-          <button class="touche" type="button" data-touche="g" data-etat="gps" data-i18n="puck">Puck GPS</button>
-          <button class="touche" type="button" data-touche="c" data-etat="mag" data-i18n="boussole">Boussole</button>
-          <button class="touche" type="button" data-touche="r" data-etat="spin" data-i18n="rotation">Tour sur place</button>
-          <button class="touche" type="button" data-touche="p" data-i18n="alim">Alimentation</button>
-          <button class="touche" type="button" data-touche="v" data-i18n="ecran">Écran suivant</button>
-          <button class="touche" type="button" id="son" aria-pressed="false" data-i18n="son">Son</button>
+        <legend data-i18n="tests">Essais</legend>
+        <div class="keys two" id="tests">
+          <button class="key" type="button" data-key="n" data-state="night" data-i18n="night">Nuit</button>
+          <button class="key" type="button" data-key="d" data-state="signal" data-i18n="signal">Signal GPS</button>
+          <button class="key" type="button" data-key="g" data-state="gps" data-i18n="puck">Puck GPS</button>
+          <button class="key" type="button" data-key="c" data-state="mag" data-i18n="compass">Boussole</button>
+          <button class="key" type="button" data-key="r" data-state="spin" data-i18n="spin">Tour sur place</button>
+          <button class="key" type="button" data-key="p" data-i18n="power">Alimentation</button>
+          <button class="key" type="button" data-key="v" data-i18n="nextScreen">Écran suivant</button>
+          <button class="key" type="button" id="sound" aria-pressed="false" data-i18n="sound">Son</button>
         </div>
-        <p class="detail" data-i18n="clavier">Clavier : a b + − m (Maj : appui long), n nuit, d signal, g puck, c boussole, r tour, p alimentation, v écran suivant.</p>
+        <p class="detail" data-i18n="keyboard">Clavier : a b + − m (Maj : appui long), n nuit, d signal, g puck, c boussole, r tour, p alimentation, v écran suivant.</p>
       </fieldset>
 
       <fieldset>
-        <legend data-i18n="memoire">Mémoire</legend>
-        <p class="detail" data-i18n="memoire_detail">Trips et réglages restent dans ce navigateur, comme dans la mémoire du boîtier (sauf avec les actions : mémoire de la session).</p>
-        <button class="touche" type="button" id="raz" data-i18n="raz">Remise à zéro</button>
+        <legend data-i18n="memory">Mémoire</legend>
+        <p class="detail" data-i18n="memoryDetail">Trips et réglages restent dans ce navigateur, comme dans la mémoire du boîtier (sauf avec les actions : mémoire de la session).</p>
+        <button class="key" type="button" id="reset" data-i18n="reset">Remise à zéro</button>
       </fieldset>
 
-      <fieldset class="journal">
-        <legend data-i18n="journal">Journal</legend>
-        <pre id="journal" tabindex="0"></pre>
+      <fieldset class="log">
+        <legend data-i18n="log">Journal</legend>
+        <pre id="log" tabindex="0"></pre>
       </fieldset>
 
       <p class="note" id="version"></p>

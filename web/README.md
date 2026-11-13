@@ -49,7 +49,7 @@ gauche), plus un **bouchon** qui ferme le flanc gauche quand rien n'y est branch
 le bloc « GPS » de la page en montre une.
 
 Les textes des pièces sont en français dans le modèle ; leur traduction anglaise est dans `main.js`
-(`MODELE_EN`), le français s'affiche pour un texte non traduit.
+(`MODEL_EN`), le français s'affiche pour un texte non traduit.
 
 ## Simulateur (`sim/`)
 

@@ -1,94 +1,98 @@
 // Maquette 3D du Raidmaster 403 : modèle raidmaster.glb (voir README.md), assemblé ou éclaté.
 // Les pièces, leur déplacement à l'éclaté, la démonstration et les textes viennent du modèle (réglages de la maquette) :
-// rien à régler ici, sauf la traduction anglaise (TEXTES, MODELE_EN) quand un texte du modèle change.
+// rien à régler ici, sauf la traduction anglaise (TEXTS, MODEL_EN) quand un texte du modèle change.
+// Les données du modèle (userData écrits par scene.py) gardent leurs noms français : maquette, eclate, groupe, vis,
+// version, aretes, animation { ips, fin, pistes, etapes }, groupes [{ id, nom, detail }], visserie, note, date, gps.
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { applyLanguage, initialLanguage, onLanguageChange } from "../common/common.js";
 
-// Axes de vue, dans le repère de la scène : X à droite, Y en haut, façade vers +Z.
-const VUES = { iso: [0.95, 0.5, 1], face: [0, 0.02, 1], cote: [1, 0.14, 0.04], dos: [-0.8, 0.42, -1] };
+// Axes de vue, dans le repère de la scène : X à droite, Y en haut, façade vers +Z. Les clés sont les valeurs de
+// ?vue= (adresses publiées, gardées en français).
+const VIEWS = { iso: [0.95, 0.5, 1], face: [0, 0.02, 1], cote: [1, 0.14, 0.04], dos: [-0.8, 0.42, -1] };
 
-const SURBRILLANCE = new THREE.Color(0x3a2a0c);
-const RETARD = 0.3;      // part de la course pendant laquelle les pièces proches attendent les plus lointaines
+const HIGHLIGHT = new THREE.Color(0x3a2a0c);
+const DELAY = 0.3;       // part de la course pendant laquelle les pièces proches attendent les plus lointaines
 const FOV = 26;
-const MARGE = 0.9;       // part de l'image occupée par l'objet
+const MARGIN = 0.9;      // part de l'image occupée par l'objet
 const MM = 1000;         // modèle en mètres, scène en millimètres
+const HARDWARE = "hardware";   // ligne de la visserie dans la liste (pièces marquées « vis » dans le modèle)
 
 // --- langues : français (textes du modèle) et anglais
 
-const TEXTES = {
+const TEXTS = {
   fr: {
-    titre: "Raidmaster éclaté",
+    title: "Raidmaster éclaté",
     description: "Maquette 3D du Raidmaster 403 : la carte Waveshare, la carte fille et la carte boutons dans leur boîtier, assemblé ou éclaté.",
-    chapeau: "Les trois cartes du tripmaster dans leur boîtier, assemblé ou éclaté, avec la trappe de la carte micro-SD et le câble en démonstration.",
+    lede: "Les trois cartes du tripmaster dans leur boîtier, assemblé ou éclaté, avec la trappe de la carte micro-SD et le câble en démonstration.",
     scene: "Maquette 3D : glisser pour tourner, molette ou pincement pour zoomer",
-    chargement: "Chargement du modèle…",
-    maquette: "Maquette",
-    aide: "Glisser pour tourner, molette pour zoomer. Survoler une pièce pour la nommer.",
-    aideTactile: "Glisser pour tourner, pincer pour zoomer. Toucher une pièce pour la nommer.",
-    commandes: "Commandes de la maquette",
-    ouverture: "Ouverture",
-    assemble: "Assemblé",
-    eclate: "Éclaté",
-    curseur: "Ouverture de l'éclaté, en pour cent",
-    demonstration: "Démonstration",
-    rejouer: "Rejouer",
-    vue: "Vue",
-    vue_iso: "Trois quarts",
-    vue_face: "Face",
-    vue_cote: "Côté",
-    vue_dos: "Dos",
+    loading: "Chargement du modèle…",
+    model: "Maquette",
+    help: "Glisser pour tourner, molette pour zoomer. Survoler une pièce pour la nommer.",
+    helpTouch: "Glisser pour tourner, pincer pour zoomer. Toucher une pièce pour la nommer.",
+    controls: "Commandes de la maquette",
+    explode: "Ouverture",
+    assembled: "Assemblé",
+    exploded: "Éclaté",
+    slider: "Ouverture de l'éclaté, en pour cent",
+    demo: "Démonstration",
+    replay: "Rejouer",
+    view: "Vue",
+    viewIso: "Trois quarts",
+    viewFront: "Face",
+    viewSide: "Côté",
+    viewBack: "Dos",
     gps: "GPS",
-    gps_puck: "Puck externe",
-    gps_interne: "GPS interne",
-    gps_bouchon: "Bouchon",
-    pieces: "Pièces",
+    gpsPuck: "Puck externe",
+    gpsInternal: "GPS interne",
+    gpsPlug: "Bouchon",
+    parts: "Pièces",
     webgl: "Cette page a besoin de WebGL, qui n'est pas disponible dans ce navigateur.",
-    erreur: "Le modèle n'a pas pu être chargé.",
-    mo: (n) => `${n.toFixed(1).replace(".", ",")} Mo`,
+    error: "Le modèle n'a pas pu être chargé.",
+    mb: (n) => `${n.toFixed(1).replace(".", ",")} Mo`,
     date: (d) => `Modèle du ${d.split("-").reverse().join("/")}.`,
   },
   en: {
-    titre: "Raidmaster exploded view",
+    title: "Raidmaster exploded view",
     description: "3D model of the Raidmaster 403: the Waveshare board, the daughter board and the button board in their enclosure, assembled or exploded.",
-    chapeau: "The tripmaster's three boards in their enclosure, assembled or exploded, with the micro-SD card door and the cable shown in a demonstration.",
+    lede: "The tripmaster's three boards in their enclosure, assembled or exploded, with the micro-SD card door and the cable shown in a demonstration.",
     scene: "3D model: drag to rotate, scroll or pinch to zoom",
-    chargement: "Loading the model…",
-    maquette: "Model",
-    aide: "Drag to rotate, scroll to zoom. Hover over a part to name it.",
-    aideTactile: "Drag to rotate, pinch to zoom. Tap a part to name it.",
-    commandes: "Model controls",
-    ouverture: "Explode",
-    assemble: "Assembled",
-    eclate: "Exploded",
-    curseur: "Explosion amount, in percent",
-    demonstration: "Demonstration",
-    rejouer: "Replay",
-    vue: "View",
-    vue_iso: "Three-quarter",
-    vue_face: "Front",
-    vue_cote: "Side",
-    vue_dos: "Back",
+    loading: "Loading the model…",
+    model: "Model",
+    help: "Drag to rotate, scroll to zoom. Hover over a part to name it.",
+    helpTouch: "Drag to rotate, pinch to zoom. Tap a part to name it.",
+    controls: "Model controls",
+    explode: "Explode",
+    assembled: "Assembled",
+    exploded: "Exploded",
+    slider: "Explosion amount, in percent",
+    demo: "Demonstration",
+    replay: "Replay",
+    view: "View",
+    viewIso: "Three-quarter",
+    viewFront: "Front",
+    viewSide: "Side",
+    viewBack: "Back",
     gps: "GPS",
-    gps_puck: "External puck",
-    gps_interne: "Built-in GPS",
-    gps_bouchon: "Blanking plug",
-    pieces: "Parts",
+    gpsPuck: "External puck",
+    gpsInternal: "Built-in GPS",
+    gpsPlug: "Blanking plug",
+    parts: "Parts",
     webgl: "This page needs WebGL, which is not available in this browser.",
-    erreur: "The model could not be loaded.",
-    mo: (n) => `${n.toFixed(1)} MB`,
-    date: (d) => `Model dated ${d.replaceAll("-", "\u2011")}.`,   // tirets insécables
+    error: "The model could not be loaded.",
+    mb: (n) => `${n.toFixed(1)} MB`,
+    date: (d) => `Model dated ${d.replaceAll("-", "‑")}.`,   // tirets insécables
   },
 };
 
-// Textes du modèle en anglais : groupes par identifiant, étapes de la démonstration par nom français.
-// Un texte absent ici s'affiche en français.
-const MODELE_EN = {
+// Textes du modèle en anglais : groupes par identifiant (ceux du modèle), étapes de la démonstration par nom
+// français. Un texte absent ici s'affiche en français.
+const MODEL_EN = {
   note: "Boards exported from KiCad, Waveshare board from the manufacturer's 3D model. 123 × 94 × 33 mm enclosure (127 × 97 × 35 with the bumpers): sketch of the model designed for printing, still to be tested.",
-  visserie: ["Hardware", "4 M2 standoffs (5.1 mm), 4 M2 × 12 screws fitted from the back that hold the daughter board and the Waveshare to the back shell, 4 M2 × 6 screws for the button board, 4 recessed M3 × 10 screws that close the enclosure, 4 M3 × 5 screws for the battery cover, all stainless socket head cap screws; 8 brass M3 heat-set inserts, 4 in the front panel and 4 under the battery cover."],
-  groupes: {
+  hardware: ["Hardware", "4 M2 standoffs (5.1 mm), 4 M2 × 12 screws fitted from the back that hold the daughter board and the Waveshare to the back shell, 4 M2 × 6 screws for the button board, 4 recessed M3 × 10 screws that close the enclosure, 4 M3 × 5 screws for the battery cover, all stainless socket head cap screws; 8 brass M3 heat-set inserts, 4 in the front panel and 4 under the battery cover."],
+  groups: {
     capuchons: ["Button caps", "5 printed caps, Ø 14.5 mm, on 12 × 12 push buttons, held by a collar behind the front panel. Inlaid colour legends: A, B, menu, up, down."],
     facade: ["Front panel", "PETG, 123 × 94 mm, chamfered corners, two facets around the edge, sides cut down to screen height, grooves on top and bottom, translucent LED windows. Inlaid amber line around the screen and \"RAIDMASTER 403\" lettering (two-filament print). A locating lip fits into the back shell."],
     carte_boutons: ["Button board", "108 × 20 mm board snapped off the daughter board, bottom corners cut off: 5 push buttons at an 18.5 mm pitch and 2 LEDs on the front, 2 PCF8574 expanders on the back, linked to the daughter board by a 6-way flat flexible cable. KiCad export."],
@@ -104,33 +108,33 @@ const MODELE_EN = {
     manchon: ["USB-C sleeve", "Separate part slipped onto the board's USB-C socket before the back shell goes on: it surrounds the socket on all four sides, guides the plug through a sloped channel and closes the side, with no opening in the enclosure. The edges of the slot in the back shell hold it."],
     cable: ["USB-C cable", "Test plug the size of a standard plug (12.35 × 6.5 mm overmould, 22 mm long), plugged into the original socket through the sleeve to check access. Untick to remove it."],
   },
-  etapes: {
+  steps: {
     "Trappe micro-SD": ["Micro-SD door", "It slides backwards, unclips and comes off."],
     "Carte micro-SD": ["Micro-SD card", "It comes out through the top of the enclosure."],
     "Câble USB-C": ["USB-C cable", "The plug goes through the sleeve into the board's socket."],
   },
 };
 
-let langue = initialLanguage();
-const t = (cle) => TEXTES[langue][cle];
+let lang = initialLanguage();
+const t = (key) => TEXTS[lang][key];
 
 const $ = (id) => document.getElementById(id);
-const calme = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const params = new URLSearchParams(location.search);
 const zone = $("scene");
-const canvas = $("vue");
-const attente = $("attente");
-let etatAttente = "chargement";   // message affiché tant que le modèle n'est pas là : chargement, erreur
+const canvas = $("view");
+const waiting = $("waiting");
+let waitingState = "loading";   // message affiché tant que le modèle n'est pas là : loading, error, webgl
 
 const clamp01 = (v) => Math.min(Math.max(v, 0), 1);
-const adoucit = (t) => t * t * (3 - 2 * t);
+const smooth = (t) => t * t * (3 - 2 * t);
 
 let renderer;
 try {
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
 } catch {
-  etatAttente = "webgl";
-  attente.textContent = t("webgl");
+  waitingState = "webgl";
+  waiting.textContent = t("webgl");
   throw new Error("WebGL indisponible");
 }
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -141,11 +145,11 @@ const scene = new THREE.Scene();
 scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
 scene.environmentIntensity = 0.7;
 scene.add(new THREE.HemisphereLight(0xffffff, 0x33373c, 0.9));
-const cle = new THREE.DirectionalLight(0xffffff, 1.8);
-cle.position.set(200, 260, 240);
-const contre = new THREE.DirectionalLight(0xffffff, 0.9);
-contre.position.set(-180, 90, -260);
-scene.add(cle, contre);
+const keyLight = new THREE.DirectionalLight(0xffffff, 1.8);
+keyLight.position.set(200, 260, 240);
+const backLight = new THREE.DirectionalLight(0xffffff, 0.9);
+backLight.position.set(-180, 90, -260);
+scene.add(keyLight, backLight);
 
 const camera = new THREE.PerspectiveCamera(FOV, 1, 5, 8000);
 const controls = new OrbitControls(camera, canvas);
@@ -154,470 +158,473 @@ controls.dampingFactor = 0.09;
 controls.minDistance = 40;
 controls.maxDistance = 3000;
 
-let sale = true;          // l'image est à refaire
-let pieces = [];
-let cibles = [];          // maillages que le pointeur peut désigner
-let modele = null;        // textes du modèle (en français) : note, date, groupes, visserie
-let groupes = {};         // identifiant → [nom, détail] dans la langue de la page, dans l'ordre de la liste
-let visserie = ["Visserie", ""];
-let ouverture = 0;
-const visibles = {};
-let visserieVisible = true;
-let versionGps = null;    // version de la connectique GPS montrée (puck, interne, bouchon) ; pièces sans version : toujours
-let demo = null;          // démonstration animée du modèle : { ips, fin, pistes, etapes }
-let etape = null;         // étape de la démonstration en cours : [nom, détail] en français
-let attenteDemo = 0;      // minuterie entre deux temps de la démonstration
+let dirty = true;         // l'image est à refaire
+let parts = [];
+let targets = [];         // maillages que le pointeur peut désigner
+let model = null;         // textes du modèle (en français) : note, date, groupes, visserie
+let groups = {};          // identifiant → [nom, détail] dans la langue de la page, dans l'ordre de la liste
+let hardware = ["Visserie", ""];
+let explode = 0;          // ouverture de l'éclaté, de 0 (assemblé) à 1
+const shown = {};
+let hardwareShown = true;
+let gpsVersion = null;    // version de la connectique GPS montrée (puck, interne, bouchon) ; pièces sans version : toujours
+let demo = null;          // démonstration animée du modèle : { fps, end, steps }
+let step = null;          // étape de la démonstration en cours : [nom, détail] en français
+let demoTimer = 0;        // minuterie entre deux temps de la démonstration
 
 // --- animations
 
 const tweens = new Map();
-function anime(nom, duree, pas, apres) {
-  if (calme) {
-    pas(1);
-    sale = true;
-    apres?.();
+function animate(name, duration, step, then) {
+  if (reducedMotion) {
+    step(1);
+    dirty = true;
+    then?.();
     return;
   }
-  tweens.set(nom, { debut: performance.now(), duree, pas, apres });
+  tweens.set(name, { start: performance.now(), duration, step, then });
 }
 
 // --- cadrage
 
 // Part d'une pièce sur sa course, pour une ouverture k.
-const avance = (p, k) => adoucit(clamp01((k - p.retard) / (1 - p.retard)));
+const progress = (p, k) => smooth(clamp01((k - p.delay) / (1 - p.delay)));
 
 // Cible et distance pour que toutes les pièces tiennent dans l'image, pour un axe de vue et une ouverture.
-function cadrage(axe, k) {
-  const droite = new THREE.Vector3().crossVectors(camera.up, axe);
-  if (droite.lengthSq() < 1e-6) droite.set(1, 0, 0);
-  droite.normalize();
-  const haut = new THREE.Vector3().crossVectors(axe, droite);
+function framing(axis, k) {
+  const right = new THREE.Vector3().crossVectors(camera.up, axis);
+  if (right.lengthSq() < 1e-6) right.set(1, 0, 0);
+  right.normalize();
+  const up = new THREE.Vector3().crossVectors(axis, right);
   const v = new THREE.Vector3();
-  const points = pieces.flatMap((p) => {
-    const f = avance(p, k);
-    return p.coins.map((c) => {
+  const points = parts.flatMap((p) => {
+    const f = progress(p, k);
+    return p.corners.map((c) => {
       v.copy(p.offset).multiplyScalar(f).add(p.demo).add(c);
-      return [v.dot(droite), v.dot(haut), v.dot(axe)];
+      return [v.dot(right), v.dot(up), v.dot(axis)];
     });
   });
-  const milieu = (i) => {
-    const valeurs = points.map((q) => q[i]);
-    return (Math.min(...valeurs) + Math.max(...valeurs)) / 2;
+  const middle = (i) => {
+    const values = points.map((q) => q[i]);
+    return (Math.min(...values) + Math.max(...values)) / 2;
   };
-  const [cx, cy, cz] = [milieu(0), milieu(1), milieu(2)];
-  const tv = Math.tan(THREE.MathUtils.degToRad(FOV) / 2) * MARGE;
+  const [cx, cy, cz] = [middle(0), middle(1), middle(2)];
+  const tv = Math.tan(THREE.MathUtils.degToRad(FOV) / 2) * MARGIN;
   const th = tv * camera.aspect;
-  const recul = Math.max(...points.map(([x, y, z]) => z + Math.max(Math.abs(x - cx) / th, Math.abs(y - cy) / tv)));
-  const cible = droite.multiplyScalar(cx).addScaledVector(haut, cy).addScaledVector(axe, cz);
-  return { cible, distance: recul - cz };
+  const back = Math.max(...points.map(([x, y, z]) => z + Math.max(Math.abs(x - cx) / th, Math.abs(y - cy) / tv)));
+  const target = right.multiplyScalar(cx).addScaledVector(up, cy).addScaledVector(axis, cz);
+  return { target, distance: back - cz };
 }
 
 // Suit un changement d'ouverture ou de format sans perdre le point de vue ni le zoom choisis.
-function recadre(faitChanger) {
-  const axe = camera.position.clone().sub(controls.target).normalize();
-  const avant = cadrage(axe, faitChanger.avant);
-  faitChanger.applique?.();
-  const apres = cadrage(axe, ouverture);
-  const distance = camera.position.distanceTo(controls.target) * (apres.distance / avant.distance);
-  controls.target.add(apres.cible.sub(avant.cible));
-  camera.position.copy(controls.target).addScaledVector(axe, distance);
+function reframe(change) {
+  const axis = camera.position.clone().sub(controls.target).normalize();
+  const before = framing(axis, change.before);
+  change.apply?.();
+  const after = framing(axis, explode);
+  const distance = camera.position.distanceTo(controls.target) * (after.distance / before.distance);
+  controls.target.add(after.target.sub(before.target));
+  camera.position.copy(controls.target).addScaledVector(axis, distance);
 }
 
-function placeVue(nom, immediat) {
-  const fin = new THREE.Vector3(...VUES[nom]).normalize();
-  const axe = camera.position.clone().sub(controls.target);
-  const d0 = axe.length();
-  const debut = axe.normalize();
+function setView(name, immediate) {
+  const end = new THREE.Vector3(...VIEWS[name]).normalize();
+  const axis = camera.position.clone().sub(controls.target);
+  const d0 = axis.length();
+  const start = axis.normalize();
   const t0 = controls.target.clone();
-  const pas = (u) => {
-    const e = adoucit(u);
-    const { cible, distance } = cadrage(fin, ouverture);
-    controls.target.lerpVectors(t0, cible, e);
-    const dir = debut.clone().lerp(fin, e).normalize();
+  const step = (u) => {
+    const e = smooth(u);
+    const { target, distance } = framing(end, explode);
+    controls.target.lerpVectors(t0, target, e);
+    const dir = start.clone().lerp(end, e).normalize();
     camera.position.copy(controls.target).addScaledVector(dir, THREE.MathUtils.lerp(d0, distance, e));
   };
-  if (immediat) pas(1);
-  else anime("vue", 700, pas);
-  for (const b of $("vues").children) b.setAttribute("aria-pressed", String(b.dataset.vue === nom));
-  sale = true;
+  if (immediate) step(1);
+  else animate("view", 700, step);
+  for (const b of $("views").children) b.setAttribute("aria-pressed", String(b.dataset.view === name));
+  dirty = true;
 }
 
 // --- ouverture
 
 // Place chaque pièce : sa course d'éclaté, plus son décalage de démonstration.
-function pose() {
-  for (const p of pieces) p.objet.position.copy(p.offset).multiplyScalar(avance(p, ouverture)).add(p.demo).divideScalar(MM);
+function place() {
+  for (const p of parts) p.object.position.copy(p.offset).multiplyScalar(progress(p, explode)).add(p.demo).divideScalar(MM);
 }
 
-function ouvre(k) {
-  const avant = ouverture;
-  ouverture = k;
-  pose();
-  recadre({ avant });
-  $("ouverture").value = Math.round(k * 100);
-  $("assemble").setAttribute("aria-pressed", String(k === 0));
-  $("eclate").setAttribute("aria-pressed", String(k === 1));
-  sale = true;
+function setExplode(k) {
+  const before = explode;
+  explode = k;
+  place();
+  reframe({ before });
+  $("explode").value = Math.round(k * 100);
+  $("assembled").setAttribute("aria-pressed", String(k === 0));
+  $("exploded").setAttribute("aria-pressed", String(k === 1));
+  dirty = true;
 }
 
-function ouvreVers(k, duree = 1400) {
-  const depart = ouverture;
-  anime("ouverture", duree * Math.max(Math.abs(k - depart), 0.25), (u) => ouvre(THREE.MathUtils.lerp(depart, k, u)));
+function explodeTo(k, duration = 1400) {
+  const from = explode;
+  animate("explode", duration * Math.max(Math.abs(k - from), 0.25), (u) => setExplode(THREE.MathUtils.lerp(from, k, u)));
 }
 
 // --- démonstration : l'animation préparée dans la scène Blender (réglages de la maquette, « animation »)
 
 // Décalage d'une pièce à l'image f, entre ses clés [image, vecteur], rangé dans v.
-function decalage(p, f, v) {
-  const c = p.cles;
+function demoOffset(p, f, v) {
+  const k = p.keys;
   let i = 0;
-  while (i < c.length - 1 && f >= c[i + 1][0]) i++;
-  if (i === c.length - 1 || f <= c[i][0]) return v.copy(c[i][1]);
-  return v.lerpVectors(c[i][1], c[i + 1][1], adoucit((f - c[i][0]) / (c[i + 1][0] - c[i][0])));
+  while (i < k.length - 1 && f >= k[i + 1][0]) i++;
+  if (i === k.length - 1 || f <= k[i][0]) return v.copy(k[i][1]);
+  return v.lerpVectors(k[i][1], k[i + 1][1], smooth((f - k[i][0]) / (k[i + 1][0] - k[i][0])));
 }
 
 // Règle le décalage de chaque pièce animée ; la caméra suit, comme pour l'éclaté.
-function poseDemo(regle) {
-  const animees = pieces.filter((p) => p.cles);
-  recadre({ avant: ouverture, applique: () => animees.forEach(regle) });
-  pose();
-  sale = true;
+function poseDemo(set) {
+  const animated = parts.filter((p) => p.keys);
+  reframe({ before: explode, apply: () => animated.forEach(set) });
+  place();
+  dirty = true;
 }
 
-const demoEnPlace = () => pieces.some((p) => p.cles && p.demo.lengthSq() > 0);
+const demoOut = () => parts.some((p) => p.keys && p.demo.lengthSq() > 0);
 
-function arreteDemo() {
+function stopDemo() {
   tweens.delete("demo");
-  clearTimeout(attenteDemo);
-  etape = null;
+  clearTimeout(demoTimer);
+  step = null;
   $("demo").setAttribute("aria-pressed", "false");
-  if (demoEnPlace()) poseDemo((p) => p.demo.set(0, 0, 0));
-  montreFiche();
+  if (demoOut()) poseDemo((p) => p.demo.set(0, 0, 0));
+  showCard();
 }
 
-function joueDemo() {
+function playDemo() {
   if (!demo) return;
-  if (calme) {        // sans mouvement : le bouton montre la fin de la démonstration, puis la pose assemblée
-    if (demoEnPlace()) arreteDemo();
-    else poseDemo((p) => decalage(p, demo.fin, p.demo));
+  if (reducedMotion) {   // sans mouvement : le bouton montre la fin de la démonstration, puis la pose assemblée
+    if (demoOut()) stopDemo();
+    else poseDemo((p) => demoOffset(p, demo.end, p.demo));
     return;
   }
-  arreteDemo();
-  const lance = () => {
+  stopDemo();
+  const run = () => {
     $("demo").setAttribute("aria-pressed", "true");
     // 1. de la pose assemblée à la première image : la fiche se débranche
-    anime("demo", 700, (u) => poseDemo((p) => decalage(p, 1, p.demo).multiplyScalar(adoucit(u))), () => {
+    animate("demo", 700, (u) => poseDemo((p) => demoOffset(p, 1, p.demo).multiplyScalar(smooth(u))), () => {
       // 2. l'animation, à sa cadence
-      anime("demo", ((demo.fin - 1) / demo.ips) * 1000, (u) => {
-        const f = 1 + u * (demo.fin - 1);
-        poseDemo((p) => decalage(p, f, p.demo));
-        const e = demo.etapes.find((q) => f >= q.de && f <= q.a);
-        if (e?.nom !== etape?.[0]) {
-          etape = e ? [e.nom, e.detail] : null;
-          montreFiche();
+      animate("demo", ((demo.end - 1) / demo.fps) * 1000, (u) => {
+        const f = 1 + u * (demo.end - 1);
+        poseDemo((p) => demoOffset(p, f, p.demo));
+        const s = demo.steps.find((q) => f >= q.from && f <= q.to);
+        if (s?.name !== step?.[0]) {
+          step = s ? [s.name, s.detail] : null;
+          showCard();
         }
       }, () => {
         // 3. un temps d'arrêt, puis retour à la pose assemblée
-        attenteDemo = setTimeout(() => {
-          const fin = new Map(pieces.filter((p) => p.cles).map((p) => [p, p.demo.clone()]));
-          anime("demo", 1200, (u) => poseDemo((p) => p.demo.copy(fin.get(p)).multiplyScalar(1 - adoucit(u))),
-            arreteDemo);
+        demoTimer = setTimeout(() => {
+          const last = new Map(parts.filter((p) => p.keys).map((p) => [p, p.demo.clone()]));
+          animate("demo", 1200, (u) => poseDemo((p) => p.demo.copy(last.get(p)).multiplyScalar(1 - smooth(u))),
+            stopDemo);
         }, 2500);
       });
     });
   };
-  if (ouverture > 0) {
-    const depart = ouverture;
-    anime("ouverture", 1400 * Math.max(depart, 0.25), (u) => ouvre(THREE.MathUtils.lerp(depart, 0, u)), lance);
-  } else lance();
+  if (explode > 0) {
+    const from = explode;
+    animate("explode", 1400 * Math.max(from, 0.25), (u) => setExplode(THREE.MathUtils.lerp(from, 0, u)), run);
+  } else run();
 }
 
 // --- pièces
 
 // Pièce de la version GPS montrée ; une pièce peut être de plusieurs versions (« puck bouchon »), sans version : toujours.
-const dansVersion = (p) => !p.version || p.version.split(" ").includes(versionGps);
+const inVersion = (p) => !p.version || p.version.split(" ").includes(gpsVersion);
 
-function appliqueVisibilite() {
-  for (const p of pieces) {
-    p.objet.visible = visibles[p.groupe] !== false && (!p.vis || visserieVisible)
-      && dansVersion(p);
+function applyVisibility() {
+  for (const p of parts) {
+    p.object.visible = shown[p.group] !== false && (!p.hardware || hardwareShown) && inVersion(p);
   }
   // Une ligne de la liste par groupe qui a des pièces dans la version montrée.
-  for (const l of $("liste").children) {
-    const g = l.dataset.groupe;
-    if (g !== "visserie") l.hidden = !pieces.some((p) => p.groupe === g && dansVersion(p));
+  for (const l of $("parts").children) {
+    const g = l.dataset.group;
+    if (g !== HARDWARE) l.hidden = !parts.some((p) => p.group === g && inVersion(p));
   }
-  cibles = pieces.filter((p) => p.objet.visible).flatMap((p) => p.maillages);
-  sale = true;
+  targets = parts.filter((p) => p.object.visible).flatMap((p) => p.meshes);
+  dirty = true;
 }
 
-let survole = null;       // groupe sous le pointeur ou dans la liste
-let epingle = null;       // groupe choisi au toucher ou au clic
+let hovered = null;       // groupe sous le pointeur ou dans la liste
+let pinned = null;        // groupe choisi au toucher ou au clic
 
-function montreFiche() {
-  const g = survole ?? epingle;
-  const [nom, detail] = g === "visserie" ? visserie
-    : (groupes[g] ?? (etape && traduitEtape(etape)) ?? [t("maquette"), ficheParDefaut()]);
-  $("fiche-nom").textContent = nom;
-  $("fiche-detail").textContent = detail;
-  for (const l of $("liste").children) l.classList.toggle("marque", l.dataset.groupe === g);
-  for (const p of pieces) {
-    const allume = g === "visserie" ? p.vis : p.groupe === g && !p.vis;
-    for (const m of p.materiaux) {
+function showCard() {
+  const g = hovered ?? pinned;
+  const [name, detail] = g === HARDWARE ? hardware
+    : (groups[g] ?? (step && translateStep(step)) ?? [t("model"), defaultCard()]);
+  $("card-name").textContent = name;
+  $("card-detail").textContent = detail;
+  for (const l of $("parts").children) l.classList.toggle("marked", l.dataset.group === g);
+  for (const p of parts) {
+    const lit = g === HARDWARE ? p.hardware : p.group === g && !p.hardware;
+    for (const m of p.materials) {
       m.emissive.copy(m.userData.emissive);
-      if (allume) m.emissive.add(SURBRILLANCE);
+      if (lit) m.emissive.add(HIGHLIGHT);
     }
   }
-  sale = true;
+  dirty = true;
 }
-const tactile = matchMedia("(hover: none)").matches;
-const ficheParDefaut = () => t(tactile ? "aideTactile" : "aide");
-const traduitEtape = ([nom, detail]) => (langue === "en" && MODELE_EN.etapes[nom]) || [nom, detail];
+const touch = matchMedia("(hover: none)").matches;
+const defaultCard = () => t(touch ? "helpTouch" : "help");
+const translateStep = ([name, detail]) => (lang === "en" && MODEL_EN.steps[name]) || [name, detail];
 
-function designe(groupe) {
-  if (groupe === survole) return;
-  survole = groupe;
-  montreFiche();
+function highlight(group) {
+  if (group === hovered) return;
+  hovered = group;
+  showCard();
 }
 
-function ligne(groupe, nom, coche) {
+function row(group, name, onToggle) {
   const l = document.createElement("label");
-  l.className = "piece";
-  l.dataset.groupe = groupe;
+  l.className = "part";
+  l.dataset.group = group;
   const c = document.createElement("input");
   c.type = "checkbox";
-  c.id = `piece-${groupe}`;
+  c.id = `part-${group}`;
   c.checked = true;
-  c.addEventListener("change", () => coche(c.checked));
+  c.addEventListener("change", () => onToggle(c.checked));
   const n = document.createElement("span");
-  n.textContent = nom;
+  n.textContent = name;
   l.append(c, n);
-  l.addEventListener("pointerenter", () => designe(groupe));
-  l.addEventListener("pointerleave", () => designe(null));
-  c.addEventListener("focus", () => designe(groupe));
-  c.addEventListener("blur", () => designe(null));
+  l.addEventListener("pointerenter", () => highlight(group));
+  l.addEventListener("pointerleave", () => highlight(null));
+  c.addEventListener("focus", () => highlight(group));
+  c.addEventListener("blur", () => highlight(null));
   return l;
 }
 
-function construitListe() {
-  const liste = $("liste");
-  for (const [g, [nom]] of Object.entries(groupes)) {
-    liste.append(ligne(g, nom, (v) => {
-      visibles[g] = v;
-      appliqueVisibilite();
+function buildList() {
+  const list = $("parts");
+  for (const [g, [name]] of Object.entries(groups)) {
+    list.append(row(g, name, (v) => {
+      shown[g] = v;
+      applyVisibility();
     }));
   }
-  const l = ligne("visserie", visserie[0], (v) => {
-    visserieVisible = v;
-    appliqueVisibilite();
+  const l = row(HARDWARE, hardware[0], (v) => {
+    hardwareShown = v;
+    applyVisibility();
   });
-  l.classList.add("visserie");
-  liste.append(l);
+  l.classList.add("hardware");
+  list.append(l);
 }
 
-function marqueVersion() {
-  for (const b of $("versions").children) b.setAttribute("aria-pressed", String(b.dataset.version === versionGps));
+function markVersion() {
+  for (const b of $("versions").children) b.setAttribute("aria-pressed", String(b.dataset.version === gpsVersion));
 }
 
-function choisitVersion(v) {
-  versionGps = v;
-  marqueVersion();
-  if (epingle && !pieces.some((p) => p.groupe === epingle && p.objet.visible)) epingle = null;
-  appliqueVisibilite();
-  montreFiche();
+function chooseVersion(v) {
+  gpsVersion = v;
+  markVersion();
+  if (pinned && !parts.some((p) => p.group === pinned && p.object.visible)) pinned = null;
+  applyVisibility();
+  showCard();
 }
 
 // --- pointeur
 
-const rayon = new THREE.Raycaster();
-const pointeur = new THREE.Vector2();
-let aTester = false;
-let appui = null;
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+let pickPending = false;
+let pressAt = null;
 
-function placePointeur(e) {
+function setPointer(e) {
   const r = canvas.getBoundingClientRect();
-  pointeur.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
 }
 
-function groupeSousPointeur() {
-  rayon.setFromCamera(pointeur, camera);
-  const hit = rayon.intersectObjects(cibles, false)[0];
-  return hit ? hit.object.userData.groupe : null;
+function groupUnderPointer() {
+  raycaster.setFromCamera(pointer, camera);
+  const hit = raycaster.intersectObjects(targets, false)[0];
+  return hit ? hit.object.userData.pickGroup : null;
 }
 
 canvas.addEventListener("pointermove", (e) => {
   if (e.pointerType === "mouse" && !e.buttons) {
-    placePointeur(e);
-    aTester = true;
+    setPointer(e);
+    pickPending = true;
   }
 });
 canvas.addEventListener("pointerleave", () => {
-  aTester = false;
-  designe(null);
+  pickPending = false;
+  highlight(null);
 });
 canvas.addEventListener("pointerdown", (e) => {
-  appui = [e.clientX, e.clientY];
+  pressAt = [e.clientX, e.clientY];
 });
 canvas.addEventListener("pointerup", (e) => {
-  if (!appui || Math.hypot(e.clientX - appui[0], e.clientY - appui[1]) > 6) return;
-  placePointeur(e);
-  const g = groupeSousPointeur();
-  epingle = g === epingle ? null : g;
-  montreFiche();
+  if (!pressAt || Math.hypot(e.clientX - pressAt[0], e.clientY - pressAt[1]) > 6) return;
+  setPointer(e);
+  const g = groupUnderPointer();
+  pinned = g === pinned ? null : g;
+  showCard();
 });
 
 // --- chargement
 
 function prepare(gltf) {
-  const racine = gltf.scene;
-  racine.scale.setScalar(MM);
-  scene.add(racine);
+  const root = gltf.scene;
+  root.scale.setScalar(MM);
+  scene.add(root);
 
-  const infos = JSON.parse(racine.userData.maquette ?? "{}");
-  modele = infos;
-  traduitModele();
+  const info = JSON.parse(root.userData.maquette ?? "{}");
+  model = info;
+  translateModel();
 
-  racine.traverse((o) => {
+  root.traverse((o) => {
     const e = o.userData.eclate;
     if (!e) return;
     // Blender : Y vers l'arrière, Z en haut ; scène : Y en haut, façade vers +Z
     const p = {
-      objet: o, nom: o.name, groupe: o.userData.groupe, vis: Boolean(o.userData.vis), version: o.userData.version ?? null,
-      offset: new THREE.Vector3(e[0], e[2], -e[1]), demo: new THREE.Vector3(), maillages: [], materiaux: [],
+      object: o, name: o.name, group: o.userData.groupe, hardware: Boolean(o.userData.vis),
+      version: o.userData.version ?? null,
+      offset: new THREE.Vector3(e[0], e[2], -e[1]), demo: new THREE.Vector3(), meshes: [], materials: [],
     };
     o.traverse((m) => {
       if (!m.isMesh) return;
       m.material = m.material.clone();
       m.material.userData.emissive = m.material.emissive.clone();
-      m.userData.groupe = p.vis ? "visserie" : p.groupe;
-      p.materiaux.push(m.material);
-      p.maillages.push(m);
+      m.userData.pickGroup = p.hardware ? HARDWARE : p.group;
+      p.materials.push(m.material);
+      p.meshes.push(m);
     });
-    pieces.push(p);
+    parts.push(p);
   });
 
   // Démonstration : clés [image, [dx, dy, dz]] en mm, dans le repère de Blender ; l'image 0 est la pose assemblée.
-  demo = infos.animation ?? null;
-  if (demo) {
-    for (const piste of demo.pistes) {
-      const p = pieces.find((q) => q.nom === piste.piece);
-      if (p) p.cles = [[0, new THREE.Vector3()], ...piste.cles.map(([f, [x, y, z]]) => [f, new THREE.Vector3(x, z, -y)])];
+  const a = info.animation;
+  if (a) {
+    demo = {
+      fps: a.ips, end: a.fin,
+      steps: (a.etapes ?? []).map((s) => ({ from: s.de, to: s.a, name: s.nom, detail: s.detail })),
+    };
+    for (const track of a.pistes) {
+      const p = parts.find((q) => q.name === track.piece);
+      if (p) p.keys = [[0, new THREE.Vector3()], ...track.cles.map(([f, [x, y, z]]) => [f, new THREE.Vector3(x, z, -y)])];
     }
-    demo.etapes ??= [];
-    $("bloc-demo").hidden = false;
+    $("demo-block").hidden = false;
   }
 
-  const loin = Math.max(...pieces.map((p) => p.offset.length()));
-  for (const p of pieces) p.retard = RETARD * (1 - p.offset.length() / loin);
+  const farthest = Math.max(...parts.map((p) => p.offset.length()));
+  for (const p of parts) p.delay = DELAY * (1 - p.offset.length() / farthest);
 
   // Coins des pièces pour le cadrage, dans le repère de la scène.
-  racine.updateMatrixWorld(true);
-  for (const p of pieces) {
-    const b = new THREE.Box3().setFromObject(p.objet);
-    p.coins = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => new THREE.Vector3(
+  root.updateMatrixWorld(true);
+  for (const p of parts) {
+    const b = new THREE.Box3().setFromObject(p.object);
+    p.corners = [0, 1, 2, 3, 4, 5, 6, 7].map((i) => new THREE.Vector3(
       (i & 1 ? b.max : b.min).x, (i & 2 ? b.max : b.min).y, (i & 4 ? b.max : b.min).z,
     ));
   }
   camera.position.set(0, 0, 1);
 
   // Arêtes des pièces imprimées, pour lire les formes sombres.
-  const clair = new THREE.LineBasicMaterial({ color: 0xa8adb3, transparent: true, opacity: 0.34 });
-  const fonce = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 });
-  for (const p of pieces) {
-    if (!p.objet.userData.aretes) continue;
-    for (const m of p.maillages) {
+  const light = new THREE.LineBasicMaterial({ color: 0xa8adb3, transparent: true, opacity: 0.34 });
+  const dark = new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.4 });
+  for (const p of parts) {
+    if (!p.object.userData.aretes) continue;
+    for (const m of p.meshes) {
       const c = m.material.color;
-      m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry, 28), c.r + c.g + c.b < 0.2 ? clair : fonce));
+      m.add(new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry, 28), c.r + c.g + c.b < 0.2 ? light : dark));
     }
   }
 
   // Connectique GPS en trois versions (puck externe, GPS interne, bouchon) : ?gps=puck|interne|bouchon, sinon celle
   // du modèle.
-  const versions = [...new Set(pieces.flatMap((p) => (p.version ? p.version.split(" ") : [])))];
+  const versions = [...new Set(parts.flatMap((p) => (p.version ? p.version.split(" ") : [])))];
   if (versions.length) {
-    const demandee = params.get("gps");
-    versionGps = versions.includes(demandee) ? demandee : versions.includes(infos.gps) ? infos.gps : versions[0];
-    $("bloc-gps").hidden = false;
-    marqueVersion();
+    const asked = params.get("gps");
+    gpsVersion = versions.includes(asked) ? asked : versions.includes(info.gps) ? info.gps : versions[0];
+    $("gps-block").hidden = false;
+    markVersion();
   }
 
-  construitListe();
-  appliqueVisibilite();
-  placeVue(params.has("vue") && VUES[params.get("vue")] ? params.get("vue") : "iso", true);
-  attente.hidden = true;
+  buildList();
+  applyVisibility();
+  setView(params.has("vue") && VIEWS[params.get("vue")] ? params.get("vue") : "iso", true);
+  waiting.hidden = true;
 
   // ?ouverture=40 ouvre directement à 40 %, ?image=120 fige la démonstration à cette image ; sinon la
   // démonstration se joue une fois, peu après le chargement (sans démonstration : l'objet s'ouvre tout seul).
-  const demande = Number(params.get("ouverture"));
-  if (params.has("ouverture")) ouvre(clamp01(demande / 100));
+  const openAt = Number(params.get("ouverture"));
+  if (params.has("ouverture")) setExplode(clamp01(openAt / 100));
   else if (demo && params.has("image")) {
-    ouvre(0);
-    poseDemo((p) => decalage(p, Number(params.get("image")), p.demo));
+    setExplode(0);
+    poseDemo((p) => demoOffset(p, Number(params.get("image")), p.demo));
   } else if (demo) {
-    ouvre(0);
-    if (!calme) setTimeout(joueDemo, 1200);
-  } else if (calme) ouvre(1);
+    setExplode(0);
+    if (!reducedMotion) setTimeout(playDemo, 1200);
+  } else if (reducedMotion) setExplode(1);
   else {
-    ouvre(0);
-    setTimeout(() => ouvreVers(1, 2200), 600);
+    setExplode(0);
+    setTimeout(() => explodeTo(1, 2200), 600);
   }
 }
 
 // --- langue de la page
 
 // Textes du modèle dans la langue de la page (le français du modèle sert de repli).
-function traduitModele() {
-  if (!modele) return;
-  const en = langue === "en";
-  groupes = Object.fromEntries((modele.groupes ?? []).map((g) =>
-    [g.id, (en && MODELE_EN.groupes[g.id]) || [g.nom, g.detail]]));
-  visserie = (en && MODELE_EN.visserie) || modele.visserie || visserie;
-  const note = (en && MODELE_EN.note) || modele.note;
-  $("note").textContent = [note, modele.date && t("date")(modele.date)].filter(Boolean).join(" ");
-  for (const l of $("liste").children) {
-    const g = l.dataset.groupe;
-    l.querySelector("span").textContent = g === "visserie" ? visserie[0] : groupes[g]?.[0] ?? g;
+function translateModel() {
+  if (!model) return;
+  const en = lang === "en";
+  groups = Object.fromEntries((model.groupes ?? []).map((g) =>
+    [g.id, (en && MODEL_EN.groups[g.id]) || [g.nom, g.detail]]));
+  hardware = (en && MODEL_EN.hardware) || model.visserie || hardware;
+  const note = (en && MODEL_EN.note) || model.note;
+  $("note").textContent = [note, model.date && t("date")(model.date)].filter(Boolean).join(" ");
+  for (const l of $("parts").children) {
+    const g = l.dataset.group;
+    l.querySelector("span").textContent = g === HARDWARE ? hardware[0] : groups[g]?.[0] ?? g;
   }
 }
 
-function changeLangue(l) {
-  langue = l in TEXTES ? l : "fr";
-  document.title = t("titre");
+function setLanguage(l) {
+  lang = l in TEXTS ? l : "fr";
+  document.title = t("title");
   const description = document.querySelector('meta[name="description"]');   // absente de la page en un seul fichier
   if (description) description.content = t("description");
   for (const e of document.querySelectorAll("[data-i18n]")) e.textContent = t(e.dataset.i18n);
-  if (!attente.hidden) attente.textContent = t(etatAttente);
+  if (!waiting.hidden) waiting.textContent = t(waitingState);
   for (const e of document.querySelectorAll("[data-i18n-aria]")) e.setAttribute("aria-label", t(e.dataset.i18nAria));
-  applyLanguage(langue);   // en-tête commun : navigation, sélecteur, drapeau, choix gardé
-  traduitModele();
-  if (pieces.length) montreFiche();
-  else $("fiche-detail").textContent = ficheParDefaut();
+  applyLanguage(lang);   // en-tête commun : navigation, sélecteur, drapeau
+  translateModel();
+  if (parts.length) showCard();
+  else $("card-detail").textContent = defaultCard();
 }
 
-onLanguageChange(changeLangue);
-changeLangue(langue);
+onLanguageChange(setLanguage);
+setLanguage(lang);
 
 // --- boucle : rien n'est dessiné tant que rien ne change
 
-function boucle(now) {
-  requestAnimationFrame(boucle);
-  if (!pieces.length) return;
-  for (const [nom, t] of tweens) {
-    const u = clamp01((now - t.debut) / t.duree);
-    t.pas(u);
-    if (u === 1 && tweens.get(nom) === t) {
-      tweens.delete(nom);
-      t.apres?.();
+function loop(now) {
+  requestAnimationFrame(loop);
+  if (!parts.length) return;
+  for (const [name, tw] of tweens) {
+    const u = clamp01((now - tw.start) / tw.duration);
+    tw.step(u);
+    if (u === 1 && tweens.get(name) === tw) {
+      tweens.delete(name);
+      tw.then?.();
     }
-    sale = true;
+    dirty = true;
   }
-  if (controls.update()) sale = true;
-  if (aTester) {
-    aTester = false;
-    designe(groupeSousPointeur());
+  if (controls.update()) dirty = true;
+  if (pickPending) {
+    pickPending = false;
+    highlight(groupUnderPointer());
   }
-  if (sale) {
-    sale = false;
+  if (dirty) {
+    dirty = false;
     renderer.render(scene, camera);
   }
 }
@@ -627,45 +634,45 @@ new ResizeObserver(() => {
   const h = zone.clientHeight;
   if (!w || !h) return;
   renderer.setSize(w, h, false);
-  const applique = () => {
+  const apply = () => {
     camera.aspect = w / h;
     camera.updateProjectionMatrix();
   };
-  if (pieces.length) recadre({ avant: ouverture, applique });
-  else applique();
-  sale = true;
+  if (parts.length) reframe({ before: explode, apply });
+  else apply();
+  dirty = true;
 }).observe(zone);
 
-$("assemble").addEventListener("click", () => {
-  arreteDemo();
-  ouvreVers(0);
+$("assembled").addEventListener("click", () => {
+  stopDemo();
+  explodeTo(0);
 });
-$("eclate").addEventListener("click", () => {
-  arreteDemo();
-  ouvreVers(1);
+$("exploded").addEventListener("click", () => {
+  stopDemo();
+  explodeTo(1);
 });
-$("ouverture").addEventListener("input", (e) => {
-  arreteDemo();
-  tweens.delete("ouverture");
-  ouvre(e.target.valueAsNumber / 100);
+$("explode").addEventListener("input", (e) => {
+  stopDemo();
+  tweens.delete("explode");
+  setExplode(e.target.valueAsNumber / 100);
 });
-$("demo").addEventListener("click", joueDemo);
-for (const b of $("vues").children) b.addEventListener("click", () => placeVue(b.dataset.vue));
-for (const b of $("versions").children) b.addEventListener("click", () => choisitVersion(b.dataset.version));
+$("demo").addEventListener("click", playDemo);
+for (const b of $("views").children) b.addEventListener("click", () => setView(b.dataset.view));
+for (const b of $("versions").children) b.addEventListener("click", () => chooseVersion(b.dataset.version));
 
-requestAnimationFrame(boucle);
+requestAnimationFrame(loop);
 
 new GLTFLoader().load(
   "raidmaster.glb",
   prepare,
   (e) => {
-    attente.textContent = e.lengthComputable
-      ? `${t("chargement")} ${Math.round((e.loaded / e.total) * 100)} %`
-      : `${t("chargement")} ${t("mo")(e.loaded / 1e6)}`;
+    waiting.textContent = e.lengthComputable
+      ? `${t("loading")} ${Math.round((e.loaded / e.total) * 100)} %`
+      : `${t("loading")} ${t("mb")(e.loaded / 1e6)}`;
   },
-  (erreur) => {
-    console.error(erreur);
-    etatAttente = "erreur";
-    attente.textContent = t("erreur");
+  (error) => {
+    console.error(error);
+    waitingState = "error";
+    waiting.textContent = t("error");
   },
 );

@@ -22,7 +22,7 @@
 <div class="page">
   <header>
     <h1><a class="home" href="../" data-nav-aria="home" aria-label="Accueil"><span class="brand">RAIDMASTER</span> <span class="num">403</span></a></h1>
-    <p class="lede" data-i18n="chapeau">Les trois cartes du tripmaster dans leur boîtier, assemblé ou éclaté, avec la trappe de la carte micro-SD et le câble en démonstration.</p>
+    <p class="lede" data-i18n="lede">Les trois cartes du tripmaster dans leur boîtier, assemblé ou éclaté, avec la trappe de la carte micro-SD et le câble en démonstration.</p>
     <div class="tools">
       <nav class="site-nav" data-nav-aria="site" aria-label="Pages du site">
         <a class="btn" href="../mockup/" data-nav="mockup" aria-current="page">Maquette 3D</a>
@@ -44,55 +44,55 @@
     </div>
   </header>
 
-  <main class="banc">
+  <main class="workspace">
     <section class="scene" id="scene" data-i18n-aria="scene" aria-label="Maquette 3D : glisser pour tourner, molette ou pincement pour zoomer">
-      <canvas id="vue"></canvas>
-      <p class="attente" id="attente" role="status">Chargement du modèle…</p>
-      <div class="fiche" id="fiche" aria-live="polite">
-        <b id="fiche-nom" data-i18n="maquette">Maquette</b>
-        <span id="fiche-detail">Glisser pour tourner, molette pour zoomer. Survoler une pièce pour la nommer.</span>
+      <canvas id="view"></canvas>
+      <p class="waiting" id="waiting" role="status">Chargement du modèle…</p>
+      <div class="card" id="card" aria-live="polite">
+        <b id="card-name" data-i18n="model">Maquette</b>
+        <span id="card-detail">Glisser pour tourner, molette pour zoomer. Survoler une pièce pour la nommer.</span>
       </div>
     </section>
 
-    <aside class="rack" data-i18n-aria="commandes" aria-label="Commandes de la maquette">
+    <aside class="rack" data-i18n-aria="controls" aria-label="Commandes de la maquette">
       <fieldset>
-        <legend data-i18n="ouverture">Ouverture</legend>
-        <div class="touches">
-          <button class="touche" type="button" id="assemble" aria-pressed="false" data-i18n="assemble">Assemblé</button>
-          <button class="touche" type="button" id="eclate" aria-pressed="false" data-i18n="eclate">Éclaté</button>
+        <legend data-i18n="explode">Ouverture</legend>
+        <div class="keys">
+          <button class="key" type="button" id="assembled" aria-pressed="false" data-i18n="assembled">Assemblé</button>
+          <button class="key" type="button" id="exploded" aria-pressed="false" data-i18n="exploded">Éclaté</button>
         </div>
-        <input type="range" id="ouverture" min="0" max="100" value="0" data-i18n-aria="curseur" aria-label="Ouverture de l'éclaté, en pour cent">
+        <input type="range" id="explode" min="0" max="100" value="0" data-i18n-aria="slider" aria-label="Ouverture de l'éclaté, en pour cent">
       </fieldset>
 
-      <fieldset id="bloc-demo" hidden>
-        <legend data-i18n="demonstration">Démonstration</legend>
-        <div class="touches">
-          <button class="touche" type="button" id="demo" aria-pressed="false" data-i18n="rejouer">Rejouer</button>
+      <fieldset id="demo-block" hidden>
+        <legend data-i18n="demo">Démonstration</legend>
+        <div class="keys">
+          <button class="key" type="button" id="demo" aria-pressed="false" data-i18n="replay">Rejouer</button>
         </div>
       </fieldset>
 
       <fieldset>
-        <legend data-i18n="vue">Vue</legend>
-        <div class="touches deux" id="vues">
-          <button class="touche" type="button" data-vue="iso" aria-pressed="true" data-i18n="vue_iso">Trois quarts</button>
-          <button class="touche" type="button" data-vue="face" aria-pressed="false" data-i18n="vue_face">Face</button>
-          <button class="touche" type="button" data-vue="cote" aria-pressed="false" data-i18n="vue_cote">Côté</button>
-          <button class="touche" type="button" data-vue="dos" aria-pressed="false" data-i18n="vue_dos">Dos</button>
+        <legend data-i18n="view">Vue</legend>
+        <div class="keys two" id="views">
+          <button class="key" type="button" data-view="iso" aria-pressed="true" data-i18n="viewIso">Trois quarts</button>
+          <button class="key" type="button" data-view="face" aria-pressed="false" data-i18n="viewFront">Face</button>
+          <button class="key" type="button" data-view="cote" aria-pressed="false" data-i18n="viewSide">Côté</button>
+          <button class="key" type="button" data-view="dos" aria-pressed="false" data-i18n="viewBack">Dos</button>
         </div>
       </fieldset>
 
-      <fieldset id="bloc-gps" hidden>
+      <fieldset id="gps-block" hidden>
         <legend data-i18n="gps">GPS</legend>
-        <div class="touches" id="versions">
-          <button class="touche" type="button" data-version="puck" aria-pressed="true" data-i18n="gps_puck">Puck externe</button>
-          <button class="touche" type="button" data-version="interne" aria-pressed="false" data-i18n="gps_interne">GPS interne</button>
-          <button class="touche" type="button" data-version="bouchon" aria-pressed="false" data-i18n="gps_bouchon">Bouchon</button>
+        <div class="keys" id="versions">
+          <button class="key" type="button" data-version="puck" aria-pressed="true" data-i18n="gpsPuck">Puck externe</button>
+          <button class="key" type="button" data-version="interne" aria-pressed="false" data-i18n="gpsInternal">GPS interne</button>
+          <button class="key" type="button" data-version="bouchon" aria-pressed="false" data-i18n="gpsPlug">Bouchon</button>
         </div>
       </fieldset>
 
       <fieldset>
-        <legend data-i18n="pieces">Pièces</legend>
-        <div class="liste" id="liste"></div>
+        <legend data-i18n="parts">Pièces</legend>
+        <div class="parts" id="parts"></div>
       </fieldset>
 
       <p class="note" id="note"></p>
