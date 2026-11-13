@@ -52,7 +52,7 @@ dans [`web/mockup/`](web/mockup/) ; modèles 3D externes et fichiers STEP du bo�
   <img src="docs/demo/boitier-assemble.png" alt="Boîtier assemblé : écran 3,5 pouces, cinq boutons, deux voyants, pare-chocs en TPU orange aux coins" width="520">
 </p>
 <p align="center">
-  <img src="docs/demo/boitier-eclate.png" alt="Vue éclatée : capuchons, façade, pare-chocs en TPU, carte boutons et sa nappe, carte Waveshare, carte fille, fond du boîtier" width="820">
+  <img src="docs/demo/boitier-eclate.png" alt="Vue éclatée : capuchons, façade, pare-chocs en TPU, carte boutons et sa nappe, carte Waveshare, carte fille, fond du boîtier, batterie et sa trappe" width="820">
 </p>
 
 <p align="center"><sub>Rendus Blender de la maquette : boîtier de 123 × 94 × 33 mm avec l'aspect retenu, esquisse du modèle dessiné pour l'impression.</sub></p>
