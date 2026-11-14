@@ -315,6 +315,8 @@ software/        tout le code ; CMakeLists.txt et CMakePresets.json, build dans 
 hardware/kicad/carte-fille/
                  projet KiCad 10 de la carte fille et de la carte boutons (schémas, PCB, bibliothèques,
                  3d/ : modèles 3D propres et leur provenance, export/ : STEP des deux cartes)
+hardware/kicad/BOM.md
+                 composants des deux cartes : version GPS intégré et version puck GPS externe
 enclosure/       boîtier : modèles 3D externes utilisés (README.md), stepfiles/ : exports STEP des pièces du boîtier
 web/             site publié sur GitHub Pages : accueil (index.html), common/ : en-tête et styles communs,
                  mockup/ : maquette 3D des cartes dans leur boîtier (page three.js et modèle GLB),
